@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <title>阿弥陀佛 • 遇见</title>
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", serif; /* 改为serif字体 */
+      background: #f5f1e8; /* 宣纸米黄色背景 */
+      overflow-x: hidden;
+    }
+
+    /* ====================== 头部导航 - 书法风格 ====================== */
+    .header-nav {
+      background: linear-gradient(135deg, #5d4037, #3e2723); /* 深褐色渐变 */
+      padding: 12px 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      width: 100%;
+      box-sizing: border-box;
+      border-bottom: 2px solid #d7ccc8; /* 浅褐色边框 */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .nav-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      overflow-x: auto;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+
+    .nav-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      background: rgba(255, 253, 231, 0.15); /* 淡米黄色背景 */
+      color: #fff8e1; /* 米白色文字 */
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 15px;
+      border: 1px solid rgba(169, 145, 109, 0.5); /* 古铜色边框 */
+      margin: 0 5px;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px; /* 增加字间距 */
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 253, 231, 0.25);
+      transform: translateY(-2px);
+      color: #fff;
+      border-color: #d7a55e; /* 金色边框 */
+    }
+
+    .nav-btn.active {
+      background: rgba(215, 167, 94, 0.25); /* 金色背景 */
+      border-color: #d7a55e;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .header-nav {
+        padding: 10px 0;
+      }
+      
+      .nav-container {
+        justify-content: flex-start;
+        padding: 0 15px;
+      }
+      
+      .nav-btn {
+        padding: 10px 14px;
+        font-size: 14px;
+        margin: 0 4px;
+      }
+    }
+
+    /* ====================== 顶部图片 ====================== */
+      .top-image {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    .top-image img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(60, 45, 30, 0.15);
+      display: block;
+      border: 1px solid #d7ccc8;
+    }
+
+    @media (max-width: 768px) {
+      .top-image {
+        padding: 15px;
+      }
+    }
+
+    /* ====================== 中间单张图片 ====================== */
+    .center-pic-container {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .center-pic-container img {
+      width: auto;
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* ====================== 页脚 ====================== */
+    .footer {
+      background: linear-gradient(135deg, #5d4037, #3e2723);
+      color: #fff8e1;
+      text-align: center;
+      padding: 25px 20px;
+      font-size: 14px;
+      border-top: 2px solid #d7ccc8;
+      position: relative;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    .footer p {
+      margin: 8px 0;
+      opacity: 0.9;
+      line-height: 1.5;
+    }
+
+    /* ====================== 添加黄实线效果 ====================== */
+    .footer::before {
+      content: "";
+      display: block;
+      width: 80px;
+      height: 2px;
+      background: #d7a55e;
+      margin: 0 auto 15px auto;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<!-- 头部导航 -->
+<header class="header-nav">
+  <nav class="nav-container">
+    <a href="https://amitofo.icu/jingwen.html" class="nav-btn">无量寿经</a>
+    <a href="https://amitofo.icu/yiqu.html" class="nav-btn" >经文义趣</a>
+    <a href="https://amitofo.icu/sound.html" class="nav-btn">天籁梵音</a>
+    <a href="https://amitofo.icu/art.html" class="nav-btn">大德墨宝</a>
+  </nav>
+</header>
+
+<!-- 顶部图片 -->
+<a href="https://amitofo.icu">
+  <div class="top-image">
+    <img src="https://amitofo.icu/MB-03-0041_preview.jpg" alt="南无阿弥陀佛">
+  </div>
+</a>
+
+<!-- 中间单张图片 -->
+<div class="center-pic-container">
+  <img src="https://amitofo.icu/wuliangsofo_s.jpg" alt="无量寿佛">
+</div>
+
+<!-- 页脚 -->
+<div class="footer">
+  <p>愿以此功德 庄严佛净土 上报四重恩 下济三途苦</p>
+  <p>若有见闻者 悉发菩提心 尽此一报身 同生极乐国</p>
+</div>
+
+</body>
+</html>
