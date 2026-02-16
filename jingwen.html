@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>阿弥陀佛 • 遇见</title>
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", serif;
+      background: #f5f1e8;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+
+    /* ====================== 头部导航菜单 - 书法风格配色 ====================== */
+    .header-nav {
+      background: linear-gradient(135deg, #5d4037, #3e2723);
+      padding: 12px 0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      width: 100%;
+      box-sizing: border-box;
+      border-bottom: 2px solid #d7ccc8;
+    }
+
+    .nav-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      white-space: nowrap;
+      padding: 0 10px;
+      scrollbar-width: none;
+      box-sizing: border-box;
+    }
+
+    .nav-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* 导航按钮样式 - 书法风格 */
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      background: rgba(255, 253, 231, 0.15);
+      color: #fff8e1;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 500;
+      border: 1px solid rgba(169, 145, 109, 0.5);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      margin: 0 5px;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      box-sizing: border-box;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 253, 231, 0.25);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+      color: #fff;
+      border-color: #d7a55e;
+    }
+
+    .nav-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-btn.active {
+      background: rgba(215, 167, 94, 0.25);
+      border-color: #d7a55e;
+      box-shadow: 0 4px 8px rgba(215, 167, 94, 0.3);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* ====================== 顶部图片 ====================== */
+    .top-image {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    .top-image img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(60, 45, 30, 0.15);
+      display: block;
+      border: 1px solid #d7ccc8;
+    }
+
+    /* ====================== 视频播放器区域 ====================== */
+    .video-section {
+      max-width: 1200px;
+      margin: 0 auto 30px;
+      padding: 0 20px;
+      box-sizing: border-box;
+    }
+    
+    .video-player-container {
+      background: #fffcf5;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 8px 24px rgba(60, 45, 30, 0.15);
+      border: 2px solid #d7a55e;
+      position: relative;
+    }
+    
+    .video-player-container::before {
+      content: "";
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      border: 1px solid rgba(215, 167, 94, 0.3);
+      border-radius: 12px;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .section-title {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 25px;
+      color: #5d4037;
+      font-size: 22px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #d7a55e;
+      font-weight: 600;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: 1px;
+    }
+    
+    .section-title i {
+      color: #8d6e63;
+    }
+    
+    /* 视频播放器主体 */
+    .video-player {
+      width: 100%;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    #main-video {
+      width: 100%;
+      height: auto;
+      display: block;
+      max-height: 500px;
+      border-radius: 6px;
+    }
+    
+    /* 视频控制栏 - 简化版本 */
+    .video-controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+      background: rgba(93, 64, 55, 0.9);
+      border-radius: 6px;
+      margin-top: 15px;
+    }
+    
+    .control-btn {
+      background: rgba(255, 253, 231, 0.15);
+      color: #fff8e1;
+      border: 1px solid rgba(169, 145, 109, 0.5);
+      border-radius: 6px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+    }
+    
+    .control-btn:hover {
+      background: rgba(255, 253, 231, 0.25);
+      border-color: #d7a55e;
+    }
+    
+    .control-btn:active {
+      transform: translateY(1px);
+    }
+    
+    .control-btn i {
+      font-size: 18px;
+    }
+    
+    /* 视频信息 */
+    .video-info {
+      color: #5d4037;
+      font-size: 16px;
+      text-align: center;
+      margin-top: 15px;
+      font-weight: 500;
+    }
+    
+    /* ====================== 页脚 - 书法风格配色 ====================== */
+    .footer {
+      background: linear-gradient(135deg, #5d4037, #3e2723);
+      color: #fff8e1;
+      text-align: center;
+      padding: 25px 20px;
+      margin-top: 40px;
+      font-size: 14px;
+      box-sizing: border-box;
+      width: 100%;
+      border-top: 2px solid #d7ccc8;
+    }
+    
+    .footer p {
+      margin: 8px 0;
+      opacity: 0.9;
+      line-height: 1.5;
+      letter-spacing: 0.5px;
+    }
+    
+    /* 添加分隔线装饰 */
+    .footer::before {
+      content: "";
+      display: block;
+      width: 80px;
+      height: 2px;
+      background: #d7a55e;
+      margin: 0 auto 15px auto;
+    }
+
+    /* ====================== 响应式设计 ====================== */
+    @media (max-width: 768px) {
+      .header-nav {
+        padding: 10px 0;
+        position: -webkit-sticky;
+        position: sticky;
+      }
+      
+      .nav-container {
+        justify-content: flex-start;
+        padding: 0 15px;
+      }
+      
+      .nav-btn {
+        padding: 10px 14px;
+        font-size: 14px;
+        margin: 0 4px;
+      }
+      
+      .top-image {
+        padding: 15px;
+      }
+      
+      .video-section {
+        padding: 0 15px;
+      }
+      
+      .video-player-container {
+        padding: 20px;
+      }
+      
+      .section-title {
+        font-size: 20px;
+      }
+      
+      #main-video {
+        max-height: 400px;
+      }
+    }
+
+    /* 针对iPhone小屏幕的特殊优化 */
+    @media (max-width: 414px) {
+      #main-video {
+        max-height: 300px;
+      }
+      
+      .control-btn {
+        padding: 10px 16px;
+        font-size: 15px;
+      }
+    }
+
+    /* 通用修复 - 防止所有元素溢出 */
+    * {
+      max-width: 100%;
+    }
+
+  </style>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+<!-- ====================== 头部导航菜单 ====================== -->
+<header class="header-nav">
+  <nav class="nav-container">
+    <a href="https://amitofo.icu/jingwen.html" class="nav-btn">无量寿经</a>
+    <a href="https://amitofo.icu/yiqu.html" class="nav-btn">经文义趣</a>
+    <a href="https://amitofo.icu/sound.html" class="nav-btn">天籁梵音</a>
+    <a href="https://amitofo.icu/art.html" class="nav-btn">大德墨宝</a>
+  </nav>
+</header>
+
+<!-- ====================== 顶部图片 ====================== -->
+<a href="https://amitofo.icu">
+<div class="top-image">
+    <img src="https://amitofo.icu/MB-03-0041_preview.jpg" alt="南无阿弥陀佛">
+</div>
+</a>
+
+<!-- ====================== 视频播放器 ====================== -->
+<div class="video-section">
+  <div class="video-player-container">
+    <h2 class="section-title">
+      <i class="fas fa-play-circle"></i>
+      大乘无量寿庄严清净平等觉经
+    </h2>
+    
+    <!-- 主视频播放器 -->
+    <div class="video-player">
+      <video id="main-video" controls playsinline>
+        <source src="https://cf.sanshi.uk/media/himp4/61/61-173/61-173-0001.mp4" type="video/mp4">
+        您的浏览器不支持视频播放，请使用现代浏览器访问。
+      </video>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== 页脚 ====================== -->
+<div class="footer">
+  <p>愿以此功德 庄严佛净土 上报四重恩 下济三途苦</p>
+  <p>若有见闻者 悉发菩提心 尽此一报身 同生极乐国</p>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 视频播放器功能
+    const videoPlayer = document.getElementById('main-video');
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const playIcon = document.getElementById('play-icon');
+    const playText = document.getElementById('play-text');
+    
+    // 设置固定视频源
+    videoPlayer.src = 'https://cf.sanshi.uk/media/himp4/61/61-173/61-173-0001.mp4';
+    
+    // 播放视频
+    function playVideo() {
+      videoPlayer.play()
+        .then(() => {
+          updatePlayPauseButton(true);
+        })
+        .catch(error => {
+          console.log('播放失败:', error);
+          updatePlayPauseButton(false);
+        });
+    }
+    
+    // 暂停视频
+    function pauseVideo() {
+      videoPlayer.pause();
+      updatePlayPauseButton(false);
+    }
+    
+    // 更新播放/暂停按钮
+    function updatePlayPauseButton(isPlaying) {
+      if (isPlaying) {
+        playIcon.className = 'fas fa-pause';
+        playText.textContent = '暂停';
+      } else {
+        playIcon.className = 'fas fa-play';
+        playText.textContent = '播放';
+      }
+    }
+    
+    // 初始化播放器
+    function initVideoPlayer() {
+      // 设置事件监听器
+      playPauseBtn.addEventListener('click', function() {
+        if (videoPlayer.paused) {
+          playVideo();
+        } else {
+          pauseVideo();
+        }
+      });
+      
+      // 视频播放状态变化
+      videoPlayer.addEventListener('play', function() {
+        updatePlayPauseButton(true);
+      });
+      
+      videoPlayer.addEventListener('pause', function() {
+        updatePlayPauseButton(false);
+      });
+      
+      // 键盘快捷键支持
+      document.addEventListener('keydown', function(event) {
+        // 空格键切换播放/暂停
+        if (event.code === 'Space') {
+          event.preventDefault();
+          if (videoPlayer.paused) {
+            playVideo();
+          } else {
+            pauseVideo();
+          }
+        }
+      });
+    }
+    
+    // 初始化视频播放器
+    initVideoPlayer();
+    
+    // 添加触摸效果
+    document.querySelectorAll('.nav-btn, .control-btn').forEach(btn => {
+      btn.addEventListener('touchstart', function() {
+        this.style.opacity = '0.9';
+      });
+      
+      btn.addEventListener('touchend', function() {
+        this.style.opacity = '1';
+      });
+    });
+
+  });
+</script>
+
+</body>
+</html>

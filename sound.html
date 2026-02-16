@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+  <title>阿弥陀佛 • 遇见</title>
+
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", serif;
+      background: #f5f1e8;
+      overflow-x: hidden;
+    }
+
+    /* ====================== 头部导航 - 书法风格 ====================== */
+    .header-nav {
+      background: linear-gradient(135deg, #5d4037, #3e2723);
+      padding: 12px 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      width: 100%;
+      box-sizing: border-box;
+      border-bottom: 2px solid #d7ccc8;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .nav-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      overflow-x: auto;
+      padding: 0 10px;
+      box-sizing: border-box;
+    }
+
+    .nav-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 16px;
+      background: rgba(255, 253, 231, 0.15);
+      color: #fff8e1;
+      text-decoration: none;
+      border-radius: 6px;
+      font-size: 15px;
+      border: 1px solid rgba(169, 145, 109, 0.5);
+      margin: 0 5px;
+      flex-shrink: 0;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-btn:hover {
+      background: rgba(255, 253, 231, 0.25);
+      transform: translateY(-2px);
+      color: #fff;
+      border-color: #d7a55e;
+    }
+
+    .nav-btn.active {
+      background: rgba(215, 167, 94, 0.25);
+      border-color: #d7a55e;
+      color: #fff;
+      font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+      .header-nav {
+        padding: 10px 0;
+      }
+      
+      .nav-container {
+        justify-content: flex-start;
+        padding: 0 15px;
+      }
+      
+      .nav-btn {
+        padding: 10px 14px;
+        font-size: 14px;
+        margin: 0 4px;
+      }
+    }
+
+    /* ====================== 顶部图片 ====================== */
+    .top-image {
+      display: flex;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+      width: 100%;
+    }
+
+    .top-image img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(60, 45, 30, 0.15);
+      border: 1px solid #d7ccc8;
+    }
+
+    @media (max-width: 768px) {
+      .top-image {
+        padding: 15px;
+      }
+    }
+
+    /* ====================== 音乐播放器区域 - 简化版 ====================== */
+    .music-section {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    
+    .music-player {
+      background: #fffcf5;
+      border-radius: 12px;
+      padding: 40px 25px;
+      box-shadow: 0 8px 24px rgba(60, 45, 30, 0.15);
+      width: 100%;
+      box-sizing: border-box;
+      scroll-margin-top: 80px;
+      border: 2px solid #d7a55e;
+      position: relative;
+      text-align: center;
+    }
+    
+    .music-player::before {
+      content: "";
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      right: -4px;
+      bottom: -4px;
+      border: 1px solid rgba(215, 167, 94, 0.3);
+      border-radius: 14px;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .section-title {
+      text-align: center;
+      margin-top: 0;
+      margin-bottom: 30px;
+      color: #5d4037;
+      font-size: 22px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #d7a55e;
+      font-weight: 600;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: 1px;
+    }
+    
+    /* ====================== 简单播放按钮 ====================== */
+    .simple-player {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding: 20px;
+    }
+    
+    .play-btn {
+      background: linear-gradient(135deg, #d7a55e, #b08d57);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 20px rgba(215, 165, 94, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .play-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(215, 165, 94, 0.4);
+    }
+    
+    .play-btn:active {
+      transform: scale(0.98);
+    }
+    
+    .play-btn.playing {
+      background: linear-gradient(135deg, #5d4037, #3e2723);
+    }
+    
+    .song-info {
+      color: #5d4037;
+      font-size: 16px;
+      font-weight: 500;
+      margin-top: 10px;
+    }
+    
+    /* ====================== 加载指示器 ====================== */
+    .loading-indicator {
+      font-size: 14px;
+      color: #8d6e63;
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      opacity: 0.8;
+    }
+    
+    .loading-indicator i {
+      animation: spin 1.5s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    /* ====================== 当前播放指示器 ====================== */
+    .now-playing {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(93, 64, 55, 0.95);
+      color: #fff8e1;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      display: none;
+      z-index: 999;
+      box-sizing: border-box;
+      max-width: 90%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      border: 1px solid rgba(215, 167, 94, 0.5);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      letter-spacing: 0.5px;
+    }
+    
+    .now-playing.show {
+      display: block;
+      animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+
+    /* ====================== 页脚 - 书法风格 ====================== */
+    .footer {
+      background: linear-gradient(135deg, #5d4037, #3e2723);
+      color: #fff8e1;
+      text-align: center;
+      padding: 25px 20px;
+      margin-top: 40px;
+      font-size: 14px;
+      box-sizing: border-box;
+      width: 100%;
+      border-top: 2px solid #d7ccc8;
+      letter-spacing: 0.5px;
+    }
+    
+    .footer p {
+      margin: 8px 0;
+      opacity: 0.9;
+      line-height: 1.5;
+    }
+    
+    .footer::before {
+      content: "";
+      display: block;
+      width: 80px;
+      height: 2px;
+      background: #d7a55e;
+      margin: 0 auto 15px auto;
+    }
+    
+    * {
+      max-width: 100%;
+    }
+
+    /* ====================== 响应式设计 ====================== */
+    @media (max-width: 768px) {
+      .music-section {
+        padding: 0 15px;
+        margin: 30px auto;
+      }
+      
+      .music-player {
+        padding: 30px 20px;
+      }
+      
+      .section-title {
+        font-size: 20px;
+      }
+      
+      .play-btn {
+        width: 70px;
+        height: 70px;
+        font-size: 22px;
+      }
+      
+      .song-info {
+        font-size: 15px;
+      }
+      
+      .now-playing {
+        width: 90%;
+        padding: 10px 20px;
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 414px) {
+      .play-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 20px;
+      }
+      
+      .song-info {
+        font-size: 14px;
+      }
+    }
+
+  </style>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+
+<!-- 头部导航菜单 -->
+<header class="header-nav">
+  <nav class="nav-container">
+    <a href="https://amitofo.icu/jingwen.html" class="nav-btn">无量寿经</a>
+    <a href="https://amitofo.icu/yiqu.html" class="nav-btn">经文义趣</a>
+    <a href="#music-player" class="nav-btn active">天籁梵音</a>
+    <a href="https://amitofo.icu/art.html" class="nav-btn">大德墨宝</a>
+  </nav>
+</header>
+
+<!-- 顶部图片 -->
+<a href="https://amitofo.icu">
+<div class="top-image">
+    <img src="https://ft.amtb.de/doc/MB/03/MB-03-0041_preview.jpg" alt="南无阿弥陀佛">
+</div>
+</a>
+
+<!-- 音乐播放器区域 -->
+<div class="music-section" id="music-player">
+  <div class="music-player">
+    <h2 class="section-title">
+      <i class="fas fa-music"></i>
+      天籁梵音
+    </h2>
+    
+    <!-- 简单的音乐播放器 -->
+    <div class="simple-player">
+      <div class="song-info">
+        四字佛号 (净空法师)
+      </div>
+      
+      <button class="play-btn" id="play-btn">
+        <i class="fas fa-play" id="play-icon"></i>
+      </button>
+      
+      <div class="song-info">
+        点击上方按钮播放/暂停
+      </div>
+      
+      <!-- 加载状态指示器 -->
+      <div class="loading-indicator" id="loading-indicator">
+        <i class="fas fa-spinner"></i>
+        正在预加载音频文件...
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 当前播放指示器 -->
+<div class="now-playing" id="nowPlaying">
+  正在播放：四字佛号 (净空)
+</div>
+
+<!-- 页脚 -->
+<div class="footer">
+  <p>愿以此功德 庄严佛净土 上报四重恩 下济三途苦</p>
+  <p>若有见闻者 悉发菩提心 尽此一报身 同生极乐国</p>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 创建音频对象
+    const audioPlayer = new Audio();
+    const playBtn = document.getElementById('play-btn');
+    const playIcon = document.getElementById('play-icon');
+    const nowPlaying = document.getElementById('nowPlaying');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    
+    // 设置音频源
+    const musicUrl = "https://amitofo.icu/amitofo-jingkong.mp3";
+    audioPlayer.src = musicUrl;
+    audioPlayer.loop = true; // 循环播放
+    audioPlayer.volume = 0.8; // 设置音量
+    
+    // 设置预加载
+    audioPlayer.preload = "auto";
+    
+    let isPlaying = false;
+    let audioLoaded = false;
+    
+    // 显示加载状态
+    function showLoadingState() {
+      loadingIndicator.style.display = 'flex';
+    }
+    
+    // 隐藏加载状态
+    function hideLoadingState() {
+      loadingIndicator.style.display = 'none';
+    }
+    
+    // 更新按钮状态
+    function updateButtonState() {
+      if (audioLoaded) {
+        playBtn.disabled = false;
+        playBtn.style.opacity = '1';
+        playBtn.style.cursor = 'pointer';
+      } else {
+        playBtn.disabled = true;
+        playBtn.style.opacity = '0.7';
+        playBtn.style.cursor = 'not-allowed';
+      }
+    }
+    
+    // 初始化按钮状态
+    updateButtonState();
+    showLoadingState();
+    
+    // 音频加载事件
+    audioPlayer.addEventListener('canplaythrough', function() {
+      console.log('音频已预加载完成，可以随时播放');
+      audioLoaded = true;
+      hideLoadingState();
+      updateButtonState();
+    });
+    
+    audioPlayer.addEventListener('error', function(e) {
+      console.error('音频加载失败:', e);
+      hideLoadingState();
+      loadingIndicator.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 音频加载失败，请刷新页面重试';
+      loadingIndicator.style.color = '#d32f2f';
+    });
+    
+    // 主动开始加载音频
+    audioPlayer.load();
+    
+    // 播放/暂停函数
+    function togglePlay() {
+      if (!audioLoaded) {
+        alert('音频还在加载中，请稍候...');
+        return;
+      }
+      
+      if (isPlaying) {
+        // 如果正在播放，暂停
+        audioPlayer.pause();
+        playIcon.className = 'fas fa-play';
+        playBtn.classList.remove('playing');
+        nowPlaying.classList.remove('show');
+        isPlaying = false;
+      } else {
+        // 如果暂停，播放
+        audioPlayer.play()
+          .then(() => {
+            playIcon.className = 'fas fa-pause';
+            playBtn.classList.add('playing');
+            nowPlaying.classList.add('show');
+            isPlaying = true;
+          })
+          .catch(error => {
+            console.log('播放失败:', error);
+            alert('播放失败，请检查网络连接或稍后重试。');
+          });
+      }
+    }
+    
+    // 绑定播放按钮点击事件
+    playBtn.addEventListener('click', togglePlay);
+    
+    // 空格键控制播放/暂停
+    document.addEventListener('keydown', function(event) {
+      if (event.code === 'Space') {
+        event.preventDefault();
+        togglePlay();
+      }
+    });
+    
+    // 页面卸载时暂停音频
+    window.addEventListener('beforeunload', function() {
+      if (isPlaying) {
+        audioPlayer.pause();
+      }
+    });
+    
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        const targetId = this.getAttribute('href');
+        
+        if (targetId === '#' || targetId === '') return;
+        
+        const targetElement = document.querySelector(targetId);
+        if (targetElement) {
+          e.preventDefault();
+          
+          const headerHeight = document.querySelector('.header-nav').offsetHeight;
+          const elementPosition = targetElement.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerHeight;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+          
+          document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.classList.remove('active');
+          });
+          this.classList.add('active');
+        }
+      });
+    });
+
+    // 导航布局调整
+    function adjustNavLayout() {
+      const navContainer = document.querySelector('.nav-container');
+      const navButtons = document.querySelectorAll('.nav-btn');
+      const isMobile = window.innerWidth <= 768;
+      
+      if (isMobile) {
+        let totalWidth = 0;
+        navButtons.forEach(btn => {
+          totalWidth += btn.offsetWidth + 8;
+        });
+        
+        if (totalWidth < navContainer.offsetWidth) {
+          navContainer.style.justifyContent = 'center';
+        } else {
+          navContainer.style.justifyContent = 'flex-start';
+        }
+      } else {
+        navContainer.style.justifyContent = 'center';
+      }
+    }
+    
+    setTimeout(adjustNavLayout, 100);
+    window.addEventListener('resize', adjustNavLayout);
+    
+    // 添加一个延迟检查，确保音频开始加载
+    setTimeout(function() {
+      if (!audioLoaded && audioPlayer.readyState === 0) {
+        console.log('强制重新加载音频...');
+        audioPlayer.load();
+      }
+    }, 2000);
+  });
+</script>
+
+</body>
+</html>

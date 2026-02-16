@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>荷花采集小游戏</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+        
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            overflow-x: hidden;
+            background-color: #0a3d3d;
+            position: relative;
+            -webkit-text-size-adjust: 100%;
+        }
+        
+        /* 背景图片 */
+        .background-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.15;
+            z-index: -2;
+        }
+        
+        .more-games-link {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background-color: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 1000;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            touch-action: manipulation;
+        }
+        
+        .more-games-link:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: white;
+            font-size: clamp(2.2rem, 5vw, 3.2rem);
+            margin-bottom: 8px;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            letter-spacing: 1px;
+        }
+        
+        .subtitle {
+            color: #ffeb3b;
+            font-size: clamp(1rem, 3vw, 1.4rem);
+            font-weight: 500;
+            margin-bottom: 15px;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .info-box {
+            text-align: center;
+            flex: 1;
+        }
+        
+        .info-label {
+            color: #e0e0e0;
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            margin-bottom: 6px;
+        }
+        
+        .info-value {
+            color: white;
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            font-weight: 700;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        #score {
+            color: #ff6b9d;
+        }
+        
+        #timer {
+            color: #ffcc00;
+        }
+        
+        #level {
+            color: #4cff4c;
+        }
+        
+        .game-area {
+            position: relative;
+            width: 100%;
+            height: clamp(300px, 50vh, 500px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 20px;
+            touch-action: manipulation;
+        }
+        
+        .game-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        .lotus-bubble {
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        .lotus-bubble:active {
+            transform: scale(0.95);
+        }
+        
+        .lotus-bubble.popped {
+            animation: pop 0.3s forwards;
+        }
+        
+        .lotus-bubble::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50%;
+            box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+        
+        @keyframes pop {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 14px 28px;
+            font-size: clamp(1rem, 3vw, 1.2rem);
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+            min-width: 150px;
+            justify-content: center;
+            -webkit-appearance: none;
+            touch-action: manipulation;
+        }
+        
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-start {
+            background: linear-gradient(to right, #4CAF50, #8BC34A);
+            color: white;
+        }
+        
+        .btn-pause {
+            background: linear-gradient(to right, #FF9800, #FFC107);
+            color: white;
+        }
+        
+        .btn-reset {
+            background: linear-gradient(to right, #f44336, #FF5722);
+            color: white;
+        }
+        
+        .btn-mute {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+        }
+        
+        .btn-mute.muted {
+            background: linear-gradient(to right, #8e9eab, #eef2f3);
+            color: #666;
+        }
+        
+        .instructions {
+            background-color: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            width: 100%;
+            max-width: 700px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .instructions h2 {
+            color: white;
+            margin-bottom: 12px;
+            font-size: clamp(1.4rem, 3vw, 1.8rem);
+            text-align: center;
+        }
+        
+        .instructions ul {
+            color: #e0e0e0;
+            list-style-type: none;
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            line-height: 1.7;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            padding-left: 28px;
+            position: relative;
+        }
+        
+        .instructions li i {
+            position: absolute;
+            left: 0;
+            top: 4px;
+            color: #ffcc00;
+        }
+        
+        .combo-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(3rem, 8vw, 5rem);
+            font-weight: 900;
+            color: #ffcc00;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 100;
+            text-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
+        }
+        
+        .combo-show {
+            animation: comboAnim 1s forwards;
+        }
+        
+        @keyframes comboAnim {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            30% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            70% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+        }
+        
+        .petal-fall {
+            position: fixed;
+            top: -50px;
+            font-size: 2rem;
+            color: #ff6b9d;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 90;
+            animation: petalFall 3s linear forwards;
+        }
+        
+        @keyframes petalFall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        
+        footer {
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            padding: 12px;
+        }
+        
+        footer a {
+            color: #4cff4c;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        
+        footer a:hover {
+            color: #ffcc00;
+            text-decoration: underline;
+        }
+        
+        .image-not-found {
+            background: linear-gradient(45deg, #ff9a9e, #fad0c4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            font-weight: bold;
+            font-size: 12px;
+            text-align: center;
+            padding: 5px;
+        }
+        
+        .mobile-tap-hint {
+            display: none;
+            color: #ffcc00;
+            font-size: 1rem;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        /* 针对iPhone的优化 */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                padding: 10px;
+            }
+            
+            .game-area {
+                height: clamp(280px, 45vh, 450px);
+            }
+            
+            .btn {
+                padding: 12px 24px;
+                font-size: 0.95rem;
+                min-width: 140px;
+            }
+            
+            /* 防止iOS上的橡皮筋效果 */
+            html, body {
+                overscroll-behavior-y: contain;
+                overflow-y: auto;
+                position: fixed;
+                width: 100%;
+                height: 100%;
+            }
+            
+            .lotus-bubble {
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+            }
+        }
+        
+        /* 横屏优化 */
+        @media screen and (orientation: landscape) and (max-height: 600px) {
+            .game-area {
+                height: clamp(200px, 40vh, 350px);
+            }
+            
+            .game-info {
+                padding: 12px 15px;
+                margin-bottom: 15px;
+            }
+            
+            .info-label {
+                font-size: 0.8rem;
+            }
+            
+            .info-value {
+                font-size: 1.5rem;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+                min-width: 130px;
+            }
+            
+            .instructions {
+                padding: 15px;
+            }
+        }
+        
+        /* 小屏幕手机优化 */
+        @media (max-width: 320px) {
+            .more-games-link {
+                top: 10px;
+                left: 10px;
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .game-info {
+                padding: 12px 15px;
+            }
+            
+            .info-value {
+                font-size: 1.5rem;
+            }
+            
+            .btn {
+                min-width: 120px;
+                padding: 10px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .instructions {
+                padding: 15px;
+            }
+        }
+        
+        /* 防止双击缩放 */
+        .lotus-bubble, .btn, a {
+            touch-action: manipulation;
+        }
+        
+        /* 优化字体渲染 */
+        h1, .info-value {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        /* 防止文本选择 */
+        .lotus-bubble, .btn {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        
+        /* 优化动画性能 */
+        .lotus-bubble, .petal-fall, .combo-indicator {
+            will-change: transform, opacity;
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景图片将在JS中设置 -->
+    <div class="background-image" id="backgroundImage"></div>
+    
+    <!-- 左上角角标 -->
+    <a href="https://game.amitofo.icu" class="more-games-link">
+        <i class="fas fa-gamepad"></i> 更多游戏
+    </a>
+    
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-water-lily"></i> 荷花采集小游戏</h1>
+            <p class="subtitle">轻触荷花进行采集，享受禅意时光</p>
+            <p class="mobile-tap-hint"><i class="fas fa-hand-point-up"></i> 在移动设备上，轻触荷花即可采集</p>
+        </header>
+        
+        <div class="game-info">
+            <div class="info-box">
+                <div class="info-label">采集花朵总数</div>
+                <div id="score" class="info-value">0</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">剩余时间</div>
+                <div id="timer" class="info-value">60</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">等级</div>
+                <div id="level" class="info-value">1</div>
+            </div>
+        </div>
+        
+        <div class="game-area" id="gameArea">
+            <div class="game-background" id="gameBackground"></div>
+            <!-- 荷花泡泡会在这里动态生成 -->
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-start" id="startBtn">
+                <i class="fas fa-play"></i> 开始游戏
+            </button>
+            <button class="btn btn-reset" id="resetBtn">
+                <i class="fas fa-redo"></i> 重新开始
+            </button>
+            <button class="btn btn-mute" id="muteBtn">
+                <i class="fas fa-volume-up"></i> 静音
+            </button>
+        </div>
+        
+        <div class="instructions">
+            <h2>游戏说明</h2>
+            <ul>
+                <li><i class="fas fa-hand-pointer"></i> 点击/轻触荷花进行采集，每朵计1分</li>
+                <li><i class="fas fa-clock"></i> 游戏时间60秒，时间结束游戏停止</li>
+                <li><i class="fas fa-tachometer-alt"></i> 随着等级提高，荷花出现速度会加快</li>
+                <li><i class="fas fa-gift"></i> 每采集10朵荷花触发花瓣雨特效</li>
+                <li><i class="fas fa-expand-alt"></i> 荷花大小随机变化：30px 到 80px</li>
+            </ul>
+        </div>
+        
+        <div class="combo-indicator" id="comboIndicator"></div>
+    </div>
+    
+    <footer>
+        <p>© 2026 荷花采集小游戏 | 提供者：<a href="https://amitofo.icu">amitofo.icu</a></p>
+    </footer>
+
+    <!-- 音频元素 -->
+    <audio id="bg-music" loop>
+        <source src="beijing.ogg" type="audio/ogg">
+        <source src="beijing.mp3" type="audio/mpeg">
+        您的浏览器不支持音频元素。
+    </audio>
+    <audio id="pop-sound">
+        <source src="win.mp3" type="audio/mpeg">
+        <source src="win.ogg" type="audio/ogg">
+        您的浏览器不支持音频元素。
+    </audio>
+    <audio id="effect-sound">
+        <source src="xiaochu.mp3" type="audio/mpeg">
+        <source src="xiaochu.ogg" type="audio/ogg">
+        您的浏览器不支持音频元素。
+    </audio>
+
+    <script>
+        // 游戏变量
+        let score = 0;
+        let timeLeft = 60;
+        let level = 1;
+        let gameActive = false;
+        let gamePaused = false;
+        let timerInterval;
+        let bubbleInterval;
+        let comboCount = 0;
+        let comboTimeout;
+        let lastClickTime = 0;
+        let lastTenTrigger = 0; // 记录上次触发10朵荷花的时间
+        let isMuted = false; // 静音状态
+        
+        // 音频元素
+        const bgMusic = document.getElementById('bg-music');
+        const popSound = document.getElementById('pop-sound');
+        const effectSound = document.getElementById('effect-sound');
+        
+        // DOM 元素
+        const gameArea = document.getElementById('gameArea');
+        const gameBackground = document.getElementById('gameBackground');
+        const backgroundImage = document.getElementById('backgroundImage');
+        const scoreElement = document.getElementById('score');
+        const timerElement = document.getElementById('timer');
+        const levelElement = document.getElementById('level');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const muteBtn = document.getElementById('muteBtn');
+        const comboIndicator = document.getElementById('comboIndicator');
+        
+        // 资源路径配置 - 根据实际情况修改这些路径
+        const RESOURCE_PATHS = {
+            // 背景图片
+            background: 'https://s3.ap-south-1.amazonaws.com/amitofo.icu/lianchi6.jpg',
+            // 备用背景图片（如果主图片加载失败）
+            fallbackBackground: '',
+            // 荷花图片数组
+            lotusImages: [
+                'lotus1.jpg',
+                'lotus2.jpg', 
+                'lotus3.jpg',
+                'lotus4.jpg'
+            ],
+            // 备用荷花图片
+            onlineLotusImages: [
+                'https://s3.ap-south-1.amazonaws.com/amitofo.icu/lotus1.jpg',
+                'https://s3.ap-south-1.amazonaws.com/amitofo.icu/lotus2.jpg',
+                'https://s3.ap-south-1.amazonaws.com/amitofo.icu/lotus3.jpg',
+                'https://s3.ap-south-1.amazonaws.com/amitofo.icu/lotus4.jpg'
+            ]
+        };
+        
+        // 当前使用的图片数组
+        let currentLotusImages = [];
+        
+        // 预先加载音频
+        function preloadAudio() {
+            // 设置音频音量
+            bgMusic.volume = 0.5; // 中等音量
+            popSound.volume = 0.4;
+            effectSound.volume = 0.7;
+            
+            // 加载音频
+            bgMusic.load();
+            popSound.load();
+            effectSound.load();
+            
+            // 尝试自动播放背景音乐（需要用户交互后）
+            document.addEventListener('click', startBackgroundMusic, { once: true });
+        }
+        
+        // 开始背景音乐
+        function startBackgroundMusic() {
+            if (!isMuted) {
+                bgMusic.play().catch(e => console.log("音频自动播放被阻止:", e));
+            }
+        }
+        
+        // 加载资源并检查可用性
+        async function loadResources() {
+            console.log("开始加载资源...");
+            
+            // 1. 尝试加载背景图片
+            const bgLoaded = await testImageLoad(RESOURCE_PATHS.background);
+            
+            if (bgLoaded) {
+                console.log("背景图片加载成功:", RESOURCE_PATHS.background);
+                gameBackground.style.backgroundImage = `url('${RESOURCE_PATHS.background}')`;
+                backgroundImage.style.backgroundImage = `url('${RESOURCE_PATHS.background}')`;
+            } else {
+                console.log("背景图片加载失败，使用备用背景");
+                gameBackground.style.background = 'linear-gradient(135deg, #0c7b93 0%, #00a8cc 100%)';
+                backgroundImage.style.background = 'linear-gradient(135deg, #0c7b93 0%, #00a8cc 100%)';
+            }
+            
+            // 2. 测试荷花图片
+            const lotusTests = [];
+            for (let i = 0; i < RESOURCE_PATHS.lotusImages.length; i++) {
+                lotusTests.push(testImageLoad(RESOURCE_PATHS.lotusImages[i]));
+            }
+            
+            const lotusResults = await Promise.all(lotusTests);
+            const availableImages = [];
+            
+            for (let i = 0; i < lotusResults.length; i++) {
+                if (lotusResults[i]) {
+                    availableImages.push(RESOURCE_PATHS.lotusImages[i]);
+                }
+            }
+            
+            if (availableImages.length > 0) {
+                console.log("找到", availableImages.length, "个可用的荷花图片");
+                currentLotusImages = availableImages;
+            } else {
+                console.log("所有本地荷花图片都加载失败，使用在线资源");
+                currentLotusImages = RESOURCE_PATHS.onlineLotusImages;
+            }
+            
+            console.log("资源加载完成");
+        }
+        
+        // 测试图片加载
+        function testImageLoad(src) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(true);
+                img.onerror = () => resolve(false);
+                img.src = src;
+                
+                // 设置超时
+                setTimeout(() => resolve(false), 3000);
+            });
+        }
+        
+        // 初始化
+        window.addEventListener('load', async function() {
+            // 首先预加载音频
+            preloadAudio();
+            
+            // 然后加载图片资源
+            await loadResources();
+            
+            // 初始生成一些静态荷花泡泡
+            for (let i = 0; i < 6; i++) {
+                setTimeout(() => createLotusBubble(), i * 300);
+            }
+        });
+        
+        // 游戏事件监听
+        startBtn.addEventListener('click', toggleGame);
+        resetBtn.addEventListener('click', resetGame);
+        muteBtn.addEventListener('click', toggleMute);
+        
+        // 切换静音状态
+        function toggleMute() {
+            isMuted = !isMuted;
+            
+            if (isMuted) {
+                // 静音所有音频
+                bgMusic.pause();
+                muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i> 取消静音';
+                muteBtn.classList.add('muted');
+                muteBtn.style.background = 'linear-gradient(to right, #8e9eab, #eef2f3)';
+            } else {
+                // 取消静音
+                muteBtn.innerHTML = '<i class="fas fa-volume-up"></i> 静音';
+                muteBtn.classList.remove('muted');
+                muteBtn.style.background = 'linear-gradient(to right, #6a11cb, #2575fc)';
+                
+                // 播放背景音乐
+                if (gameActive && !gamePaused) {
+                    bgMusic.play().catch(e => console.log("背景音乐播放失败:", e));
+                }
+            }
+        }
+        
+        // 切换游戏状态（开始/暂停）
+        function toggleGame() {
+            if (!gameActive) {
+                startGame();
+            } else if (gamePaused) {
+                resumeGame();
+            } else {
+                pauseGame();
+            }
+        }
+        
+        // 生成荷花泡泡函数
+        function createLotusBubble() {
+            if (!gameActive || gamePaused) return;
+            
+            const bubble = document.createElement('div');
+            bubble.classList.add('lotus-bubble');
+            
+            // 随机泡泡大小 (30px 到 80px)
+            const size = Math.floor(Math.random() * 50) + 30;
+            
+            // 随机位置
+            const maxX = gameArea.clientWidth - size;
+            const maxY = gameArea.clientHeight - size;
+            const posX = Math.floor(Math.random() * maxX);
+            const posY = Math.floor(Math.random() * maxY);
+            
+            // 随机选择荷花图片
+            let imageUrl = '';
+            if (currentLotusImages && currentLotusImages.length > 0) {
+                const imageIndex = Math.floor(Math.random() * currentLotusImages.length);
+                imageUrl = currentLotusImages[imageIndex];
+            }
+            
+            // 设置泡泡样式
+            bubble.style.width = `${size}px`;
+            bubble.style.height = `${size}px`;
+            bubble.style.left = `${posX}px`;
+            bubble.style.top = `${posY}px`;
+            
+            // 如果有图片URL，尝试加载
+            if (imageUrl) {
+                const img = new Image();
+                img.onload = function() {
+                    bubble.style.backgroundImage = `url('${imageUrl}')`;
+                };
+                img.onerror = function() {
+                    // 如果图片加载失败，显示彩色替代背景
+                    bubble.classList.add('image-not-found');
+                    bubble.style.backgroundImage = 'none';
+                    bubble.style.background = getRandomGradient();
+                    bubble.innerHTML = `<div style="font-size: ${size/5}px">荷花</div>`;
+                };
+                img.src = imageUrl;
+            } else {
+                // 没有可用图片，使用彩色替代背景
+                bubble.classList.add('image-not-found');
+                bubble.style.backgroundImage = 'none';
+                bubble.style.background = getRandomGradient();
+                bubble.innerHTML = `<div style="font-size: ${size/5}px">荷花</div>`;
+            }
+            
+            // 每个荷花分值为1分
+            const bubbleValue = 1;
+            bubble.dataset.value = bubbleValue;
+            
+            // 触摸开始处理（防止iOS上的300ms延迟）
+            function handleTouchStart(e) {
+                // 阻止默认行为以防止双击缩放
+                e.preventDefault();
+            }
+            
+            // 点击事件处理
+            function handleBubbleClick(e) {
+                if (e.type === 'touchend') {
+                    // 防止触摸事件触发多次点击
+                    e.preventDefault();
+                }
+                popBubble(bubble, bubbleValue);
+            }
+            
+            // 添加点击事件 - 同时支持鼠标和触摸
+            bubble.addEventListener('click', handleBubbleClick);
+            bubble.addEventListener('touchstart', handleTouchStart, { passive: false });
+            bubble.addEventListener('touchend', handleBubbleClick, { passive: false });
+            
+            // 添加到游戏区域
+            gameArea.appendChild(bubble);
+            
+            // 泡泡自动消失 (避免堆积)
+            const lifetime = 3000 + (level * 500);
+            setTimeout(() => {
+                if (bubble.parentNode && !bubble.classList.contains('popped')) {
+                    bubble.remove();
+                }
+            }, lifetime);
+        }
+        
+        // 随机渐变背景函数
+        function getRandomGradient() {
+            const gradients = [
+                'linear-gradient(45deg, #ff9a9e, #fad0c4)',
+                'linear-gradient(45deg, #a1c4fd, #c2e9fb)',
+                'linear-gradient(45deg, #d4fc79, #96e6a1)',
+                'linear-gradient(45deg, #fbc2eb, #a6c1ee)'
+            ];
+            return gradients[Math.floor(Math.random() * gradients.length)];
+        }
+        
+        // 点击荷花函数
+        function popBubble(bubble, value) {
+            if (!gameActive || gamePaused) return;
+            
+            // 泡泡爆炸动画
+            bubble.classList.add('popped');
+            
+            // 计算连击
+            const currentTime = Date.now();
+            if (currentTime - lastClickTime < 500) {
+                comboCount++;
+                if (comboCount >= 3) {
+                    showCombo(comboCount);
+                    value *= comboCount; // 连击加成
+                }
+            } else {
+                comboCount = 1;
+            }
+            
+            lastClickTime = currentTime;
+            
+            // 清除连击定时器
+            clearTimeout(comboTimeout);
+            comboTimeout = setTimeout(() => {
+                comboCount = 0;
+            }, 500);
+            
+            // 更新分数
+            score += value;
+            scoreElement.textContent = score;
+            
+            // 分数增加动画
+            scoreElement.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                scoreElement.style.transform = 'scale(1)';
+            }, 200);
+            
+            // 检查是否达到10的倍数
+            if (score > 0 && score % 10 === 0 && score !== lastTenTrigger) {
+                lastTenTrigger = score;
+                triggerPetalFall();
+                
+                // 播放特效音效
+                if (!isMuted) {
+                    effectSound.currentTime = 0;
+                    effectSound.play().catch(e => console.log("特效音效播放失败:", e));
+                }
+            }
+            
+            // 播放点击音效
+            if (!isMuted) {
+                popSound.currentTime = 0;
+                popSound.play().catch(e => console.log("点击音效播放失败:", e));
+            }
+            
+            // 移除泡泡
+            setTimeout(() => {
+                if (bubble.parentNode) {
+                    bubble.remove();
+                }
+            }, 300);
+            
+            // 每得30分升一级
+            const newLevel = Math.floor(score / 30) + 1;
+            if (newLevel > level) {
+                level = newLevel;
+                levelElement.textContent = level;
+                levelElement.style.transform = 'scale(1.3)';
+                setTimeout(() => {
+                    levelElement.style.transform = 'scale(1)';
+                }, 300);
+                
+                // 提高游戏难度
+                clearInterval(bubbleInterval);
+                const intervalTime = Math.max(200, 800 - (level * 50));
+                bubbleInterval = setInterval(createLotusBubble, intervalTime);
+            }
+        }
+        
+        // 触发花瓣雨特效
+        function triggerPetalFall() {
+            const petalCount = 15;
+            
+            for (let i = 0; i < petalCount; i++) {
+                setTimeout(() => {
+                    const petal = document.createElement('div');
+                    petal.classList.add('petal-fall');
+                    petal.innerHTML = '🌸';
+                    
+                    // 随机水平位置
+                    const leftPos = Math.random() * 100;
+                    petal.style.left = `${leftPos}%`;
+                    
+                    // 随机动画延迟
+                    petal.style.animationDelay = `${Math.random() * 0.5}s`;
+                    
+                    // 随机大小
+                    const size = Math.random() * 1.5 + 0.8;
+                    petal.style.fontSize = `${size}rem`;
+                    
+                    document.body.appendChild(petal);
+                    
+                    // 动画结束后移除花瓣
+                    setTimeout(() => {
+                        if (petal.parentNode) {
+                            petal.remove();
+                        }
+                    }, 3000);
+                }, i * 100);
+            }
+        }
+        
+        // 显示连击效果
+        function showCombo(count) {
+            const comboTexts = ['漂亮!', '厉害!', '太棒了!', '惊人!', '无敌!'];
+            const textIndex = Math.min(count - 3, comboTexts.length - 1);
+            comboIndicator.textContent = `${count} 连击! ${comboTexts[textIndex]}`;
+            comboIndicator.classList.remove('combo-show');
+            setTimeout(() => {
+                comboIndicator.classList.add('combo-show');
+            }, 10);
+        }
+        
+        // 开始游戏
+        function startGame() {
+            if (gameActive) return;
+            
+            gameActive = true;
+            gamePaused = false;
+            
+            // 启动计时器
+            timerInterval = setInterval(() => {
+                if (!gamePaused) {
+                    timeLeft--;
+                    timerElement.textContent = timeLeft;
+                    
+                    // 时间结束
+                    if (timeLeft <= 0) {
+                        endGame();
+                    }
+                }
+            }, 1000);
+            
+            // 开始生成泡泡
+            const intervalTime = Math.max(200, 800 - (level * 50));
+            bubbleInterval = setInterval(createLotusBubble, intervalTime);
+            
+            // 初始生成一些泡泡
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => createLotusBubble(), i * 200);
+            }
+            
+            // 更新按钮状态
+            startBtn.innerHTML = '<i class="fas fa-pause"></i> 暂停游戏';
+            startBtn.classList.remove('btn-start');
+            startBtn.classList.add('btn-pause');
+            
+            // 播放背景音乐
+            if (!isMuted) {
+                bgMusic.play().catch(e => console.log("背景音乐播放失败:", e));
+            }
+        }
+        
+        // 暂停游戏
+        function pauseGame() {
+            if (!gameActive || gamePaused) return;
+            
+            gamePaused = true;
+            
+            // 更新按钮状态
+            startBtn.innerHTML = '<i class="fas fa-play"></i> 继续游戏';
+            startBtn.classList.remove('btn-pause');
+            startBtn.classList.add('btn-start');
+            
+            // 暂停背景音乐
+            bgMusic.pause();
+        }
+        
+        // 继续游戏（从暂停状态恢复）
+        function resumeGame() {
+            if (!gameActive || !gamePaused) return;
+            
+            gamePaused = false;
+            
+            // 更新按钮状态
+            startBtn.innerHTML = '<i class="fas fa-pause"></i> 暂停游戏';
+            startBtn.classList.remove('btn-start');
+            startBtn.classList.add('btn-pause');
+            
+            // 恢复背景音乐
+            if (!isMuted) {
+                bgMusic.play().catch(e => console.log("背景音乐恢复失败:", e));
+            }
+        }
+        
+        // 重置游戏
+        function resetGame() {
+            // 清除所有状态
+            gameActive = false;
+            gamePaused = false;
+            score = 0;
+            timeLeft = 60;
+            level = 1;
+            comboCount = 0;
+            lastTenTrigger = 0;
+            
+            // 更新显示
+            scoreElement.textContent = score;
+            timerElement.textContent = timeLeft;
+            levelElement.textContent = level;
+            
+            // 清除所有定时器
+            clearInterval(timerInterval);
+            clearInterval(bubbleInterval);
+            
+            // 清除所有泡泡
+            const bubbles = document.querySelectorAll('.lotus-bubble');
+            bubbles.forEach(bubble => bubble.remove());
+            
+            // 重置按钮状态
+            startBtn.innerHTML = '<i class="fas fa-play"></i> 开始游戏';
+            startBtn.classList.remove('btn-pause');
+            startBtn.classList.add('btn-start');
+            
+            // 停止背景音乐
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        }
+        
+        // 游戏结束
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            clearInterval(bubbleInterval);
+            
+            // 更新按钮状态
+            startBtn.innerHTML = '<i class="fas fa-play"></i> 开始游戏';
+            startBtn.classList.remove('btn-pause');
+            startBtn.classList.add('btn-start');
+            
+            // 停止背景音乐
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+            
+            // 显示游戏结束信息
+            const gameOverMsg = document.createElement('div');
+            gameOverMsg.style.position = 'absolute';
+            gameOverMsg.style.top = '50%';
+            gameOverMsg.style.left = '50%';
+            gameOverMsg.style.transform = 'translate(-50%, -50%)';
+            gameOverMsg.style.backgroundColor = 'rgba(0, 0, 0, 0.85)';
+            gameOverMsg.style.color = 'white';
+            gameOverMsg.style.padding = '25px';
+            gameOverMsg.style.borderRadius = '20px';
+            gameOverMsg.style.textAlign = 'center';
+            gameOverMsg.style.zIndex = '50';
+            gameOverMsg.style.width = '85%';
+            gameOverMsg.style.maxWidth = '400px';
+            gameOverMsg.innerHTML = `
+                <h2 style="margin-bottom: 15px; color: #FFD166;">恭喜您!</h2>
+                <p style="font-size: 1.4rem; margin-bottom: 10px;">采集花朵总数: <span style="color: #ff6b9d; font-weight: bold;">${score}</span></p>
+                <p style="font-size: 1.1rem;">最高等级: <span style="color: #4CAF50; font-weight: bold;">${level}</span></p>
+                <p style="font-size: 1.1rem; margin-bottom: 20px;">触发花瓣雨: <span style="color: #00a8cc; font-weight: bold;">${Math.floor(score/10)}</span> 次</p>
+                <button id="playAgainBtn" style="margin-top: 10px; padding: 12px 30px; background: #4CAF50; color: white; border: none; border-radius: 50px; font-size: 1.1rem; cursor: pointer; width: 100%;">
+                    <i class="fas fa-redo"></i> 再玩一次
+                </button>
+            `;
+            
+            gameArea.appendChild(gameOverMsg);
+            
+            // 添加再玩一次按钮事件
+            document.getElementById('playAgainBtn').addEventListener('click', () => {
+                gameOverMsg.remove();
+                resetGame();
+                startGame();
+            });
+        }
+        
+        // 防止iOS上的双击缩放
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // 窗口大小改变时重新调整游戏区域
+        window.addEventListener('resize', () => {
+            // 使用防抖避免频繁调整
+            clearTimeout(window.resizeTimer);
+            window.resizeTimer = setTimeout(() => {
+                // 重新定位现有的荷花泡泡
+                const bubbles = document.querySelectorAll('.lotus-bubble');
+                bubbles.forEach(bubble => {
+                    if (!bubble.classList.contains('popped')) {
+                        const size = parseInt(bubble.style.width);
+                        const maxX = gameArea.clientWidth - size;
+                        const maxY = gameArea.clientHeight - size;
+                        
+                        // 如果泡泡超出边界，调整位置
+                        const currentLeft = parseInt(bubble.style.left);
+                        const currentTop = parseInt(bubble.style.top);
+                        
+                        if (currentLeft > maxX || currentTop > maxY) {
+                            bubble.style.left = `${Math.min(currentLeft, maxX)}px`;
+                            bubble.style.top = `${Math.min(currentTop, maxY)}px`;
+                        }
+                    }
+                });
+            }, 250);
+        });
+        
+        // 处理iOS上的方向改变
+        window.addEventListener('orientationchange', () => {
+            // 短暂延迟后重新调整布局
+            setTimeout(() => {
+                // 重新定位现有的荷花泡泡
+                const bubbles = document.querySelectorAll('.lotus-bubble');
+                bubbles.forEach(bubble => {
+                    if (!bubble.classList.contains('popped')) {
+                        const size = parseInt(bubble.style.width);
+                        const maxX = gameArea.clientWidth - size;
+                        const maxY = gameArea.clientHeight - size;
+                        
+                        // 如果泡泡超出边界，调整到随机位置
+                        const currentLeft = parseInt(bubble.style.left);
+                        const currentTop = parseInt(bubble.style.top);
+                        
+                        if (currentLeft > maxX || currentTop > maxY) {
+                            bubble.style.left = `${Math.floor(Math.random() * maxX)}px`;
+                            bubble.style.top = `${Math.floor(Math.random() * maxY)}px`;
+                        }
+                    }
+                });
+            }, 300);
+        });
+        
+        // 调试函数：检查资源状态
+        function checkResources() {
+            console.log("=== 资源状态检查 ===");
+            console.log("当前荷花图片数组:", currentLotusImages);
+            console.log("游戏区域尺寸:", gameArea.clientWidth, "x", gameArea.clientHeight);
+            console.log("音频元素状态:");
+            console.log("- bgMusic:", bgMusic.readyState);
+            console.log("- popSound:", popSound.readyState);
+            console.log("- effectSound:", effectSound.readyState);
+        }
+        
+        // 可选：添加调试按钮
+        window.checkResources = checkResources;
+    </script>
+</body>
+</html>

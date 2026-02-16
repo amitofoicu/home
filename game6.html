@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>贪吃蛇游戏</title>
+    <style>
+        /* 新增：角标样式 */
+        .amitofo-badge {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: linear-gradient(135deg, #9c7c4a, #6b5538);
+            color: #f4e4c1;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            z-index: 9999;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            border: 2px solid #f4d29a;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        
+        .amitofo-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #b8965e, #8b7355);
+        }
+        
+        .amitofo-badge:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .amitofo-badge {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+                top: 8px;
+                left: 8px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .amitofo-badge {
+                font-size: 0.7rem;
+                padding: 5px 10px;
+                top: 5px;
+                left: 5px;
+            }
+        }
+        
+        /* 横屏优化 */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .amitofo-badge {
+                font-size: 0.7rem;
+                padding: 4px 8px;
+                top: 5px;
+                left: 5px;
+            }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Microsoft YaHei', 'SimHei', sans-serif;
+            background-color: #1a1a1a;
+            color: #e0d0b0;
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            overflow: hidden;
+            background-image: url('lianchi.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            height: 90vh;
+            max-height: 90vh;
+            height: -webkit-fill-available;
+        }
+        
+        .game-area {
+            background-color: rgba(30, 20, 10, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+            border: 2px solid #8b7355;
+            position: relative;
+            overflow: hidden;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        .game-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('lianchi.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.15;
+            z-index: 0;
+        }
+        
+        header {
+            text-align: center;
+            width: 100%;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+            color: #f4d29a;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+        
+        .merit-container {
+            background: rgba(60, 45, 25, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px 25px;
+            text-align: center;
+            width: auto;
+            min-width: 200px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            border: 2px solid #9c7c4a;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .merit-label {
+            font-size: 1.2rem;
+            color: #d4b97a;
+            margin-bottom: 5px;
+        }
+        
+        .merit-value {
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: #f4d29a;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        #game-canvas {
+            background-color: rgba(15, 10, 5, 0.95);
+            border-radius: 10px;
+            box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.8);
+            border: 2px solid #6b5538;
+            width: 100%;
+            height: auto;
+            min-height: 300px;
+            position: relative;
+            z-index: 1;
+            aspect-ratio: 1/1;
+            max-width: 500px;
+            margin: 0 auto;
+            touch-action: manipulation;
+        }
+        
+        .controls {
+            margin-top: 15px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #9c7c4a, #6b5538);
+            color: #f4e4c1;
+            border: none;
+            border-radius: 40px;
+            padding: 16px 24px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 150px;
+            position: relative;
+            overflow: hidden;
+            -webkit-touch-callout: none;
+            user-select: none;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2) !important;
+        }
+        
+        #start-pause-btn {
+            background: linear-gradient(135deg, #6b8e23, #556b2f);
+        }
+        
+        #speed-btn {
+            background: linear-gradient(135deg, #4682b4, #2f4f4f);
+        }
+        
+        #mute-btn {
+            background: linear-gradient(135deg, #808080, #555555);
+        }
+        
+        .mobile-controls {
+            display: none;
+            width: 280px;
+            height: 280px;
+            margin-top: 15px;
+            position: relative;
+            touch-action: none;
+        }
+        
+        .dpad {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .dpad-btn {
+            position: absolute;
+            background: rgba(155, 135, 95, 0.9);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: none;
+            border-radius: 50%;
+            color: #f4e4c1;
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            user-select: none;
+            width: 80px;
+            height: 80px;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+        }
+        
+        .dpad-btn:active {
+            background: rgba(185, 155, 105, 0.95);
+            transform: scale(0.9);
+        }
+        
+        .dpad-up {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .dpad-down {
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .dpad-left {
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .dpad-right {
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .game-over {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+        
+        .game-over-content {
+            background: rgba(20, 15, 8, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+            border: 2px solid #9c7c4a;
+        }
+        
+        .game-over h2 {
+            font-size: 2.5rem;
+            color: #f4d29a;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+        
+        .game-over p {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #e0d0b0;
+        }
+        
+        .game-over .final-merit {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #f4d29a;
+            margin: 15px 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+        }
+        
+        .game-over-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .no-merit-alert {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1500;
+            padding: 20px;
+        }
+        
+        .no-merit-alert-content {
+            background: rgba(20, 15, 8, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+            border: 2px solid #9c7c4a;
+        }
+        
+        .no-merit-alert h3 {
+            font-size: 1.8rem;
+            color: #f4d29a;
+            margin-bottom: 15px;
+        }
+        
+        .no-merit-alert p {
+            font-size: 1.2rem;
+            color: #e0d0b0;
+            margin-bottom: 20px;
+        }
+        
+        /* 天花降落动画样式 */
+        .petal-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            overflow: hidden;
+        }
+        
+        .petal {
+            position: absolute;
+            top: -50px;
+            color: #ff6b6b;
+            font-size: 24px;
+            opacity: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            user-select: none;
+        }
+        
+        .petal.flower {
+            color: #f4d29a;
+            font-size: 28px;
+        }
+        
+        .petal.lotus {
+            color: #ff6b6b;
+            font-size: 30px;
+        }
+        
+        @keyframes petalFall {
+            0% {
+                transform: translateY(-50px) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes celebratePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            text-align: center;
+            color: #9c7c4a;
+            font-size: 0.9rem;
+            padding: 10px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+        
+        /* iPhone特定优化 */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                min-height: -webkit-fill-available;
+            }
+            
+            .container {
+                height: -webkit-fill-available;
+            }
+            
+            button, .dpad-btn {
+                cursor: pointer;
+            }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+                padding-top: max(20px, env(safe-area-inset-top));
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
+            
+            .container {
+                height: 100vh;
+                max-height: 100vh;
+                height: -webkit-fill-available;
+                gap: 10px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+                letter-spacing: 1px;
+            }
+            
+            .merit-container {
+                padding: 12px 20px;
+                min-width: 160px;
+                margin-bottom: 10px;
+            }
+            
+            .merit-label {
+                font-size: 1rem;
+            }
+            
+            .merit-value {
+                font-size: 2rem;
+            }
+            
+            .game-area {
+                padding: 15px;
+                border-radius: 12px;
+                height: calc(100% - 80px);
+            }
+            
+            #game-canvas {
+                min-height: 250px;
+                margin-top: 10px;
+            }
+            
+            .buttons {
+                gap: 10px;
+            }
+            
+            button {
+                padding: 14px 20px;
+                font-size: 1rem;
+                min-width: 140px;
+                border-radius: 35px;
+                flex: 1;
+                max-width: calc(50% - 5px);
+            }
+            
+            .mobile-controls {
+                display: block;
+                width: 250px;
+                height: 250px;
+                margin-top: 10px;
+            }
+            
+            .dpad-btn {
+                width: 70px;
+                height: 70px;
+                font-size: 2rem;
+            }
+            
+            .controls {
+                margin-top: 10px;
+            }
+            
+            .game-over-content {
+                padding: 25px 20px;
+                margin: 20px;
+            }
+            
+            .game-over h2 {
+                font-size: 2rem;
+            }
+            
+            .game-over .final-merit {
+                font-size: 2.5rem;
+            }
+            
+            .game-over-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .game-over-buttons button {
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .no-merit-alert-content {
+                padding: 20px;
+                margin: 20px;
+            }
+            
+            .no-merit-alert h3 {
+                font-size: 1.5rem;
+            }
+            
+            .no-merit-alert p {
+                font-size: 1rem;
+            }
+            
+            .petal {
+                font-size: 20px;
+            }
+            
+            .petal.flower {
+                font-size: 22px;
+            }
+            
+            .petal.lotus {
+                font-size: 24px;
+            }
+            
+            .footer {
+                font-size: 0.8rem;
+                padding: 8px;
+                line-height: 1.3;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.6rem;
+            }
+            
+            .merit-container {
+                min-width: 140px;
+                padding: 10px 15px;
+            }
+            
+            .merit-value {
+                font-size: 1.8rem;
+            }
+            
+            .game-area {
+                padding: 12px;
+            }
+            
+            button {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+                min-width: 120px;
+                border-radius: 30px;
+            }
+            
+            .mobile-controls {
+                width: 220px;
+                height: 220px;
+            }
+            
+            .dpad-btn {
+                width: 65px;
+                height: 65px;
+                font-size: 1.8rem;
+            }
+            
+            .petal {
+                font-size: 18px;
+            }
+            
+            .petal.flower {
+                font-size: 20px;
+            }
+            
+            .petal.lotus {
+                font-size: 22px;
+            }
+        }
+        
+        @media (max-height: 700px) {
+            .container {
+                height: 100vh;
+                max-height: 100vh;
+                height: -webkit-fill-available;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 3px;
+            }
+            
+            .merit-container {
+                padding: 10px 15px;
+                margin-bottom: 8px;
+            }
+            
+            .merit-value {
+                font-size: 1.8rem;
+            }
+            
+            button {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+            }
+            
+            .mobile-controls {
+                width: 200px;
+                height: 200px;
+                margin-top: 8px;
+            }
+            
+            .dpad-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.6rem;
+            }
+            
+            #game-canvas {
+                margin-top: 5px;
+            }
+        }
+        
+        /* 横屏优化 */
+        @media (orientation: landscape) and (max-height: 500px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                flex-direction: row;
+                gap: 20px;
+                height: 100vh;
+            }
+            
+            .game-area {
+                height: 100%;
+                max-height: 100%;
+            }
+            
+            header {
+                margin-bottom: 5px;
+            }
+            
+            h1 {
+                font-size: 1.4rem;
+            }
+            
+            .merit-container {
+                padding: 8px 15px;
+                min-width: 130px;
+            }
+            
+            .merit-value {
+                font-size: 1.6rem;
+            }
+            
+            #game-canvas {
+                height: calc(100% - 140px);
+                min-height: 200px;
+            }
+            
+            .mobile-controls {
+                width: 180px;
+                height: 180px;
+                margin-top: 5px;
+            }
+            
+            .dpad-btn {
+                width: 55px;
+                height: 55px;
+                font-size: 1.5rem;
+            }
+            
+            .buttons {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            button {
+                min-width: 120px;
+                padding: 10px 15px;
+                font-size: 0.85rem;
+            }
+            
+            .footer {
+                display: none;
+            }
+        }
+        
+        /* 防误触优化 */
+        @media (hover: none) and (pointer: coarse) {
+            button:hover {
+                transform: none;
+            }
+            
+            button:active {
+                transform: scale(0.98);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 新增：角标 -->
+    <a href="https://game.amitofo.icu" class="amitofo-badge">更多游戏</a>
+    
+    <!-- 天花降落容器 -->
+    <div id="petal-container" class="petal-container"></div>
+    
+    <div class="container">
+        <div class="game-area">
+            <header>
+                <h1>贪吃蛇游戏</h1>
+                <div class="merit-container">
+                    <div class="merit-label">累计分数</div>
+                    <div id="total-merit" class="merit-value">0</div>
+                </div>
+            </header>
+            
+            <canvas id="game-canvas"></canvas>
+            
+            <div class="mobile-controls">
+                <div class="dpad">
+                    <button class="dpad-btn dpad-up" id="up-btn">↑</button>
+                    <button class="dpad-btn dpad-down" id="down-btn">↓</button>
+                    <button class="dpad-btn dpad-left" id="left-btn">←</button>
+                    <button class="dpad-btn dpad-right" id="right-btn">→</button>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="buttons">
+                    <button id="start-pause-btn">
+                        <span>▶ 开始游戏</span>
+                    </button>
+                    <button id="speed-btn">
+                        <span>🐢 慢速</span>
+                    </button>
+                    <button id="mute-btn">
+                        <span>🔊 静音</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="game-over" class="game-over">
+            <div class="game-over-content">
+                <h2>游戏结束</h2>
+                <p>本次获得分数:</p>
+                <div class="final-merit" id="final-merit">0</div>
+                <div class="game-over-buttons">
+                    <button id="continue-game-btn">
+                        <span>▶ 继续游戏</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="no-merit-alert" class="no-merit-alert">
+            <div class="no-merit-alert-content">
+                <h3>分数不足</h3>
+                <p>分数为0，无法继续</p>
+                <button id="close-alert-btn" style="margin-top: 15px; min-width: 100px;">确定</button>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>贪吃蛇游戏 - 经典玩法，挑战高分</p>
+        </div>
+    </div>
+
+    <!-- 音频元素 -->
+    <audio id="bgm" loop preload="auto">
+        <source src="beijing.ogg" type="audio/ogg">
+        您的浏览器不支持音频元素。
+    </audio>
+    
+    <audio id="eat-sound" preload="auto">
+        <source src="xiaochu.mp3" type="audio/mpeg">
+        您的浏览器不支持音频元素。
+    </audio>
+
+    <script>
+        // 检测iPhone设备
+        const isIPhone = /iPhone/.test(navigator.userAgent) && !window.MSStream;
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        
+        // 游戏变量
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const totalMeritElement = document.getElementById('total-merit');
+        const finalMeritElement = document.getElementById('final-merit');
+        const gameOverScreen = document.getElementById('game-over');
+        const noMeritAlert = document.getElementById('no-merit-alert');
+        const petalContainer = document.getElementById('petal-container');
+        
+        // 音频元素
+        const bgm = document.getElementById('bgm');
+        const eatSound = document.getElementById('eat-sound');
+        
+        // 按钮元素
+        const startPauseBtn = document.getElementById('start-pause-btn');
+        const speedBtn = document.getElementById('speed-btn');
+        const muteBtn = document.getElementById('mute-btn');
+        const continueGameBtn = document.getElementById('continue-game-btn');
+        const closeAlertBtn = document.getElementById('close-alert-btn');
+        
+        // 移动控制按钮
+        const upBtn = document.getElementById('up-btn');
+        const downBtn = document.getElementById('down-btn');
+        const leftBtn = document.getElementById('left-btn');
+        const rightBtn = document.getElementById('right-btn');
+        
+        // 游戏设置
+        const gridSize = isIPhone ? 25 : 20; // iPhone上使用更大的网格
+        let gridWidth, gridHeight;
+        
+        // 游戏速度设置
+        const speedSettings = {
+            'slow': 200,
+            'normal': 120
+        };
+        
+        let currentSpeed = 'slow';
+        let gameSpeed = speedSettings[currentSpeed];
+        
+        // 游戏状态
+        let snake = [];
+        let food = {};
+        let direction = 'right';
+        let nextDirection = 'right';
+        let currentGameMerit = 0;
+        let totalMerit = 0;
+        let lastCelebrationScore = 0; // 记录上次庆祝的分数
+        let gameRunning = false;
+        let gamePaused = false;
+        let gameLoop;
+        
+        // 音频状态
+        let bgmEnabled = true;
+        let sfxEnabled = true;
+        
+        // 防止iOS双击缩放
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // 初始化游戏
+        function initGame() {
+            resizeCanvas();
+            
+            // 初始化蛇 - 根据屏幕大小调整初始位置
+            const startX = Math.floor(gridWidth / 4);
+            const startY = Math.floor(gridHeight / 2);
+            
+            snake = [
+                {x: startX, y: startY},
+                {x: startX - 1, y: startY},
+                {x: startX - 2, y: startY}
+            ];
+            
+            generateFood();
+            
+            direction = 'right';
+            nextDirection = 'right';
+            
+            currentGameMerit = 0;
+            totalMerit = 0; // 重置累计分数
+            lastCelebrationScore = 0; // 重置庆祝记录
+            
+            gameSpeed = speedSettings[currentSpeed];
+            
+            updateTotalMeritDisplay();
+            speedBtn.innerHTML = `<span>${currentSpeed === 'slow' ? '🐢 慢速' : '⚡ 正常'}</span>`;
+            
+            gameOverScreen.style.display = 'none';
+            
+            drawGame();
+            
+            // iOS音频自动播放处理
+            if (isIOS && bgmEnabled) {
+                try {
+                    bgm.play();
+                } catch (e) {
+                    console.log('iOS音频播放需要用户交互');
+                }
+            }
+            
+            // 显示移动控制
+            showMobileControls();
+        }
+        
+        // 调整Canvas大小
+        function resizeCanvas() {
+            const container = document.querySelector('.game-area');
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+            
+            // 计算Canvas最大尺寸，留出空间给控制区域
+            const maxCanvasSize = Math.min(
+                containerWidth - 40, 
+                containerHeight - (isIPhone ? 250 : 200),
+                500
+            );
+            
+            canvas.width = maxCanvasSize;
+            canvas.height = maxCanvasSize;
+            
+            // 确保是gridSize的倍数
+            const gridWidthCalc = Math.floor(canvas.width / gridSize);
+            const gridHeightCalc = Math.floor(canvas.height / gridSize);
+            
+            canvas.width = gridWidthCalc * gridSize;
+            canvas.height = gridHeightCalc * gridSize;
+            
+            gridWidth = gridWidthCalc;
+            gridHeight = gridHeightCalc;
+            
+            if (gameRunning) {
+                drawGame();
+            }
+        }
+        
+        // 显示/隐藏移动控制
+        function showMobileControls() {
+            const mobileControls = document.querySelector('.mobile-controls');
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                mobileControls.style.display = 'block';
+                
+                // 调整控制按钮大小
+                const dpadBtns = document.querySelectorAll('.dpad-btn');
+                const controlSize = Math.min(window.innerWidth, window.innerHeight) * 0.2;
+                
+                dpadBtns.forEach(btn => {
+                    btn.style.width = `${controlSize}px`;
+                    btn.style.height = `${controlSize}px`;
+                    btn.style.fontSize = `${controlSize * 0.4}px`;
+                });
+            } else {
+                mobileControls.style.display = 'none';
+            }
+        }
+        
+        // 生成食物
+        function generateFood() {
+            let foodOnSnake;
+            do {
+                foodOnSnake = false;
+                food = {
+                    x: Math.floor(Math.random() * gridWidth),
+                    y: Math.floor(Math.random() * gridHeight)
+                };
+                
+                for (let segment of snake) {
+                    if (segment.x === food.x && segment.y === food.y) {
+                        foodOnSnake = true;
+                        break;
+                    }
+                }
+            } while (foodOnSnake);
+        }
+        
+        // 绘制游戏
+        function drawGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制背景
+            ctx.fillStyle = 'rgba(20, 15, 8, 0.95)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制网格线
+            ctx.strokeStyle = 'rgba(155, 135, 95, 0.1)';
+            ctx.lineWidth = 1;
+            
+            // 垂直线
+            for (let x = 0; x <= canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // 水平线
+            for (let y = 0; y <= canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // 绘制蛇
+            drawSnake();
+            
+            // 绘制食物
+            drawFood();
+            
+            // 如果游戏暂停，显示暂停文本
+            if (gamePaused) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.font = 'bold 30px "Microsoft YaHei"';
+                ctx.fillStyle = '#f4d29a';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('游戏暂停', canvas.width / 2, canvas.height / 2);
+                
+                ctx.font = '16px "Microsoft YaHei"';
+                ctx.fillStyle = '#e0d0b0';
+                ctx.fillText('点击按钮继续', canvas.width / 2, canvas.height / 2 + 40);
+            }
+        }
+        
+        // 绘制蛇
+        function drawSnake() {
+            for (let i = 0; i < snake.length; i++) {
+                const segment = snake[i];
+                
+                if (i === 0) {
+                    // 蛇头
+                    ctx.fillStyle = '#f4d29a';
+                    ctx.fillRect(
+                        segment.x * gridSize, 
+                        segment.y * gridSize, 
+                        gridSize, 
+                        gridSize
+                    );
+                    
+                    ctx.fillStyle = '#d4b97a';
+                    ctx.fillRect(
+                        segment.x * gridSize + 4, 
+                        segment.y * gridSize + 4, 
+                        gridSize - 8, 
+                        gridSize - 8
+                    );
+                    
+                    // 蛇眼睛
+                    ctx.fillStyle = '#8b7355';
+                    
+                    let eye1X, eye1Y, eye2X, eye2Y;
+                    if (direction === 'right') {
+                        eye1X = segment.x * gridSize + gridSize - 6;
+                        eye1Y = segment.y * gridSize + 6;
+                        eye2X = segment.x * gridSize + gridSize - 6;
+                        eye2Y = segment.y * gridSize + gridSize - 6;
+                    } else if (direction === 'left') {
+                        eye1X = segment.x * gridSize + 6;
+                        eye1Y = segment.y * gridSize + 6;
+                        eye2X = segment.x * gridSize + 6;
+                        eye2Y = segment.y * gridSize + gridSize - 6;
+                    } else if (direction === 'up') {
+                        eye1X = segment.x * gridSize + 6;
+                        eye1Y = segment.y * gridSize + 6;
+                        eye2X = segment.x * gridSize + gridSize - 6;
+                        eye2Y = segment.y * gridSize + 6;
+                    } else {
+                        eye1X = segment.x * gridSize + 6;
+                        eye1Y = segment.y * gridSize + gridSize - 6;
+                        eye2X = segment.x * gridSize + gridSize - 6;
+                        eye2Y = segment.y * gridSize + gridSize - 6;
+                    }
+                    
+                    ctx.beginPath();
+                    ctx.arc(eye1X, eye1Y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.arc(eye2X, eye2Y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // 蛇身体
+                    ctx.fillStyle = '#f4d29a';
+                    ctx.fillRect(
+                        segment.x * gridSize, 
+                        segment.y * gridSize, 
+                        gridSize, 
+                        gridSize
+                    );
+                    
+                    ctx.fillStyle = '#e0d0b0';
+                    ctx.fillRect(
+                        segment.x * gridSize + 2, 
+                        segment.y * gridSize + 2, 
+                        gridSize - 4, 
+                        gridSize - 4
+                    );
+                }
+            }
+        }
+        
+        // 绘制食物
+        function drawFood() {
+            const centerX = food.x * gridSize + gridSize/2;
+            const centerY = food.y * gridSize + gridSize/2;
+            const radius = gridSize/2 - 2;
+            
+            // 食物
+            ctx.fillStyle = '#ff6b6b';
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const petalX = centerX + Math.cos(angle) * radius;
+                const petalY = centerY + Math.sin(angle) * radius;
+                
+                ctx.beginPath();
+                ctx.arc(petalX, petalY, radius/2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // 食物中心
+            ctx.fillStyle = '#f4d29a';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius/2, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // 中心点
+            ctx.fillStyle = '#8b7355';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius/4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // 检查是否需要庆祝（每500分）
+        function checkForCelebration(newTotal) {
+            // 计算已经庆祝过的500分倍数
+            const currentMultiplier = Math.floor(newTotal / 500);
+            const lastMultiplier = Math.floor(lastCelebrationScore / 500);
+            
+            // 如果达到了新的500分倍数
+            if (currentMultiplier > lastMultiplier) {
+                // 更新上次庆祝的分数
+                lastCelebrationScore = currentMultiplier * 500;
+                
+                // 播放庆祝音效
+                if (sfxEnabled) {
+                    eatSound.currentTime = 0;
+                    eatSound.play().catch(e => console.log('庆祝音效播放失败:', e));
+                }
+                
+                // 触发天花降落动画
+                createPetalRain();
+                
+                // 分数显示庆祝效果
+                celebrateScoreDisplay();
+                
+                return true;
+            }
+            
+            return false;
+        }
+        
+        // 创建天花降落动画
+        function createPetalRain() {
+            const petalCount = 30; // 花瓣数量
+            const petalTypes = ['🌸', '🌺', '🌼', '🌷', '💮', '🏵️', '🥀', '🌻', '🌹'];
+            const flowerTypes = ['🌸', '🌺', '🌼', '🌷', '🌻', '🌹'];
+            const lotusTypes = ['🌸', '💮'];
+            
+            for (let i = 0; i < petalCount; i++) {
+                setTimeout(() => {
+                    createPetal(i, petalTypes, flowerTypes, lotusTypes);
+                }, i * 100); // 延迟创建，形成连续下落效果
+            }
+        }
+        
+        // 创建单个花瓣
+        function createPetal(index, petalTypes, flowerTypes, lotusTypes) {
+            const petal = document.createElement('div');
+            petal.className = 'petal';
+            
+            // 随机选择花瓣类型
+            let petalType;
+            if (index % 10 === 0) {
+                // 每10个花瓣有一个莲花
+                petalType = lotusTypes[Math.floor(Math.random() * lotusTypes.length)];
+                petal.classList.add('lotus');
+            } else if (index % 3 === 0) {
+                // 每3个花瓣有一个花朵
+                petalType = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
+                petal.classList.add('flower');
+            } else {
+                // 普通花瓣
+                petalType = petalTypes[Math.floor(Math.random() * petalTypes.length)];
+            }
+            
+            petal.textContent = petalType;
+            
+            // 随机位置
+            const left = Math.random() * 100;
+            petal.style.left = `${left}%`;
+            
+            // 随机大小
+            const size = 20 + Math.random() * 20;
+            petal.style.fontSize = `${size}px`;
+            
+            // 随机旋转角度
+            const rotation = Math.random() * 360;
+            
+            // 随机下落时间
+            const duration = 3 + Math.random() * 4;
+            
+            // 随机延迟
+            const delay = Math.random() * 2;
+            
+            // 应用动画
+            petal.style.animation = `petalFall ${duration}s ease-in ${delay}s forwards`;
+            petal.style.transform = `rotate(${rotation}deg)`;
+            
+            // 添加到容器
+            petalContainer.appendChild(petal);
+            
+            // 动画结束后移除元素
+            setTimeout(() => {
+                if (petal.parentNode) {
+                    petal.parentNode.removeChild(petal);
+                }
+            }, (duration + delay) * 1000);
+        }
+        
+        // 分数显示庆祝效果
+        function celebrateScoreDisplay() {
+            const meritContainer = document.querySelector('.merit-container');
+            
+            // 添加庆祝动画类
+            meritContainer.style.animation = 'celebratePulse 0.5s ease-in-out';
+            
+            // 动画结束后移除样式
+            setTimeout(() => {
+                meritContainer.style.animation = '';
+            }, 500);
+            
+            // 短暂改变颜色
+            const originalColor = totalMeritElement.style.color;
+            totalMeritElement.style.color = '#ff6b6b';
+            
+            setTimeout(() => {
+                totalMeritElement.style.color = originalColor || '#f4d29a';
+            }, 300);
+        }
+        
+        // 更新游戏状态
+        function updateGame() {
+            if (gamePaused) return;
+            
+            direction = nextDirection;
+            
+            const head = {x: snake[0].x, y: snake[0].y};
+            
+            switch(direction) {
+                case 'up':
+                    head.y -= 1;
+                    break;
+                case 'down':
+                    head.y += 1;
+                    break;
+                case 'left':
+                    head.x -= 1;
+                    break;
+                case 'right':
+                    head.x += 1;
+                    break;
+            }
+            
+            // 检查是否撞墙
+            if (head.x < 0 || head.x >= gridWidth || head.y < 0 || head.y >= gridHeight) {
+                gameOver();
+                return;
+            }
+            
+            // 检查是否撞到自己
+            for (let segment of snake) {
+                if (head.x === segment.x && head.y === segment.y) {
+                    gameOver();
+                    return;
+                }
+            }
+            
+            snake.unshift(head);
+            
+            // 检查是否吃到食物
+            if (head.x === food.x && head.y === food.y) {
+                currentGameMerit += 100;
+                totalMerit += 100;
+                
+                updateTotalMeritDisplay();
+                
+                // 不再在每次吃食物时播放音效
+                // 改为每500分时检查是否播放庆祝音效
+                checkForCelebration(totalMerit);
+                
+                generateFood();
+            } else {
+                snake.pop();
+            }
+            
+            drawGame();
+        }
+        
+        // 更新累计分数显示
+        function updateTotalMeritDisplay() {
+            totalMeritElement.textContent = totalMerit;
+        }
+        
+        // 游戏结束
+        function gameOver() {
+            gameRunning = false;
+            gamePaused = false;
+            clearInterval(gameLoop);
+            
+            if (!bgm.paused) {
+                bgm.pause();
+            }
+            
+            finalMeritElement.textContent = currentGameMerit;
+            
+            gameOverScreen.style.display = 'flex';
+            
+            startPauseBtn.innerHTML = '<span>▶ 开始游戏</span>';
+        }
+        
+        // 开始/暂停游戏
+        function toggleStartPause() {
+            if (!gameRunning) {
+                gameRunning = true;
+                gamePaused = false;
+                
+                gameLoop = setInterval(updateGame, gameSpeed);
+                
+                startPauseBtn.innerHTML = '<span>⏸ 暂停游戏</span>';
+                
+                if (bgmEnabled && bgm.paused) {
+                    bgm.play().catch(e => console.log('背景音乐播放失败:', e));
+                }
+                
+                gameOverScreen.style.display = 'none';
+            } else {
+                gamePaused = !gamePaused;
+                
+                if (gamePaused) {
+                    startPauseBtn.innerHTML = '<span>▶ 继续游戏</span>';
+                    if (!bgm.paused) {
+                        bgm.pause();
+                    }
+                } else {
+                    startPauseBtn.innerHTML = '<span>⏸ 暂停游戏</span>';
+                    if (bgmEnabled && bgm.paused) {
+                        bgm.play().catch(e => console.log('背景音乐播放失败:', e));
+                    }
+                }
+                
+                drawGame();
+            }
+        }
+        
+        // 切换游戏速度
+        function toggleSpeed() {
+            currentSpeed = currentSpeed === 'slow' ? 'normal' : 'slow';
+            gameSpeed = speedSettings[currentSpeed];
+            
+            speedBtn.innerHTML = `<span>${currentSpeed === 'slow' ? '🐢 慢速' : '⚡ 正常'}</span>`;
+            
+            if (gameRunning) {
+                clearInterval(gameLoop);
+                gameLoop = setInterval(updateGame, gameSpeed);
+            }
+        }
+        
+        // 切换静音状态
+        function toggleMute() {
+            bgmEnabled = !bgmEnabled;
+            sfxEnabled = !sfxEnabled;
+            
+            if (bgmEnabled) {
+                muteBtn.innerHTML = '<span>🔊 静音</span>';
+                if (gameRunning && !gamePaused) {
+                    bgm.play().catch(e => console.log('背景音乐播放失败:', e));
+                }
+            } else {
+                muteBtn.innerHTML = '<span>🔇 取消静音</span>';
+                bgm.pause();
+            }
+        }
+        
+        // 隐藏提示
+        function hideNoMeritAlert() {
+            noMeritAlert.style.display = 'none';
+        }
+        
+        // 继续游戏
+        function continueGame() {
+            gameOverScreen.style.display = 'none';
+            restartGame();
+        }
+        
+        // 重新开始游戏
+        function restartGame() {
+            if (gameLoop) {
+                clearInterval(gameLoop);
+            }
+            
+            initGame();
+            
+            gameRunning = true;
+            gamePaused = false;
+            gameLoop = setInterval(updateGame, gameSpeed);
+            
+            startPauseBtn.innerHTML = '<span>⏸ 暂停游戏</span>';
+            
+            if (bgmEnabled && bgm.paused) {
+                bgm.play().catch(e => console.log('背景音乐播放失败:', e));
+            }
+        }
+        
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            if ([37, 38, 39, 40].includes(e.keyCode)) {
+                e.preventDefault();
+            }
+            
+            switch(e.key) {
+                case 'ArrowUp':
+                    if (direction !== 'down') nextDirection = 'up';
+                    break;
+                case 'ArrowDown':
+                    if (direction !== 'up') nextDirection = 'down';
+                    break;
+                case 'ArrowLeft':
+                    if (direction !== 'right') nextDirection = 'left';
+                    break;
+                case 'ArrowRight':
+                    if (direction !== 'left') nextDirection = 'right';
+                    break;
+                case ' ':
+                    toggleStartPause();
+                    break;
+                case 's':
+                case 'S':
+                    toggleSpeed();
+                    break;
+                case 'm':
+                case 'M':
+                    toggleMute();
+                    break;
+            }
+        });
+        
+        // 按钮事件监听
+        startPauseBtn.addEventListener('click', toggleStartPause);
+        speedBtn.addEventListener('click', toggleSpeed);
+        muteBtn.addEventListener('click', toggleMute);
+        continueGameBtn.addEventListener('click', continueGame);
+        closeAlertBtn.addEventListener('click', hideNoMeritAlert);
+        
+        // 移动控制按钮事件监听
+        upBtn.addEventListener('click', () => { if (direction !== 'down') nextDirection = 'up'; });
+        downBtn.addEventListener('click', () => { if (direction !== 'up') nextDirection = 'down'; });
+        leftBtn.addEventListener('click', () => { if (direction !== 'right') nextDirection = 'left'; });
+        rightBtn.addEventListener('click', () => { if (direction !== 'left') nextDirection = 'right'; });
+        
+        // 触摸事件支持
+        upBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (direction !== 'down') nextDirection = 'up';
+            upBtn.style.transform = 'translateX(-50%) scale(0.9)';
+        }, {passive: false});
+        
+        upBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            upBtn.style.transform = 'translateX(-50%) scale(1)';
+        }, {passive: false});
+        
+        downBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (direction !== 'up') nextDirection = 'down';
+            downBtn.style.transform = 'translateX(-50%) scale(0.9)';
+        }, {passive: false});
+        
+        downBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            downBtn.style.transform = 'translateX(-50%) scale(1)';
+        }, {passive: false});
+        
+        leftBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (direction !== 'right') nextDirection = 'left';
+            leftBtn.style.transform = 'translateY(-50%) scale(0.9)';
+        }, {passive: false});
+        
+        leftBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            leftBtn.style.transform = 'translateY(-50%) scale(1)';
+        }, {passive: false});
+        
+        rightBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (direction !== 'left') nextDirection = 'right';
+            rightBtn.style.transform = 'translateY(-50%) scale(0.9)';
+        }, {passive: false});
+        
+        rightBtn.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            rightBtn.style.transform = 'translateY(-50%) scale(1)';
+        }, {passive: false});
+        
+        // 触摸滑动控制
+        let touchStartX = 0;
+        let touchStartY = 0;
+        
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, {passive: false});
+        
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, {passive: false});
+        
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (!gameRunning || gamePaused) return;
+            
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            
+            const diffX = touchEndX - touchStartX;
+            const diffY = touchEndY - touchStartY;
+            const minSwipeDistance = 30;
+            
+            if (Math.abs(diffX) > Math.abs(diffY)) {
+                if (Math.abs(diffX) > minSwipeDistance) {
+                    if (diffX > 0 && direction !== 'left') {
+                        nextDirection = 'right';
+                    } else if (diffX < 0 && direction !== 'right') {
+                        nextDirection = 'left';
+                    }
+                }
+            } else {
+                if (Math.abs(diffY) > minSwipeDistance) {
+                    if (diffY > 0 && direction !== 'up') {
+                        nextDirection = 'down';
+                    } else if (diffY < 0 && direction !== 'down') {
+                        nextDirection = 'up';
+                    }
+                }
+            }
+        }, {passive: false});
+        
+        // 窗口大小变化处理
+        let resizeTimer;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                resizeCanvas();
+                showMobileControls();
+            }, 250);
+        });
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', () => {
+            initGame();
+            showMobileControls();
+            
+            // 确保音频在用户交互后可用
+            document.addEventListener('touchstart', function initAudio() {
+                if (bgmEnabled) {
+                    bgm.play().catch(e => console.log('需要用户交互才能播放音频'));
+                }
+                document.removeEventListener('touchstart', initAudio);
+            });
+            
+            // 横竖屏切换处理
+            window.addEventListener('orientationchange', () => {
+                setTimeout(() => {
+                    resizeCanvas();
+                    showMobileControls();
+                }, 300);
+            });
+        });
+        
+        // 初始绘制
+        drawGame();
+    </script>
+</body>
+</html>

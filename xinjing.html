@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 优化viewport以适配iPhone -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- 添加iOS和Safari特定meta标签 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <title>静心抄经</title>
+    <link rel="stylesheet" href="https://fonts.googleapis/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; /* 移除iOS点击高亮 */
+        }
+        
+        html {
+            -webkit-text-size-adjust: 100%; /* 防止iOS字体自动缩放 */
+            height: 100%;
+        }
+        
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background-color: #f5f1e6;
+            color: #3a281f;
+            line-height: 1.6;
+            min-height: 100vh;
+            height: 100vh; /* 确保body占满整个视口高度 */
+            padding: 10px; /* 减少内边距 */
+            background-image: url('lianchi.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased; /* 字体抗锯齿 */
+            -moz-osx-font-smoothing: grayscale;
+            padding-bottom: env(safe-area-inset-bottom); /* 适配iPhone底部安全区域 */
+            overflow: hidden; /* 防止整个页面滚动 */
+            position: relative;
+        }
+        
+        /* 确保确认回向按钮居中 */
+        #confirmDedication {
+            display: block;
+            margin: 15px auto 0;
+            min-width: 160px;
+            text-align: center;
+            padding: 10px 20px;
+            font-size: 0.95rem;
+        }
+
+        /* 为了更好的响应式设计，可以添加媒体查询 */
+        @media (max-width: 768px) {
+            #confirmDedication {
+                min-width: 140px;
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 375px) {
+            #confirmDedication {
+                min-width: 120px;
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: rgba(255, 253, 248, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            padding: 12px; /* 进一步减少内边距 */
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #e8dfca;
+            height: calc(100vh - 20px); /* 确保容器不超过视口高度 */
+            display: flex;
+            flex-direction: column;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 10px; /* 进一步减少下边距 */
+            border-bottom: 1px solid #e8dfca;
+            padding-bottom: 8px; /* 进一步减少内边距 */
+            position: relative;
+            flex-shrink: 0; /* 防止header被压缩 */
+        }
+        
+        /* 添加左上角阿弥陀佛链接的样式 */
+        .amitofo-link {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1rem;
+            color: #8b4513;
+            text-decoration: none;
+            z-index: 10;
+            background-color: rgba(255, 253, 248, 0.9);
+            padding: 5px 10px;
+            border-radius: 18px;
+            border: 1px solid #d4b483;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .amitofo-link:hover {
+            background-color: #fffcf5;
+            color: #a0522d;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(139, 69, 19, 0.15);
+            text-decoration: none;
+        }
+        
+        h1 {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.8rem; /* 进一步减小字体大小 */
+            color: #8b4513;
+            margin-bottom: 4px; /* 进一步减少下边距 */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            line-height: 1.2;
+        }
+        
+        .subtitle {
+            font-size: 0.85rem; /* 进一步减小字体大小 */
+            color: #a0522d;
+            font-style: italic;
+        }
+        
+        .content-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px; /* 进一步减少间距 */
+            flex: 1; /* 占用剩余空间 */
+            min-height: 0; /* 允许内容区域收缩 */
+            overflow: visible; /* 改为visible以确保内容可见 */
+            margin-bottom: 0; /* 移除下边距 */
+        }
+        
+        .sutra-display {
+            flex: 1;
+            min-width: 300px;
+            background-color: #fffcf5;
+            border-radius: 10px;
+            padding: 12px; /* 进一步减少内边距 */
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e8dfca;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* 防止内容溢出 */
+        }
+        
+        .sutra-title {
+            font-size: 1.3rem; /* 减小字体大小 */
+            color: #8b4513;
+            margin-bottom: 6px; /* 进一步减少下边距 */
+            text-align: center;
+            font-weight: bold;
+            flex-shrink: 0; /* 防止标题被压缩 */
+        }
+        
+        .sutra-text {
+            font-size: 1.3rem; /* 调整为1.3rem，比之前稍小确保显示 */
+            line-height: 1.7; /* 稍微减小行高 */
+            color: #3a281f;
+            text-align: justify;
+            font-family: 'Ma Shan Zheng', cursive;
+            margin-bottom: 8px; /* 进一步减少下边距 */
+            overflow-y: auto;
+            padding: 6px; /* 进一步减少内边距 */
+            -webkit-overflow-scrolling: touch; /* iOS平滑滚动 */
+            flex: 1; /* 占用剩余空间 */
+            min-height: 0; /* 允许内容收缩 */
+        }
+        
+        /* 自定义滚动条样式 */
+        .sutra-text::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .sutra-text::-webkit-scrollbar-track {
+            background: #f1e9d7;
+            border-radius: 10px;
+        }
+        
+        .sutra-text::-webkit-scrollbar-thumb {
+            background: #d4b483;
+            border-radius: 10px;
+        }
+        
+        .writing-area {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            overflow: visible; /* 改为visible以确保内容可见 */
+        }
+        
+        .writing-prompt {
+            font-size: 0.9rem; /* 减小字体大小 */
+            color: #8b4513;
+            margin-bottom: 6px; /* 进一步减少下边距 */
+            text-align: center;
+            font-weight: bold;
+            flex-shrink: 0; /* 防止标题被压缩 */
+        }
+        
+        .character-to-copy {
+            font-size: 2rem; /* 减小字体大小确保显示 */
+            text-align: center;
+            margin: 8px 0; /* 减少外边距 */
+            color: #8b4513;
+            font-family: 'Ma Shan Zheng', cursive;
+            min-height: 45px; /* 减小最小高度 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f9f3e9;
+            border-radius: 10px;
+            padding: 6px; /* 减少内边距 */
+            border: 1px dashed #d4b483;
+            flex-shrink: 0; /* 防止被压缩 */
+        }
+        
+        .writing-input {
+            flex: 1;
+            min-height: 100px; /* 稍微增加最小高度 */
+            font-size: 1.4rem; /* 减小字体大小 */
+            font-family: 'Ma Shan Zheng', cursive;
+            padding: 8px; /* 进一步减少内边距 */
+            border: 2px solid #d4b483;
+            border-radius: 10px;
+            background-color: #fffcf5;
+            color: #3a281f;
+            resize: none;
+            outline: none;
+            transition: all 0.3s;
+            line-height: 1.3; /* 减小行高 */
+            -webkit-appearance: none; /* 移除iOS默认样式 */
+            appearance: none;
+            touch-action: manipulation; /* 改善触摸体验 */
+            overflow-y: auto; /* 添加滚动条 */
+            min-height: 0; /* 允许内容收缩 */
+        }
+        
+        .writing-input:focus {
+            border-color: #8b4513;
+            box-shadow: 0 0 10px rgba(139, 69, 19, 0.2);
+        }
+        
+        .character-count {
+            font-size: 0.85rem; /* 减小字体大小 */
+            color: #8b4513;
+            text-align: center;
+            margin-top: 6px;
+            padding: 5px; /* 减少内边距 */
+            background-color: #f9f3e9;
+            border-radius: 8px;
+            flex-shrink: 0; /* 防止被压缩 */
+        }
+        
+        .autosave-notice {
+            text-align: center;
+            color: #5d8c5a;
+            font-size: 0.75rem; /* 减小字体大小 */
+            margin-top: 4px; /* 减少上边距 */
+            opacity: 0;
+            transition: opacity 0.5s;
+            padding: 2px; /* 减少内边距 */
+            flex-shrink: 0; /* 防止被压缩 */
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px; /* 进一步减少间距 */
+            justify-content: center;
+            margin-top: 10px; /* 稍微增加上边距 */
+            flex-shrink: 0; /* 防止被压缩 */
+            padding-top: 8px; /* 稍微增加内边距 */
+        }
+        
+        button {
+            padding: 8px 14px; /* 进一步减少内边距 */
+            font-size: 0.85rem; /* 减小字体大小 */
+            font-family: 'Noto Serif SC', serif;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px; /* 减少间距 */
+            -webkit-appearance: none; /* 移除iOS按钮默认样式 */
+            appearance: none;
+            touch-action: manipulation; /* 改善触摸体验 */
+            min-height: 36px; /* 进一步减小最小高度 */
+            min-width: 90px; /* 进一步减小最小宽度 */
+        }
+        
+        /* 为iOS优化按钮点击反馈 */
+        button:active {
+            transform: scale(0.97);
+        }
+        
+        .primary-btn {
+            background-color: #8b4513;
+            color: white;
+        }
+        
+        .primary-btn:hover, .primary-btn:active {
+            background-color: #a0522d;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+        }
+        
+        .secondary-btn {
+            background-color: #d4b483;
+            color: #3a281f;
+        }
+        
+        .secondary-btn:hover, .secondary-btn:active {
+            background-color: #e8dfca;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 180, 131, 0.3);
+        }
+        
+        .success-btn {
+            background-color: #5d8c5a;
+            color: white;
+        }
+        
+        .success-btn:hover, .success-btn:active {
+            background-color: #6fa06c;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(93, 140, 90, 0.3);
+        }
+        
+        .mute-btn-container {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+        }
+        
+        .mute-btn {
+            padding: 5px 10px; /* 减少内边距 */
+            font-size: 0.8rem; /* 减小字体大小 */
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #d4b483;
+            border-radius: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: auto;
+            min-width: auto;
+        }
+        
+        .mute-btn:hover, .mute-btn:active {
+            background-color: white;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-info {
+            margin-top: 8px; /* 减少上边距 */
+            text-align: center;
+            font-size: 0.9rem; /* 减小字体大小 */
+            color: #8b4513;
+            flex-shrink: 0; /* 防止被压缩 */
+            padding-top: 4px; /* 减少内边距 */
+        }
+        
+        .progress-bar {
+            height: 5px; /* 减小高度 */
+            background-color: #e8dfca;
+            border-radius: 5px;
+            margin-top: 4px; /* 减少上边距 */
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #8b4513;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        /* 修改页脚为绝对定位，悬浮在底部 */
+        footer {
+            text-align: center;
+            color: #a0522d;
+            font-size: 0.7rem; /* 进一步减小字体大小 */
+            line-height: 1.2; /* 减小行高 */
+            position: absolute;
+            bottom: 15px;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 1;
+            opacity: 0.9;
+            padding: 4px 12px;
+            pointer-events: none; /* 防止干扰点击 */
+        }
+        
+        footer p {
+            margin: 2px 0;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            padding-bottom: calc(15px + env(safe-area-inset-bottom)); /* 适配iPhone底部安全区域 */
+        }
+        
+        .modal-content {
+            background-color: #fffcf5;
+            padding: 20px; /* 减少内边距 */
+            border-radius: 15px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            max-height: 80vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch; /* iOS平滑滚动 */
+        }
+        
+        .modal h2 {
+            color: #8b4513;
+            margin-bottom: 10px; /* 减少下边距 */
+            font-size: 1.3rem; /* 减小字体大小 */
+        }
+        
+        .modal p {
+            margin-bottom: 12px; /* 减少下边距 */
+            font-size: 0.9rem; /* 减小字体大小 */
+            line-height: 1.4; /* 减小行高 */
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 10px; /* 减少上边距 */
+            right: 10px; /* 减少右边距 */
+            font-size: 1.2rem; /* 减小字体大小 */
+            cursor: pointer;
+            color: #8b4513;
+            width: 26px; /* 减小宽度 */
+            height: 26px; /* 减小高度 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .dedication-text {
+            width: 100%;
+            height: 100px; /* 减小高度 */
+            padding: 10px; /* 减少内边距 */
+            font-size: 0.9rem; /* 减小字体大小 */
+            font-family: 'Noto Serif SC', serif;
+            border: 1px solid #d4b483;
+            border-radius: 10px;
+            margin: 10px 0; /* 减少外边距 */
+            resize: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        
+        .completion-message {
+            background-color: #f0f8e8;
+            border: 1px solid #5d8c5a;
+            border-radius: 10px;
+            padding: 10px; /* 减少内边距 */
+            margin-top: 10px; /* 减少上边距 */
+            text-align: center;
+            color: #5d8c5a;
+            display: none;
+        }
+        
+        /* iPhone小屏幕适配 - 修复右侧边框缺失问题 */
+        @media (max-width: 768px) {
+            body {
+                padding: 7px; /* 稍微减少内边距，为边框留出空间 */
+                padding-bottom: calc(7px + env(safe-area-inset-bottom));
+                padding-right: calc(7px + max(0px, env(safe-area-inset-right) - 7px)); /* 确保右侧边框完整显示 */
+                padding-left: calc(7px + max(0px, env(safe-area-inset-left) - 7px)); /* 确保左侧边框完整显示 */
+            }
+            
+            .container {
+                padding: 9px; /* 减少内边距 */
+                border-radius: 12px;
+                height: calc(100vh - 14px); /* 调整高度，为边框留出空间 */
+                width: calc(100% - 0px); /* 确保容器宽度不溢出 */
+                max-width: calc(100% - 0px); /* 限制最大宽度 */
+                margin: 0 auto;
+                border-width: 1.5px; /* 稍微加粗边框，确保显示 */
+            }
+            
+            .amitofo-link {
+                font-size: 0.85rem;
+                padding: 4px 8px;
+                top: 8px;
+                left: 9px; /* 调整位置，确保不超出边框 */
+                right: auto; /* 明确指定右侧位置 */
+            }
+            
+            h1 {
+                font-size: 1.3rem; /* 进一步减小字体大小 */
+                padding-right: 45px; /* 为静音按钮留出空间 */
+                padding-left: 70px; /* 为阿弥陀佛链接留出空间 */
+                max-width: 100%; /* 确保标题不溢出 */
+                word-break: keep-all; /* 防止标题换行 */
+            }
+            
+            .subtitle {
+                font-size: 0.75rem; /* 减小字体大小 */
+                max-width: 100%; /* 确保副标题不溢出 */
+                padding: 0 5px; /* 添加内边距确保不贴边 */
+            }
+            
+            .content-area {
+                flex-direction: column;
+                gap: 10px; /* 减少间距 */
+            }
+            
+            .sutra-display, .writing-area {
+                min-width: 100%;
+                padding: 10px; /* 确保内边距足够 */
+                border-width: 1.5px; /* 稍微加粗边框 */
+            }
+            
+            .sutra-text {
+                font-size: 1.1rem; /* 调整为1.1rem确保显示 */
+                line-height: 1.6;
+                padding: 5px; /* 减少内边距 */
+            }
+            
+            .writing-input {
+                font-size: 1.2rem; /* 减小字体大小 */
+                padding: 6px; /* 减少内边距 */
+                line-height: 1.3; /* 减小行高 */
+                min-height: 80px; /* 调整最小高度 */
+                border-width: 2px; /* 确保边框显示 */
+            }
+            
+            .character-to-copy {
+                font-size: 1.6rem; /* 减小字体大小 */
+                min-height: 35px; /* 减小最小高度 */
+                margin: 5px 0; /* 减少外边距 */
+                border-width: 1.5px; /* 稍微加粗边框 */
+            }
+            
+            .controls {
+                gap: 5px; /* 减少间距 */
+                margin-top: 6px; /* 减少上边距 */
+                padding-left: 2px; /* 添加左侧内边距 */
+                padding-right: 2px; /* 添加右侧内边距 */
+            }
+            
+            button {
+                padding: 6px 10px; /* 减少内边距 */
+                font-size: 0.8rem; /* 减小字体大小 */
+                min-width: calc(33.333% - 5px); /* 调整最小宽度 */
+                min-height: 32px; /* 减小最小高度 */
+                border-width: 1px; /* 确保按钮边框显示 */
+            }
+            
+            .mute-btn-container {
+                top: 8px; /* 调整位置 */
+                right: 9px; /* 调整位置，确保不超出边框 */
+            }
+            
+            .mute-btn {
+                border-width: 1.5px; /* 稍微加粗边框 */
+            }
+            
+            footer {
+                font-size: 0.65rem; /* 进一步减小字体大小 */
+                bottom: 10px;
+                padding: 3px 9px; /* 调整内边距与容器一致 */
+                left: 9px; /* 与容器内边距对齐 */
+                right: 9px; /* 与容器内边距对齐 */
+                width: calc(100% - 18px); /* 调整宽度 */
+            }
+            
+            .modal-content {
+                padding: 18px 12px; /* 减少内边距 */
+                max-width: calc(100% - 20px); /* 确保模态框不超出屏幕 */
+                margin: 0 10px; /* 添加外边距 */
+            }
+        }
+        
+        /* iPhone横屏适配 */
+        @media (max-width: 768px) and (orientation: landscape) {
+            body {
+                padding: 6px; /* 横屏时减少更多内边距 */
+            }
+            
+            .container {
+                height: calc(100vh - 12px); /* 调整高度 */
+                padding: 8px;
+            }
+            
+            .content-area {
+                flex-direction: row;
+            }
+            
+            .sutra-display, .writing-area {
+                min-width: 0;
+                flex: 1;
+            }
+            
+            .character-to-copy {
+                font-size: 1.4rem; /* 减小字体大小 */
+                min-height: 30px; /* 减小最小高度 */
+                margin: 4px 0; /* 减少外边距 */
+            }
+            
+            .writing-input {
+                min-height: 70px; /* 减小最小高度 */
+                font-size: 1.1rem;
+            }
+            
+            .controls {
+                margin-top: 4px;
+            }
+            
+            button {
+                padding: 5px 8px;
+                min-height: 30px;
+            }
+            
+            footer {
+                bottom: 8px;
+                font-size: 0.6rem;
+                padding: 2px 8px;
+                left: 8px;
+                right: 8px;
+                width: calc(100% - 16px);
+            }
+        }
+        
+        /* 超小屏幕iPhone (iPhone SE等) */
+        @media (max-width: 375px) {
+            body {
+                padding: 6px;
+            }
+            
+            .container {
+                padding: 8px;
+                height: calc(100vh - 12px);
+            }
+            
+            h1 {
+                font-size: 1.1rem; /* 进一步减小字体大小 */
+                padding-right: 40px;
+                padding-left: 65px;
+            }
+            
+            .sutra-title {
+                font-size: 1rem; /* 减小字体大小 */
+            }
+            
+            button {
+                padding: 5px 7px; /* 减少内边距 */
+                font-size: 0.75rem; /* 减小字体大小 */
+                min-width: calc(50% - 5px); /* 调整最小宽度 */
+                margin-bottom: 3px;
+                min-height: 30px; /* 减小最小高度 */
+            }
+            
+            .controls {
+                justify-content: space-between;
+                padding-left: 1px;
+                padding-right: 1px;
+            }
+            
+            .controls button:nth-child(3) {
+                min-width: 100%;
+                margin-top: 3px;
+            }
+            
+            .character-to-copy {
+                font-size: 1.4rem; /* 减小字体大小 */
+                min-height: 30px; /* 减小最小高度 */
+            }
+            
+            .writing-input {
+                font-size: 1.1rem; /* 减小字体大小 */
+                min-height: 70px; /* 调整最小高度 */
+            }
+            
+            footer {
+                font-size: 0.6rem;
+                line-height: 1.1;
+                bottom: 8px;
+                padding: 2px 8px;
+                left: 8px;
+                right: 8px;
+                width: calc(100% - 16px);
+            }
+            
+            .amitofo-link {
+                font-size: 0.8rem;
+                padding: 3px 6px;
+                left: 8px;
+            }
+            
+            .mute-btn-container {
+                right: 8px;
+            }
+        }
+        
+        /* 适配iPhone X及以上机型的刘海屏 */
+        @supports (padding: max(0px)) {
+            body, .modal {
+                padding-left: max(8px, env(safe-area-inset-left));
+                padding-right: max(8px, env(safe-area-inset-right));
+            }
+            
+            @media (max-width: 768px) {
+                body {
+                    padding-left: max(7px, env(safe-area-inset-left));
+                    padding-right: max(7px, env(safe-area-inset-right));
+                }
+            }
+        }
+        
+        /* 电脑屏幕适配 - 确保所有内容显示 */
+        @media (min-width: 769px) {
+            .container {
+                max-height: 96vh; /* 限制最大高度 */
+                height: auto; /* 改为auto以容纳所有内容 */
+                min-height: calc(100vh - 20px);
+            }
+            
+            .content-area {
+                max-height: calc(96vh - 150px); /* 调整内容区域最大高度 */
+                min-height: 400px; /* 设置最小高度 */
+            }
+            
+            .sutra-display, .writing-area {
+                max-height: calc(96vh - 180px); /* 调整子区域高度 */
+                min-height: 350px; /* 设置最小高度 */
+            }
+            
+            footer {
+                bottom: 12px;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="https://amitofo.icu" class="amitofo-link" target="_blank">阿弥陀佛-遇见</a>
+            <h1>静心抄经</h1>
+            <p class="subtitle">一笔一划，静心修慧；一字一句，功德无量</p>
+            <div class="mute-btn-container">
+                <button class="mute-btn" id="muteBtn">
+                    <i class="fas fa-volume-up"></i> 静音
+                </button>
+            </div>
+        </header>
+        
+        <div class="content-area">
+            <div class="sutra-display">
+                <h2 class="sutra-title">《般若波罗蜜多心经》</h2>
+                <div class="sutra-text" id="sutraText">
+                    观自在菩萨，行深般若波罗蜜多时，照见五蕴皆空，度一切苦厄。舍利子，色不异空，空不异色，色即是空，空即是色，受想行识，亦复如是。舍利子，是诸法空相，不生不灭，不垢不净，不增不减。是故空中无色，无受想行识，无眼耳鼻舌身意，无色声香味触法，无眼界，乃至无意识界。无无明，亦无无明尽，乃至无老死，亦无老死尽。无苦集灭道，无智亦无得，以无所得故。菩提萨埵，依般若波罗蜜多故，心无罣碍，无罣碍故，无有恐怖，远离颠倒梦想，究竟涅槃。三世诸佛，依般若波罗蜜多故，得阿耨多罗三藐三菩提。故知般若波罗蜜多，是大神咒，是大明咒，是无上咒，是无等等咒，能除一切苦，真实不虚。故说般若波罗蜜多咒，即说咒曰：揭谛揭谛，波罗揭谛，波罗僧揭谛，菩提萨婆诃。
+                </div>
+                <div class="progress-info">
+                    抄经进度：<span id="progressPercent">0</span>%
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="writing-area">
+                <h3 class="writing-prompt">请抄写以下经文：</h3>
+                <div class="character-to-copy" id="characterToCopy">观</div>
+                <textarea class="writing-input" id="writingInput" placeholder="请在此处书写经文..." inputmode="text"></textarea>
+                <div class="character-count">已抄写 <span id="charCount">0</span> / <span id="totalChars">276</span> 字</div>
+                <div class="autosave-notice" id="autosaveNotice">内容已自动保存</div>
+
+                
+                <div class="controls">
+                    <button class="secondary-btn" id="prevBtn">
+                        <i class="fas fa-chevron-left"></i> 上一个字
+                    </button>
+                    <button class="primary-btn" id="nextBtn">
+                        下一个字 <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="success-btn" id="dedicateBtn">
+                        <i class="fas fa-hands-praying"></i> 功德回向
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 页脚改为绝对定位 -->
+        <footer>
+            <p>愿以此功德，庄严佛净土，上报四重恩，下济三途苦。</p>
+            <p>若有见闻者，悉发菩提心，尽此一报身，同生极乐国。</p>
+        </footer>
+    </div>
+    
+    <!-- 功德回向模态框 -->
+    <div class="modal" id="dedicationModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeModal">&times;</span>
+            <h2>功德回向</h2>
+            <p>抄经功德殊胜行，无边胜福皆回向。<br>普愿沉溺诸众生，速往无量光佛刹。</p>
+            <p>请填写回向文（可选）：</p>
+            <textarea class="dedication-text" id="dedicationText" placeholder="例如：愿以此功德，回向给我的家人朋友，愿他们平安健康，福慧增长..."></textarea>
+            <button class="success-btn" id="confirmDedication">确认回向</button>
+            <p style="margin-top: 15px; font-size: 0.85rem; color: #a0522d;">回向后，本次抄经功德圆满，进度将自动清空。</p>
+        </div>
+    </div>
+
+    <!-- 背景音乐 -->
+    <audio id="backgroundMusic" loop>
+        <source src="beijing.ogg" type="audio/mpeg">
+        您的浏览器不支持音频元素。
+    </audio>
+
+    <!-- 回向音频 -->
+    <audio id="dedicationMusic">
+        <source src="xiaochu.mp3" type="audio/mpeg">
+        您的浏览器不支持音频元素。
+    </audio>
+
+    <script>
+        // 经文内容
+        const sutra = "观自在菩萨，行深般若波罗蜜多时，照见五蕴皆空，度一切苦厄。舍利子，色不异空，空不异色，色即是空，空即是色，受想行识，亦复如是。舍利子，是诸法空相，不生不灭，不垢不净，不增不减。是故空中无色，无受想行识，无眼耳鼻舌身意，无色声香味触法，无眼界，乃至无意识界。无无明，亦无无明尽，乃至无老死，亦无老死尽。无苦集灭道，无智亦无得，以无所得故。菩提萨埵，依般若波罗蜜多故，心无罣碍，无罣碍故，无有恐怖，远离颠倒梦想，究竟涅槃。三世诸佛，依般若波罗蜜多故，得阿耨多罗三藐三菩提。故知般若波罗蜜多，是大神咒，是大明咒，是无上咒，是无等等咒，能除一切苦，真实不虚。故说般若波罗蜜多咒，即说咒曰：揭谛揭谛，波罗揭谛，波罗僧揭谛，菩提萨婆诃。";
+        
+        // 获取DOM元素
+        const sutraText = document.getElementById('sutraText');
+        const characterToCopy = document.getElementById('characterToCopy');
+        const writingInput = document.getElementById('writingInput');
+        const charCount = document.getElementById('charCount');
+        const totalChars = document.getElementById('totalChars');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressFill = document.getElementById('progressFill');
+        const autosaveNotice = document.getElementById('autosaveNotice');
+        const completionMessage = document.getElementById('completionMessage');
+        
+        // 按钮元素
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const dedicateBtn = document.getElementById('dedicateBtn');
+        
+        // 音乐控制元素
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        const dedicationMusic = document.getElementById('dedicationMusic');
+        const muteBtn = document.getElementById('muteBtn');
+        
+        // 模态框元素
+        const dedicationModal = document.getElementById('dedicationModal');
+        const closeModal = document.getElementById('closeModal');
+        const confirmDedication = document.getElementById('confirmDedication');
+        const dedicationText = document.getElementById('dedicationText');
+        
+        // 初始化变量
+        let currentIndex = 0;
+        let writtenText = "";
+        let savedProgress = localStorage.getItem('sutraProgress') ? JSON.parse(localStorage.getItem('sutraProgress')) : {
+            index: 0,
+            text: ""
+        };
+        let isMuted = false;
+        
+        // 初始化页面
+        function init() {
+            totalChars.textContent = sutra.length;
+            
+            // 恢复保存的进度
+            if (savedProgress.text && savedProgress.text.length > 0) {
+                currentIndex = savedProgress.index;
+                writtenText = savedProgress.text;
+                writingInput.value = writtenText;
+                updateDisplay();
+                showAutosaveNotice("进度已恢复");
+            } else {
+                updateDisplay();
+            }
+            
+            // 设置自动保存
+            setInterval(autoSave, 30000); // 每30秒自动保存
+            
+            // 输入框输入时自动保存
+            writingInput.addEventListener('input', function() {
+                writtenText = this.value;
+                currentIndex = writtenText.length;
+                updateDisplay();
+                autoSave();
+            });
+            
+            // 开始播放背景音乐（音量调低）
+            backgroundMusic.volume = 0.3;
+            dedicationMusic.volume = 0.7; // 设置回向音频音量
+            
+            // 尝试自动播放，如果失败则显示提示
+            const playMusic = () => {
+                backgroundMusic.play().then(() => {
+                    console.log("背景音乐开始播放");
+                }).catch(e => {
+                    console.log("自动播放被阻止，需要用户交互");
+                });
+            };
+            
+            // 添加用户交互事件来触发音频播放
+            document.addEventListener('click', function initAudio() {
+                playMusic();
+                document.removeEventListener('click', initAudio);
+            }, { once: true });
+            
+            // 页面加载后延迟尝试播放
+            setTimeout(playMusic, 1000);
+        }
+        
+        // 更新显示
+        function updateDisplay() {
+            // 更新当前要抄写的字
+            if (currentIndex < sutra.length) {
+                characterToCopy.textContent = sutra[currentIndex];
+            } else {
+                characterToCopy.textContent = "已完成";
+                characterToCopy.innerHTML = '<i class="fas fa-check-circle"></i> 已完成';
+            }
+            
+            // 更新抄写计数
+            charCount.textContent = writtenText.length;
+            
+            // 更新进度条
+            const progress = Math.min(100, Math.round((writtenText.length / sutra.length) * 100));
+            progressPercent.textContent = progress;
+            progressFill.style.width = `${progress}%`;
+            
+            // 高亮显示已抄写的经文
+            highlightSutraText();
+        }
+        
+        // 高亮显示已抄写的经文
+        function highlightSutraText() {
+            let highlightedText = "";
+            for (let i = 0; i < sutra.length; i++) {
+                if (i < writtenText.length) {
+                    // 已抄写的字用特殊样式
+                    highlightedText += `<span style="color:#8b4513; font-weight:bold; text-decoration:underline;">${sutra[i]}</span>`;
+                } else if (i === currentIndex) {
+                    // 当前要抄写的字用不同样式
+                    highlightedText += `<span style="color:#a0522d; background-color:#f5e9d9; padding:1px 0; border-radius:3px;">${sutra[i]}</span>`;
+                } else {
+                    // 未抄写的字
+                    highlightedText += sutra[i];
+                }
+            }
+            sutraText.innerHTML = highlightedText;
+        }
+        
+        // 上一个字
+        prevBtn.addEventListener('click', function() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                writtenText = writtenText.substring(0, currentIndex);
+                writingInput.value = writtenText;
+                updateDisplay();
+                autoSave();
+                showAutosaveNotice("已返回上一个字");
+            }
+        });
+        
+        // 下一个字
+        nextBtn.addEventListener('click', function() {
+            if (currentIndex < sutra.length) {
+                writtenText += sutra[currentIndex];
+                currentIndex++;
+                writingInput.value = writtenText;
+                updateDisplay();
+                autoSave();
+            }
+        });
+        
+        // 自动保存
+        function autoSave() {
+            savedProgress = {
+                index: currentIndex,
+                text: writtenText
+            };
+            localStorage.setItem('sutraProgress', JSON.stringify(savedProgress));
+            
+            // 每5次自动保存显示一次通知
+            if (Math.random() < 0.2) {
+                showAutosaveNotice("进度已自动保存");
+            }
+        }
+        
+        // 显示自动保存通知
+        function showAutosaveNotice(message) {
+            autosaveNotice.textContent = message;
+            autosaveNotice.style.opacity = "1";
+            setTimeout(() => {
+                autosaveNotice.style.opacity = "0";
+            }, 2000);
+        }
+        
+        // 清空进度
+        function clearProgress() {
+            localStorage.removeItem('sutraProgress');
+            currentIndex = 0;
+            writtenText = "";
+            writingInput.value = "";
+            updateDisplay();
+            
+            // 显示完成消息
+            completionMessage.style.display = 'block';
+            setTimeout(() => {
+                completionMessage.style.display = 'none';
+            }, 5000);
+            
+            showAutosaveNotice("进度已清空，可以重新开始");
+        }
+        
+        // 静音按钮
+        muteBtn.addEventListener('click', function() {
+            isMuted = !isMuted;
+            
+            if (isMuted) {
+                backgroundMusic.pause();
+                muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i> 取消静音';
+            } else {
+                backgroundMusic.play().catch(e => {
+                    console.log("播放失败");
+                });
+                muteBtn.innerHTML = '<i class="fas fa-volume-up"></i> 静音';
+            }
+        });
+        
+        // 功德回向
+        dedicateBtn.addEventListener('click', function() {
+            dedicationModal.style.display = 'flex';
+            // 防止背景滚动
+            document.body.style.overflow = 'hidden';
+        });
+        
+        // 确认回向
+        confirmDedication.addEventListener('click', function() {
+            const dedication = dedicationText.value.trim();
+            
+            // 播放回向音频
+            dedicationMusic.currentTime = 0; // 从头开始播放
+            dedicationMusic.play().catch(e => {
+                console.log("回向音频播放失败:", e);
+            });
+            
+            // 显示回向成功的简单提示
+            if (dedication) {
+                alert(`功德回向成功！\n回向文：${dedication}`);
+            } else {
+                alert("功德随喜！！！");
+            }
+            
+            // 关闭模态框
+            dedicationModal.style.display = 'none';
+            dedicationText.value = "";
+            document.body.style.overflow = 'auto';
+            
+            // 直接清空进度
+            clearProgress();
+        });
+        
+        // 关闭模态框
+        closeModal.addEventListener('click', function() {
+            dedicationModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+        
+        // 点击模态框外部关闭
+        window.addEventListener('click', function(event) {
+            if (event.target === dedicationModal) {
+                dedicationModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+        
+        // 防止iOS双击缩放
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+        
+        // 防止iOS橡皮筋效果导致页面滚动过头
+        document.addEventListener('touchmove', function (event) {
+            if (event.scale !== 1) {
+                event.preventDefault();
+            }
+        }, false);
+        
+        // 初始化页面
+        init();
+    </script>
+</body>
+</html>

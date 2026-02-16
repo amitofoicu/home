@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>隐私政策 - game.amitofo.icu 游戏网站</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6b8cbc;
+            --accent-color: #ff9a3c;
+            --light-color: #f8f9fa;
+            --dark-color: #333;
+            --gray-color: #6c757d;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--dark-color);
+            background-color: #f5f7fb;
+            padding-bottom: 40px;
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* 头部样式 */
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        
+        .logo i {
+            font-size: 2.5rem;
+            margin-right: 10px;
+            color: var(--accent-color);
+        }
+        
+        .logo h1 {
+            font-size: 2rem;
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* 主要内容区域 */
+        .content-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        /* 目录导航 */
+        .sidebar {
+            flex: 1;
+            min-width: 280px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: var(--box-shadow);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .sidebar h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--accent-color);
+        }
+        
+        .toc-list {
+            list-style-type: none;
+        }
+        
+        .toc-list li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .toc-list a {
+            color: var(--dark-color);
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+        
+        .toc-list a:hover {
+            background-color: rgba(74, 111, 165, 0.1);
+            color: var(--primary-color);
+            padding-left: 1.2rem;
+        }
+        
+        /* 隐私政策内容 */
+        .policy-content {
+            flex: 2;
+            min-width: 300px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--box-shadow);
+        }
+        
+        .last-updated {
+            background-color: rgba(255, 154, 60, 0.1);
+            border-left: 4px solid var(--accent-color);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
+        }
+        
+        .last-updated h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .policy-section {
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .policy-section:last-child {
+            border-bottom: none;
+        }
+        
+        .policy-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .policy-section h2 i {
+            margin-right: 10px;
+            color: var(--accent-color);
+        }
+        
+        .policy-section p {
+            margin-bottom: 1rem;
+            color: #444;
+        }
+        
+        .highlight-box {
+            background-color: rgba(107, 140, 188, 0.05);
+            border: 1px solid rgba(107, 140, 188, 0.2);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .highlight-box h4 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-info {
+            background-color: rgba(255, 154, 60, 0.05);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .contact-info h3 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+        
+        .contact-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            padding: 0.8rem 1.2rem;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .contact-item i {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+            margin-right: 15px;
+        }
+        
+        /* 底部样式 */
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+            color: var(--gray-color);
+            font-size: 0.9rem;
+        }
+        
+        .back-to-top {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            margin-top: 1rem;
+            transition: var(--transition);
+        }
+        
+        .back-to-top:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-3px);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                position: static;
+            }
+            
+            .policy-content {
+                padding: 1.5rem;
+            }
+            
+            .contact-details {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 页面头部 -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-gamepad"></i>
+                <h1>game.amitofo.icu</h1>
+            </div>
+            <p>免费、轻松的小游戏体验 - 您的隐私对我们至关重要</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="content-wrapper">
+            <!-- 目录导航 -->
+            <aside class="sidebar">
+                <h3><i class="fas fa-list"></i> 目录</h3>
+                <ul class="toc-list">
+                    <li><a href="#section1">1. 关于我们的游戏</a></li>
+                    <li><a href="#section2">2. 我们收集的信息</a></li>
+                    <li><a href="#section3">3. 我们如何使用信息</a></li>
+                    <li><a href="#section4">4. 本地存储</a></li>
+                    <li><a href="#section5">5. 第三方服务</a></li>
+                    <li><a href="#section6">6. 儿童隐私</a></li>
+                    <li><a href="#section7">7. 政策变更</a></li>
+                    <li><a href="#section8">8. 免责声明</a></li>
+                    <li><a href="#section9">9. 联系我们</a></li>
+                </ul>
+            </aside>
+            
+            <!-- 隐私政策内容 -->
+            <main class="policy-content">
+                <div class="last-updated">
+                    <h3>最后更新日期：2026年2月</h3>
+                    <p>感谢您访问 game.amitofo.icu！本网站致力于为您提供轻松愉快的游戏体验。我们非常重视您的隐私，特此说明我们的隐私政策。</p>
+                </div>
+                
+                <section id="section1" class="policy-section">
+                    <h2><i class="fas fa-gamepad"></i> 1. 关于我们的游戏</h2>
+                    <p>game.amitofo.icu 上的所有小游戏均为自主开发，旨在为用户提供免费、轻松的娱乐体验。所有游戏均可免费玩耍，无需任何费用。所有游戏资源均可免费下载和分享，无需授权。</p>
+                </section>
+                
+                <section id="section2" class="policy-section">
+                    <h2><i class="fas fa-info-circle"></i> 2. 我们不收集任何信息</h2>
+                    <p>为提供更好的游戏体验，我们的网页可能会自动适配您的设备类型，比如：浏览器类型和版本或设备类型和屏幕分辨率。但是，我们不会收集或保存这些信息，以及任何能够直接识别您个人身份的信息，如姓名、地址、电子邮件或电话号码。</p>
+                </section>
+                
+                <section id="section4" class="policy-section">
+                    <h2><i class="fas fa-database"></i> 3. 本地存储</h2>
+                    <p>我们的游戏可能会使用浏览器的本地存储功能（如 localStorage）来保存您的游戏进度、设置和高分记录。这些数据仅存储在您的设备上，不会传输到我们的服务器。</p>
+                    <div class="highlight-box">
+                        <h4>本地存储的优点：</h4>
+                        <p>使用本地存储意味着您的游戏数据完全在您的设备上，提供了更好的隐私保护。您可以随时清除浏览器数据来删除这些信息。</p>
+                    </div>
+                </section>
+                
+                <section id="section5" class="policy-section">
+                    <h2><i class="fas fa-shield-alt"></i> 4. 第三方服务</h2>
+                    <p>我们不集成任何第三方分析、广告或追踪服务。您的游戏体验不会被第三方干扰或追踪。</p>
+                    <p>我们致力于提供一个干净、无干扰的游戏环境，让您完全专注于游戏乐趣。</p>
+                </section>
+                
+                <section id="section6" class="policy-section">
+                    <h2><i class="fas fa-child"></i> 5. 儿童隐私</h2>
+                    <p>我们的游戏适合所有年龄段的用户。我们不会故意收集13岁以下儿童的个人信息。</p>
+                    <p>如果家长或监护人发现孩子未经同意向我们提供了个人信息，请通过电子邮件与我们联系，我们将尽快删除这些信息。</p>
+                </section>
+                
+                <section id="section7" class="policy-section">
+                    <h2><i class="fas fa-sync-alt"></i> 6. 政策变更</h2>
+                    <p>我们可能会不时更新本隐私政策。任何更改都会在此页面上发布更新后的政策。我们建议您定期查看此页面以了解任何更改。</p>
+                    <p>政策的"最后更新日期"将显示在页面顶部，以帮助您了解政策的最近更新时间。</p>
+                </section>
+                
+                <section id="section8" class="policy-section">
+                    <h2><i class="fas fa-exclamation-triangle"></i> 7. 免责声明</h2>
+                    <p>本网站提供的所有游戏仅供娱乐目的。我们不保证游戏的绝对可用性、无错误或满足特定要求。用户自行承担使用风险。</p>
+                    <p>我们保留在不事先通知的情况下修改、暂停或终止任何游戏服务的权利。</p>
+                </section>
+                
+                <section id="section9" class="policy-section">
+                    <h2><i class="fas fa-envelope"></i> 8. 联系我们</h2>
+                    <p>如果您对本隐私政策有任何疑问或建议，请通过以下方式联系我们：</p>
+                    
+                    <div class="contact-info">
+                        <h3>联系信息</h3>
+                        <div class="contact-details">
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <div>
+                                    <strong>电子邮件</strong>
+                                    <p>admin@amitofo.icu</p>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-globe"></i>
+                                <div>
+                                    <strong>网站</strong>
+                                    <p><a href="https://amitofo.icu" target="_blank" rel="noopener noreferrer">https://amitofo.icu</a></p>
+                                </div>
+                            </div>
+                        </div>
+                        <p style="margin-top: 1rem;">我们通常会在1-3个工作日内回复您的询问。感谢您的理解与支持！</p>
+                    </div>
+                </section>
+            </main>
+        </div>
+        
+        <!-- 页脚 -->
+        <footer>
+            <p>&copy; 2026 amitofo.icu 保留所有权利。本隐私政策最后更新于2026年2月。</p>
+            <p>我们的承诺：提供免费、有趣且尊重隐私的游戏体验。</p>
+            <a href="#" class="back-to-top"><i class="fas fa-arrow-up"></i> 返回顶部</a>
+        </footer>
+    </div>
+    
+    <script>
+        // 平滑滚动到对应章节
+        document.querySelectorAll('.toc-list a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                window.scrollTo({
+                    top: targetElement.offsetTop - 20,
+                    behavior: 'smooth'
+                });
+            });
+        });
+        
+        // 返回顶部按钮功能
+        document.querySelector('.back-to-top').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // 高亮当前查看的章节
+        function highlightCurrentSection() {
+            const sections = document.querySelectorAll('.policy-section');
+            const navLinks = document.querySelectorAll('.toc-list a');
+            
+            let currentSectionId = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                
+                if (window.scrollY >= sectionTop - 100 && window.scrollY < sectionTop + sectionHeight - 100) {
+                    currentSectionId = '#' + section.id;
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentSectionId) {
+                    link.classList.add('active');
+                    link.style.backgroundColor = 'rgba(74, 111, 165, 0.1)';
+                    link.style.color = 'var(--primary-color)';
+                    link.style.fontWeight = 'bold';
+                } else {
+                    link.style.backgroundColor = '';
+                    link.style.color = '';
+                    link.style.fontWeight = '';
+                }
+            });
+        }
+        
+        // 监听滚动事件
+        window.addEventListener('scroll', highlightCurrentSection);
+        
+        // 页面加载时执行一次
+        document.addEventListener('DOMContentLoaded', highlightCurrentSection);
+    </script>
+</body>
+</html>

@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <!-- 极致适配iPhone：包含所有安全区域及动态缩放控制，并修复滑动问题 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <title>弟子规 · 静心抄经典 · 全篇章</title>
+    <!-- 恢复原有字体：Ma Shan Zheng (毛笔楷书) 和 Noto Serif SC (宋体) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ===== 全局重置，保证滑动流畅且不溢出 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;           /* 外层禁止滚动，由内部容器滚动 */
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            /* 恢复原有字体：Noto Serif SC 为主，与之前一致 */
+            font-family: 'Noto Serif SC', serif;
+            background-color: #f5f1e6;
+            color: #3a281f;
+            line-height: 1.5;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;           /* body 也不滚动，完全由内部 .container 处理 */
+            background-image: url('lianchi.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: scroll;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        /* 主容器：允许整体滚动（因为内容可能超过视口高度） */
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            height: 100%;
+            max-height: 100%;
+            background-color: rgba(255, 253, 248, 0.96);
+            border-radius: 20px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e8dfca;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;           /* 关键：整个容器可滚动，解决无法上下滑动 */
+            -webkit-overflow-scrolling: touch; /* 流畅滚动 */
+            /* 安全区域适配 */
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* 头部区域，固定高度不压缩 */
+        header {
+            text-align: center;
+            margin-bottom: 6px;
+            border-bottom: 1px solid #e8dfca;
+            padding-bottom: 8px;
+            position: relative;
+            flex-shrink: 0;             /* 防止在flex容器中被压缩 */
+        }
+
+        /* 新增：上一篇/下一篇导航栏 */
+        .chapter-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #f4efe4;
+            border-radius: 40px;
+            padding: 4px 8px;
+            margin: 8px 12px 2px 12px;
+            border: 1px solid #d4b483;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            font-family: 'Noto Serif SC', serif;
+        }
+        .chapter-btn {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            color: #8b4513;
+            padding: 8px 10px;
+            min-width: 70px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+            box-shadow: none;
+            min-height: 36px;
+            flex: 0 1 auto;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: background-color 0.2s;
+            justify-content: center;
+        }
+        .chapter-btn:active {
+            background-color: #d4b48340;
+            transform: scale(0.96);
+        }
+        .chapter-btn:disabled {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        .chapter-indicator {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #5d3a1a;
+            background-color: #fffcf0;
+            padding: 4px 12px;
+            border-radius: 30px;
+            border: 1px solid #d4b483;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        /* 标题微调，为导航让位 */
+        h1 {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.8rem;
+            color: #8b4513;
+            margin: 0 50px 2px 50px;   /* 给右侧静音按钮留空间 */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            line-height: 1.2;
+            word-break: keep-all;
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: #a0522d;
+            font-style: italic;
+            margin: 0 8px;
+        }
+
+        .mute-btn-container {
+            position: absolute;
+            top: max(4px, env(safe-area-inset-top));
+            right: max(8px, env(safe-area-inset-right));
+        }
+
+        .mute-btn {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #d4b483;
+            border-radius: 24px;
+            cursor: pointer;
+            min-height: auto;
+            min-width: auto;
+            white-space: nowrap;
+        }
+
+        /* 核心内容区域：本身不滚动，依靠父容器滚动 */
+        .content-area {
+            display: flex;
+            flex: 1;
+            gap: 12px;
+            min-height: min-content;    /* 根据内容自然高度，不强制收缩 */
+            overflow: visible;           /* 内容可见，滚动由父容器处理 */
+            margin-bottom: 4px;
+            padding: 0 2px;
+            flex-wrap: wrap;             /* 小屏自然换行 */
+        }
+
+        /* 左侧经文区域 */
+        .sutra-display {
+            flex: 1 1 300px;
+            background-color: #fffcf5;
+            border-radius: 16px;
+            padding: 12px;
+            border: 1px solid #e8dfca;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;            /* 内部滚动由 .sutra-text 处理 */
+            min-width: 260px;
+            min-height: 240px;           /* 保证小屏下有基础高度 */
+        }
+
+        .sutra-title {
+            /* 标题使用 Ma Shan Zheng 楷书 */
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.2rem;
+            color: #8b4513;
+            margin-bottom: 6px;
+            text-align: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .sutra-text {
+            /* 经文主体使用 Noto Serif SC (宋体) */
+            font-family: 'Noto Serif SC', serif;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: #3a281f;
+            text-align: justify;
+            overflow-y: auto;            /* 经文区域独立滚动 */
+            -webkit-overflow-scrolling: touch;
+            padding: 4px 6px;
+            flex: 1;
+            min-height: 100px;           /* 确保即使内容少也能滚动 */
+            background: #fefcf7;
+            border-radius: 12px;
+            border: 1px solid #f1e9d7;
+        }
+
+        .sutra-text::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sutra-text::-webkit-scrollbar-track {
+            background: #f1e9d7;
+            border-radius: 10px;
+        }
+        .sutra-text::-webkit-scrollbar-thumb {
+            background: #d4b483;
+            border-radius: 10px;
+        }
+
+        .progress-info {
+            margin-top: 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #8b4513;
+            flex-shrink: 0;
+        }
+
+        .progress-bar {
+            height: 5px;
+            background-color: #e8dfca;
+            border-radius: 5px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #8b4513;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        /* 右侧抄写区域 */
+        .writing-area {
+            flex: 1 1 300px;
+            display: flex;
+            flex-direction: column;
+            overflow: visible;           /* 不限制，由父容器滚动 */
+            min-width: 260px;
+            min-height: 340px;           /* 保证有足够高度 */
+            background-color: #fffcf5;
+            border-radius: 16px;
+            padding: 12px;
+            border: 1px solid #e8dfca;
+        }
+
+        .writing-prompt {
+            font-size: 0.9rem;
+            color: #8b4513;
+            margin-bottom: 6px;
+            text-align: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .character-to-copy {
+            /* 提示字使用 Ma Shan Zheng 楷书 */
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 2.2rem;
+            text-align: center;
+            margin: 6px 0;
+            color: #8b4513;
+            min-height: 55px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f9f3e9;
+            border-radius: 20px;
+            padding: 8px;
+            border: 1px dashed #d4b483;
+            flex-shrink: 0;
+        }
+
+        .writing-input {
+            /* 输入框使用 Ma Shan Zheng 楷书，与提示字一致 */
+            font-family: 'Ma Shan Zheng', cursive;
+            width: 100%;
+            min-height: 120px;           /* 足够高度，内部可滚动 */
+            font-size: 1.4rem;
+            padding: 12px;
+            border: 2px solid #d4b483;
+            border-radius: 20px;
+            background-color: #fffcf5;
+            color: #3a281f;
+            resize: none;
+            outline: none;
+            line-height: 1.4;
+            -webkit-appearance: none;
+            touch-action: manipulation;
+            overflow-y: auto;             /* 文本区域可独立滚动 */
+            -webkit-overflow-scrolling: touch;
+            flex: 1;                      /* 占用剩余空间 */
+        }
+
+        .autosave-notice {
+            text-align: center;
+            color: #5d8c5a;
+            font-size: 0.75rem;
+            margin: 3px 0;
+            opacity: 0;
+            transition: opacity 0.4s;
+            flex-shrink: 0;
+        }
+
+        .completion-message {
+            background-color: #f0f8e8;
+            border: 1px solid #5d8c5a;
+            border-radius: 30px;
+            padding: 8px 12px;
+            margin: 8px 0 4px;
+            text-align: center;
+            color: #5d8c5a;
+            display: none;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 10px;
+            flex-shrink: 0;
+        }
+
+        button {
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            /* 按钮字体保持 Noto Serif SC */
+            font-family: 'Noto Serif SC', serif;
+            border: none;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            -webkit-appearance: none;
+            touch-action: manipulation;
+            min-height: 44px;          /* 苹果推荐最小点击区域 */
+            flex: 1 1 auto;
+            min-width: 110px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.96);
+            opacity: 0.8;
+        }
+
+        .primary-btn {
+            background-color: #8b4513;
+            color: white;
+        }
+        .secondary-btn {
+            background-color: #d4b483;
+            color: #3a281f;
+        }
+        .success-btn {
+            background-color: #5d8c5a;
+            color: white;
+        }
+
+        /* 超小屏精细调节 (iPhone SE 等) */
+        @media (max-width: 375px) and (max-height: 670px) {
+            h1 { font-size: 1.5rem; margin-left: 45px; margin-right: 45px; }
+            .sutra-title { font-size: 1rem; }
+            .sutra-text { font-size: 1rem; }
+            .character-to-copy { font-size: 1.8rem; min-height: 48px; }
+            .writing-input { font-size: 1.2rem; min-height: 100px; }
+            button { min-width: 90px; padding: 8px 6px; font-size: 0.8rem; }
+            .controls { gap: 4px; }
+            .mute-btn { padding: 4px 8px; }
+            .chapter-btn { font-size: 0.85rem; min-width: 60px; }
+            .chapter-indicator { font-size: 0.8rem; padding: 2px 8px; }
+        }
+
+        /* 横屏优化 */
+        @media (orientation: landscape) and (max-height: 450px) {
+            .content-area { flex-wrap: nowrap; }
+            .character-to-copy { font-size: 1.6rem; min-height: 40px; }
+            .writing-input { min-height: 70px; }
+            button { padding: 6px 10px; min-height: 36px; }
+        }
+
+        /* 安全区域精细补偿 */
+        @supports (padding: max(0px)) {
+            .container {
+                padding-top: max(env(safe-area-inset-top), 12px);
+                padding-bottom: max(env(safe-area-inset-bottom), 8px);
+                padding-left: max(env(safe-area-inset-left), 12px);
+                padding-right: max(env(safe-area-inset-right), 12px);
+            }
+            .mute-btn-container {
+                top: max(env(safe-area-inset-top), 8px);
+                right: max(env(safe-area-inset-right), 10px);
+            }
+        }
+
+        /* 针对iOS滚动增强：确保所有可滚动区域都有触摸滚动 */
+        .sutra-text, .writing-input, .container {
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="mainContainer">
+        <header>
+            <!-- 标题为“静心抄经典” -->
+            <h1>静心抄经典 · 弟子规</h1>
+            <p class="subtitle">弟子规 圣人训 首孝悌 次谨信 泛爱众 而亲仁 有余力 则学文</p>
+            <div class="mute-btn-container">
+                <button class="mute-btn" id="muteBtn">
+                    <i class="fas fa-volume-up"></i> 静音
+                </button>
+            </div>
+        </header>
+
+        <!-- 新增：上一篇/下一篇导航栏（位于标题下方） -->
+        <div class="chapter-nav">
+            <button class="chapter-btn" id="prevChapterBtn"><i class="fas fa-chevron-left"></i> 上一篇</button>
+            <span class="chapter-indicator" id="chapterIndicator">入则孝 · 1/7</span>
+            <button class="chapter-btn" id="nextChapterBtn">下一篇 <i class="fas fa-chevron-right"></i></button>
+        </div>
+
+        <!-- 主内容区，内部不限制滚动，由父容器统一滚动 -->
+        <div class="content-area">
+            <!-- 左侧经文展示 -->
+            <div class="sutra-display">
+                <h2 class="sutra-title" id="sutraTitle">《弟子规 · 入则孝》</h2>
+                <div class="sutra-text" id="sutraText">
+                    <!-- 动态经文 -->
+                </div>
+                <div class="progress-info">
+                    抄写进度：<span id="progressPercent">0</span>%
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右侧抄写区域 -->
+            <div class="writing-area">
+                <h3 class="writing-prompt">请虔心抄写下一个字</h3>
+                <div class="character-to-copy" id="characterToCopy">父</div>
+                <textarea class="writing-input" id="writingInput" placeholder="在此书写..." inputmode="text" wrap="soft"></textarea>
+                <div class="autosave-notice" id="autosaveNotice">✨ 自动保存中</div>
+                <div class="completion-message" id="completionMessage">
+                    <i class="fas fa-check-circle"></i> 恭贺您！本篇抄写圆满。
+                </div>
+
+                <div class="controls">
+                    <button class="secondary-btn" id="prevBtn">
+                        <i class="fas fa-chevron-left"></i> 上一字
+                    </button>
+                    <button class="primary-btn" id="nextBtn">
+                        下一字 <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="success-btn" id="clearBtn">
+                        <i class="fas fa-redo-alt"></i> 重新开始
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚已移除 -->
+    </div>
+
+    <!-- 背景音乐：使用 beijing.ogg 作为循环背景 -->
+    <audio id="backgroundMusic" loop preload="auto">
+        <source src="https://amitofo.icu/beijing.ogg" type="audio/ogg">
+    </audio>
+    <!-- 圆满音乐：抄写完成时播放 xiaochu.mp3 (仅播放一次) -->
+    <audio id="completionMusic" preload="auto">
+        <source src="https://amitofo.icu/xiaochu.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        (function() {
+            // ---------- 弟子规七篇全文数据 ----------
+            const chapters = [
+                { title: "入则孝", text: "父母呼 应勿缓 父母命 行勿懒 父母教 须敬听 父母责 须顺承 冬则温 夏则凊 晨则省 昏则定 出必告 反必面 居有常 业无变 事虽小 勿擅为 苟擅为 子道亏 物虽小 勿私藏 苟私藏 亲心伤 亲所好 力为具 亲所恶 谨为去 身有伤 贻亲忧 德有伤 贻亲羞 亲爱我 孝何难 亲憎我 孝方贤 亲有过 谏使更 怡吾色 柔吾声 谏不入 悦复谏 号泣随 挞无怨 亲有疾 药先尝 昼夜侍 不离床 丧三年 常悲咽 居处变 酒肉绝 丧尽礼 祭尽诚 事死者 如事生" },
+                { title: "出则悌", text: "兄道友 弟道恭 兄弟睦 孝在中 财物轻 怨何生 言语忍 忿自泯 或饮食 或坐走 长者先 幼者后 长呼人 即代叫 人不在 己即到 称尊长 勿呼名 对尊长 勿见能 路遇长 疾趋揖 长无言 退恭立 骑下马 乘下车 过犹待 百步余 长者立 幼勿坐 长者坐 命乃坐 尊长前 声要低 低不闻 却非宜 进必趋 退必迟 问起对 视勿移 事诸父 如事父 事诸兄 如事兄" },
+                { title: "谨", text: "朝起早 夜眠迟 老易至 惜此时 晨必盥 兼漱口 便溺回 辄净手 冠必正 纽必结 袜与履 俱紧切 置冠服 有定位 勿乱顿 致污秽 衣贵洁 不贵华 上循分 下称家 对饮食 勿拣择 食适可 勿过则 年方少 勿饮酒 饮酒醉 最为丑 步从容 立端正 揖深圆 拜恭敬 勿践阈 勿跛倚 勿箕踞 勿摇髀 缓揭帘 勿有声 宽转弯 勿触棱 执虚器 如执盈 入虚室 如有人 事勿忙 忙多错 勿畏难 勿轻略 斗闹场 绝勿近 邪僻事 绝勿问 将入门 问孰存 将上堂 声必扬 人问谁 对以名 吾与我 不分明 用人物 须明求 倘不问 即为偷 借人物 及时还 人借物 有勿悭" },
+                { title: "信", text: "凡出言 信为先 诈与妄 奚可焉 话说多 不如少 惟其是 勿佞巧 刻薄语 秽污词 市井气 切戒之 见未真 勿轻言 知未的 勿轻传 事非宜 勿轻诺 苟轻诺 进退错 凡道字 重且舒 勿急疾 勿模糊 彼说长 此说短 不关己 莫闲管 见人善 即思齐 纵去远 以渐跻 见人恶 即内省 有则改 无加警 唯德学 唯才艺 不如人 当自砺 若衣服 若饮食 不如人 勿生戚 闻过怒 闻誉乐 损友来 益友却 闻誉恐 闻过欣 直谅士 渐相亲 无心非 名为错 有心非 名为恶 过能改 归于无 倘掩饰 增一辜" },
+                { title: "泛爱众", text: "凡是人 皆须爱 天同覆 地同载 行高者 名自高 人所重 非貌高 才大者 望自大 人所服 非言大 己有能 勿自私 人所能 勿轻訾 勿谄富 勿骄贫 勿厌故 勿喜新 人不闲 勿事搅 人不安 勿话扰 人有短 切莫揭 人有私 切莫说 道人善 即是善 人知之 愈思勉 扬人恶 即是恶 疾之甚 祸且作 善相劝 德皆建 过不规 道两亏 凡取与 贵分晓 与宜多 取宜少 将加人 先问己 己不欲 即速已 恩欲报 怨欲忘 报怨短 报恩长 待婢仆 身贵端 虽贵端 慈而宽 势服人 心不然 理服人 方无言" },
+                { title: "而亲仁", text: "同是人 类不齐 流俗众 仁者稀 果仁者 人多畏 言不讳 色不媚 能亲仁 无限好 德日进 过日少 不亲仁 无限害 小人进 百事坏" },
+                { title: "余力学文", text: "不力行 但学文 长浮华 成何人 但力行 不学文 任己见 昧理真 读书法 有三到 心眼口 信皆要 方读此 勿慕彼 此未终 彼勿起 宽为限 紧用功 工夫到 滞塞通 心有疑 随札记 就人问 求确义 房室清 墙壁净 几案洁 笔砚正 墨磨偏 心不端 字不敬 心先病 列典籍 有定处 读看毕 还原处 虽有急 卷束齐 有缺损 就补之 非圣书 屏勿视 蔽聪明 坏心志 勿自暴 勿自弃 圣与贤 可驯致" }
+            ];
+
+            // 当前篇章索引 (0-6)
+            let currentChapter = 0;      // 默认"入则孝"
+
+            // DOM 元素
+            const sutraTitleEl = document.getElementById('sutraTitle');
+            const sutraTextDiv = document.getElementById('sutraText');
+            const characterToCopy = document.getElementById('characterToCopy');
+            const writingInput = document.getElementById('writingInput');
+            const progressPercent = document.getElementById('progressPercent');
+            const progressFill = document.getElementById('progressFill');
+            const autosaveNotice = document.getElementById('autosaveNotice');
+            const completionMessage = document.getElementById('completionMessage');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const muteBtn = document.getElementById('muteBtn');
+            const prevChapterBtn = document.getElementById('prevChapterBtn');
+            const nextChapterBtn = document.getElementById('nextChapterBtn');
+            const chapterIndicator = document.getElementById('chapterIndicator');
+            const backgroundMusic = document.getElementById('backgroundMusic');
+            const completionMusic = document.getElementById('completionMusic');
+            const mainContainer = document.getElementById('mainContainer');
+
+            // 状态变量
+            let currentIndex = 0;
+            let writtenText = "";
+            let isMuted = false;
+            let hasPlayedCompletion = false;
+
+            // 存储key (按篇章分别存储)
+            function getStorageKey() {
+                return `dizigui_ch${currentChapter}`;
+            }
+
+            // 加载当前章进度
+            function loadProgress() {
+                try {
+                    const stored = localStorage.getItem(getStorageKey());
+                    if (stored) {
+                        const saved = JSON.parse(stored);
+                        currentIndex = saved.index || 0;
+                        writtenText = saved.text || "";
+                    } else {
+                        currentIndex = 0;
+                        writtenText = "";
+                    }
+                } catch (e) {
+                    currentIndex = 0;
+                    writtenText = "";
+                }
+                writingInput.value = writtenText;
+                hasPlayedCompletion = false; // 换章重置完成标记
+                updateDisplay();
+            }
+
+            // 保存进度
+            function autoSave() {
+                let data = { index: currentIndex, text: writtenText };
+                localStorage.setItem(getStorageKey(), JSON.stringify(data));
+                showNotice('进度已保存');
+            }
+
+            function showNotice(msg) {
+                autosaveNotice.textContent = '✓ ' + msg;
+                autosaveNotice.style.opacity = '1';
+                clearTimeout(window.noticeTimer);
+                window.noticeTimer = setTimeout(() => {
+                    autosaveNotice.style.opacity = '0';
+                }, 1500);
+            }
+
+            // 获取当前经文
+            function currentSutra() {
+                return chapters[currentChapter].text;
+            }
+
+            // 更新界面：标题、经文、高亮、当前字、进度、完成消息
+            function updateDisplay() {
+                const sutra = currentSutra();
+                // 更新标题
+                sutraTitleEl.textContent = `《弟子规 · ${chapters[currentChapter].title}》`;
+                // 更新篇章指示器
+                chapterIndicator.textContent = `${chapters[currentChapter].title} · ${currentChapter+1}/7`;
+
+                // 更新当前要抄写的字符
+                if (currentIndex < sutra.length) {
+                    characterToCopy.textContent = sutra[currentIndex];
+                } else {
+                    characterToCopy.innerHTML = '<i class="fas fa-check-circle"></i> 圆满';
+                }
+
+                // 进度百分比
+                let progress = sutra.length ? Math.min(100, Math.round((writtenText.length / sutra.length) * 100)) : 0;
+                progressPercent.textContent = progress;
+                progressFill.style.width = progress + '%';
+
+                // 高亮经文
+                highlightSutra();
+
+                // 完成时显示恭贺信息，并播放圆满音乐（仅一次，且非静音）
+                if (currentIndex >= sutra.length && sutra.length > 0) {
+                    completionMessage.style.display = 'block';
+                    if (!hasPlayedCompletion && !isMuted) {
+                        completionMusic.currentTime = 0;
+                        completionMusic.play().catch(e => console.log('圆满音乐播放失败', e));
+                        hasPlayedCompletion = true;
+                    }
+                } else {
+                    completionMessage.style.display = 'none';
+                    hasPlayedCompletion = false;
+                }
+
+                // 更新上一字/下一字按钮状态 (无关章节，只跟字有关)
+                // 不禁用，逻辑已在事件中处理
+            }
+
+            function highlightSutra() {
+                const sutra = currentSutra();
+                let html = '';
+                for (let i = 0; i < sutra.length; i++) {
+                    let ch = sutra[i];
+                    if (i < writtenText.length) {
+                        html += `<span style="color:#8b4513; font-weight:bold; text-decoration:underline;">${ch}</span>`;
+                    } else if (i === currentIndex) {
+                        html += `<span style="color:#a0522d; background-color:#f5e9d9; padding:2px 0; border-radius:4px;">${ch}</span>`;
+                    } else {
+                        html += ch;
+                    }
+                }
+                sutraTextDiv.innerHTML = html;
+            }
+
+            // 监听输入
+            writingInput.addEventListener('input', function(e) {
+                writtenText = this.value;
+                currentIndex = writtenText.length;
+                updateDisplay();
+                autoSave();
+            });
+
+            // 上一字
+            prevBtn.addEventListener('click', function() {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    writtenText = writtenText.substring(0, currentIndex);
+                    writingInput.value = writtenText;
+                    updateDisplay();
+                    autoSave();
+                }
+            });
+
+            // 下一字（自动填入当前字）
+            nextBtn.addEventListener('click', function() {
+                const sutra = currentSutra();
+                if (currentIndex < sutra.length) {
+                    writtenText += sutra[currentIndex];
+                    currentIndex++;
+                    writingInput.value = writtenText;
+                    updateDisplay();
+                    autoSave();
+                }
+            });
+
+            // 重新开始（清空本篇）
+            clearBtn.addEventListener('click', function() {
+                if (confirm('确定重新开始抄写本篇？当前进度将会清空。')) {
+                    localStorage.removeItem(getStorageKey());
+                    currentIndex = 0;
+                    writtenText = "";
+                    writingInput.value = "";
+                    hasPlayedCompletion = false;
+                    updateDisplay();
+                    showNotice('已重新开始');
+                }
+            });
+
+            // 切换章节函数
+            function switchChapter(newChapter) {
+                if (newChapter < 0 || newChapter >= chapters.length) return;
+                currentChapter = newChapter;
+                loadProgress(); // 加载新章的进度，重置索引和文本
+                // 因为loadProgress里调用了updateDisplay，已更新一切
+                // 同时重置完成音乐标记
+            }
+
+            // 上一篇/下一篇点击
+            prevChapterBtn.addEventListener('click', function() {
+                if (currentChapter > 0) {
+                    switchChapter(currentChapter - 1);
+                }
+            });
+            nextChapterBtn.addEventListener('click', function() {
+                if (currentChapter < chapters.length - 1) {
+                    switchChapter(currentChapter + 1);
+                }
+            });
+
+            // 静音控制
+            muteBtn.addEventListener('click', function() {
+                isMuted = !isMuted;
+                if (isMuted) {
+                    backgroundMusic.pause();
+                    completionMusic.pause();
+                    muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i> 取消静音';
+                } else {
+                    backgroundMusic.play().catch(() => {});
+                    muteBtn.innerHTML = '<i class="fas fa-volume-up"></i> 静音';
+                }
+            });
+
+            // 音乐自动播放策略
+            backgroundMusic.volume = 0.3;
+            backgroundMusic.loop = true;
+            completionMusic.volume = 0.5;
+
+            function playBackgroundMusic() {
+                if (!isMuted) {
+                    backgroundMusic.play().catch(err => console.log('背景音乐自动播放失败', err));
+                }
+            }
+
+            const userInteraction = () => {
+                playBackgroundMusic();
+                document.removeEventListener('click', userInteraction);
+                document.removeEventListener('touchstart', userInteraction);
+            };
+            document.addEventListener('click', userInteraction, { once: true });
+            document.addEventListener('touchstart', userInteraction, { once: true });
+            setTimeout(() => playBackgroundMusic(), 1200);
+
+            // 防双击缩放
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function (e) {
+                let now = Date.now();
+                if (now - lastTouchEnd <= 300) e.preventDefault();
+                lastTouchEnd = now;
+            }, { passive: false });
+            document.addEventListener('gesturestart', function (e) {
+                e.preventDefault();
+            });
+
+            // 初始加载默认章 (入则孝)
+            // 但需要先调用一次loadProgress，基于currentChapter=0
+            // 确保localStorage读取出则孝进度
+            loadProgress();
+
+            // 滚动到顶部
+            if (mainContainer) mainContainer.scrollTop = 0;
+        })();
+    </script>
+</body>
+</html>

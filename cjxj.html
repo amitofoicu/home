@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>静心抄经</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background-color: #f5f1e6;
+            color: #3a281f;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+            background-image: url('lianchi.jpg')
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: rgba(255, 253, 248, 0.92);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #e8dfca;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #e8dfca;
+            padding-bottom: 20px;
+            position: relative;
+        }
+        
+        h1 {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 2.8rem;
+            color: #8b4513;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a0522d;
+            font-style: italic;
+        }
+        
+        .content-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .sutra-display {
+            flex: 1;
+            min-width: 300px;
+            background-color: #fffcf5;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e8dfca;
+        }
+        
+        .sutra-title {
+            font-size: 1.6rem;
+            color: #8b4513;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .sutra-text {
+            font-size: 1.3rem;
+            line-height: 2.2;
+            color: #3a281f;
+            text-align: justify;
+            font-family: 'Ma Shan Zheng', cursive;
+            margin-bottom: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .writing-area {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .writing-prompt {
+            font-size: 1.1rem;
+            color: #8b4513;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .character-to-copy {
+            font-size: 3.5rem;
+            text-align: center;
+            margin: 20px 0;
+            color: #8b4513;
+            font-family: 'Ma Shan Zheng', cursive;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .writing-input {
+            flex: 1;
+            min-height: 300px;
+            font-size: 2.2rem;
+            font-family: 'Ma Shan Zheng', cursive;
+            padding: 20px;
+            border: 2px solid #d4b483;
+            border-radius: 10px;
+            background-color: #fffcf5;
+            color: #3a281f;
+            resize: none;
+            outline: none;
+            transition: all 0.3s;
+            line-height: 1.8;
+        }
+        
+        .writing-input:focus {
+            border-color: #8b4513;
+            box-shadow: 0 0 10px rgba(139, 69, 19, 0.2);
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-family: 'Noto Serif SC', serif;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .primary-btn {
+            background-color: #8b4513;
+            color: white;
+        }
+        
+        .primary-btn:hover {
+            background-color: #a0522d;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
+        }
+        
+        .secondary-btn {
+            background-color: #d4b483;
+            color: #3a281f;
+        }
+        
+        .secondary-btn:hover {
+            background-color: #e8dfca;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(212, 180, 131, 0.3);
+        }
+        
+        .success-btn {
+            background-color: #5d8c5a;
+            color: white;
+        }
+        
+        .success-btn:hover {
+            background-color: #6fa06c;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(93, 140, 90, 0.3);
+        }
+        
+        .mute-btn-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        
+        .mute-btn {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid #d4b483;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .mute-btn:hover {
+            background-color: white;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .progress-info {
+            margin-top: 25px;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #8b4513;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e8dfca;
+            border-radius: 5px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #8b4513;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: #fffcf5;
+            padding: 40px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal h2 {
+            color: #8b4513;
+            margin-bottom: 20px;
+        }
+        
+        .modal p {
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #8b4513;
+        }
+        
+        .dedication-text {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-family: 'Noto Serif SC', serif;
+            border: 1px solid #d4b483;
+            border-radius: 10px;
+            margin: 20px 0;
+            resize: none;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e8dfca;
+            color: #a0522d;
+            font-size: 0.9rem;
+        }
+        
+        .character-count {
+            font-size: 1rem;
+            color: #8b4513;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .autosave-notice {
+            text-align: center;
+            color: #5d8c5a;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        
+        @media (max-width: 768px) {
+            .content-area {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .sutra-text {
+                font-size: 1.1rem;
+                line-height: 2;
+            }
+            
+            .writing-input {
+                font-size: 1.8rem;
+            }
+            
+            .mute-btn-container {
+                position: relative;
+                top: 0;
+                right: 0;
+                text-align: center;
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>静心抄经</h1>
+            <p class="subtitle">一笔一划，静心修慧；一字一句，功德无量</p>
+            <div class="mute-btn-container">
+                <button class="mute-btn" id="muteBtn">🔊 静音</button>
+            </div>
+        </header>
+        
+        <div class="content-area">
+            <div class="sutra-display">
+                <h2 class="sutra-title">《般若波罗蜜多心经》</h2>
+                <div class="sutra-text" id="sutraText">
+                    观自在菩萨，行深般若波罗蜜多时，照见五蕴皆空，度一切苦厄。舍利子，色不异空，空不异色，色即是空，空即是色，受想行识，亦复如是。舍利子，是诸法空相，不生不灭，不垢不净，不增不减。是故空中无色，无受想行识，无眼耳鼻舌身意，无色声香味触法，无眼界，乃至无意识界。无无明，亦无无明尽，乃至无老死，亦无老死尽。无苦集灭道，无智亦无得，以无所得故。菩提萨埵，依般若波罗蜜多故，心无挂碍，无挂碍故，无有恐怖，远离颠倒梦想，究竟涅槃。三世诸佛，依般若波罗蜜多故，得阿耨多罗三藐三菩提。故知般若波罗蜜多，是大神咒，是大明咒，是无上咒，是无等等咒，能除一切苦，真实不虚。故说般若波罗蜜多咒，即说咒曰：揭谛揭谛，波罗揭谛，波罗僧揭谛，菩提萨婆诃。
+                </div>
+                <div class="progress-info">
+                    抄经进度：<span id="progressPercent">0</span>%
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="writing-area">
+                <h3 class="writing-prompt">请抄写以下经文：</h3>
+                <div class="character-to-copy" id="characterToCopy">观</div>
+                <textarea class="writing-input" id="writingInput" placeholder="请在此处用鼠标或触摸屏书写经文..."></textarea>
+                <div class="character-count">已抄写 <span id="charCount">0</span> / <span id="totalChars">276</span> 字</div>
+                <div class="autosave-notice" id="autosaveNotice">内容已自动保存</div>
+                
+                <div class="controls">
+                    <button class="secondary-btn" id="prevBtn">
+                        <span>◀</span> 上一个字
+                    </button>
+                    <button class="primary-btn" id="nextBtn">
+                        下一个字 <span>▶</span>
+                    </button>
+                    <button class="success-btn" id="dedicateBtn">
+                        🙏 功德回向
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>愿以此功德，庄严佛净土，上报四重恩，下济三途苦。</p>
+            <p>若有见闻者，悉发菩提心，尽此一报身，同生极乐国。</p>
+        </footer>
+    </div>
+    
+    <!-- 功德回向模态框 -->
+    <div class="modal" id="dedicationModal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeModal">&times;</span>
+            <h2>功德回向</h2>
+            <p>抄经功德殊胜行，无边胜福皆回向。<br>普愿沉溺诸众生，速往无量光佛刹。</p>
+            <p>请填写回向文（可选）：</p>
+            <textarea class="dedication-text" id="dedicationText" placeholder="例如：愿以此功德，回向给我的家人朋友，愿他们平安健康，福慧增长..."></textarea>
+            <button class="success-btn" id="confirmDedication">确认回向</button>
+            <p style="margin-top: 20px; font-size: 0.9rem; color: #a0522d;">回向后，本次抄经功德圆满。</p>
+        </div>
+    </div>
+
+    <!-- 背景音乐 -->
+    <audio id="backgroundMusic" loop autoplay>
+        <source src="beijing.ogg" type="audio/ogg">
+        您的浏览器不支持音频元素。
+    </audio>
+
+    <script>
+        // 经文内容
+        const sutra = "观自在菩萨，行深般若波罗蜜多时，照见五蕴皆空，度一切苦厄。舍利子，色不异空，空不异色，色即是空，空即是色，受想行识，亦复如是。舍利子，是诸法空相，不生不灭，不垢不净，不增不减。是故空中无色，无受想行识，无眼耳鼻舌身意，无色声香味触法，无眼界，乃至无意识界。无无明，亦无无明尽，乃至无老死，亦无老死尽。无苦集灭道，无智亦无得，以无所得故。菩提萨埵，依般若波罗蜜多故，心无挂碍，无挂碍故，无有恐怖，远离颠倒梦想，究竟涅槃。三世诸佛，依般若波罗蜜多故，得阿耨多罗三藐三菩提。故知般若波罗蜜多，是大神咒，是大明咒，是无上咒，是无等等咒，能除一切苦，真实不虚。故说般若波罗蜜多咒，即说咒曰：揭谛揭谛，波罗揭谛，波罗僧揭谛，菩提萨婆诃。";
+        
+        // 获取DOM元素
+        const sutraText = document.getElementById('sutraText');
+        const characterToCopy = document.getElementById('characterToCopy');
+        const writingInput = document.getElementById('writingInput');
+        const charCount = document.getElementById('charCount');
+        const totalChars = document.getElementById('totalChars');
+        const progressPercent = document.getElementById('progressPercent');
+        const progressFill = document.getElementById('progressFill');
+        const autosaveNotice = document.getElementById('autosaveNotice');
+        
+        // 按钮元素
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const dedicateBtn = document.getElementById('dedicateBtn');
+        
+        // 音乐控制元素
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        const muteBtn = document.getElementById('muteBtn');
+        
+        // 模态框元素
+        const dedicationModal = document.getElementById('dedicationModal');
+        const closeModal = document.getElementById('closeModal');
+        const confirmDedication = document.getElementById('confirmDedication');
+        const dedicationText = document.getElementById('dedicationText');
+        
+        // 初始化变量
+        let currentIndex = 0;
+        let writtenText = "";
+        let savedProgress = localStorage.getItem('sutraProgress') ? JSON.parse(localStorage.getItem('sutraProgress')) : {
+            index: 0,
+            text: ""
+        };
+        let isMuted = false;
+        
+        // 初始化页面
+        function init() {
+            totalChars.textContent = sutra.length;
+            
+            // 恢复保存的进度
+            if (savedProgress.text && savedProgress.text.length > 0) {
+                currentIndex = savedProgress.index;
+                writtenText = savedProgress.text;
+                writingInput.value = writtenText;
+                updateDisplay();
+                showAutosaveNotice("进度已恢复");
+            } else {
+                updateDisplay();
+            }
+            
+            // 设置自动保存
+            setInterval(autoSave, 30000); // 每30秒自动保存
+            
+            // 输入框输入时自动保存
+            writingInput.addEventListener('input', function() {
+                writtenText = this.value;
+                currentIndex = writtenText.length;
+                updateDisplay();
+                autoSave();
+            });
+            
+            // 开始播放背景音乐（音量调低）
+            backgroundMusic.volume = 0.3;
+            
+            // 尝试自动播放，如果失败则静音
+            backgroundMusic.play().catch(e => {
+                console.log("自动播放被阻止，用户需要手动播放");
+                isMuted = true;
+                muteBtn.textContent = "🔇 取消静音";
+                backgroundMusic.pause();
+            });
+        }
+        
+        // 更新显示
+        function updateDisplay() {
+            // 更新当前要抄写的字
+            if (currentIndex < sutra.length) {
+                characterToCopy.textContent = sutra[currentIndex];
+            } else {
+                characterToCopy.textContent = "已完成";
+            }
+            
+            // 更新抄写计数
+            charCount.textContent = writtenText.length;
+            
+            // 更新进度条
+            const progress = Math.min(100, Math.round((writtenText.length / sutra.length) * 100));
+            progressPercent.textContent = progress;
+            progressFill.style.width = `${progress}%`;
+            
+            // 高亮显示已抄写的经文
+            highlightSutraText();
+        }
+        
+        // 高亮显示已抄写的经文
+        function highlightSutraText() {
+            let highlightedText = "";
+            for (let i = 0; i < sutra.length; i++) {
+                if (i < writtenText.length) {
+                    // 已抄写的字用特殊样式
+                    highlightedText += `<span style="color:#8b4513; font-weight:bold; text-decoration:underline;">${sutra[i]}</span>`;
+                } else if (i === currentIndex) {
+                    // 当前要抄写的字用不同样式
+                    highlightedText += `<span style="color:#a0522d; background-color:#f5e9d9; padding:2px; border-radius:3px;">${sutra[i]}</span>`;
+                } else {
+                    // 未抄写的字
+                    highlightedText += sutra[i];
+                }
+            }
+            sutraText.innerHTML = highlightedText;
+        }
+        
+        // 上一个字
+        prevBtn.addEventListener('click', function() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                writtenText = writtenText.substring(0, currentIndex);
+                writingInput.value = writtenText;
+                updateDisplay();
+                autoSave();
+                showAutosaveNotice("已返回上一个字");
+            }
+        });
+        
+        // 下一个字
+        nextBtn.addEventListener('click', function() {
+            if (currentIndex < sutra.length) {
+                writtenText += sutra[currentIndex];
+                currentIndex++;
+                writingInput.value = writtenText;
+                updateDisplay();
+                autoSave();
+            }
+        });
+        
+        // 自动保存
+        function autoSave() {
+            savedProgress = {
+                index: currentIndex,
+                text: writtenText
+            };
+            localStorage.setItem('sutraProgress', JSON.stringify(savedProgress));
+            
+            // 每5次自动保存显示一次通知
+            if (Math.random() < 0.2) {
+                showAutosaveNotice("进度已自动保存");
+            }
+        }
+        
+        // 显示自动保存通知
+        function showAutosaveNotice(message) {
+            autosaveNotice.textContent = message;
+            autosaveNotice.style.opacity = "1";
+            setTimeout(() => {
+                autosaveNotice.style.opacity = "0";
+            }, 2000);
+        }
+        
+        // 静音按钮
+        muteBtn.addEventListener('click', function() {
+            isMuted = !isMuted;
+            
+            if (isMuted) {
+                backgroundMusic.pause();
+                muteBtn.textContent = "🔇 取消静音";
+            } else {
+                backgroundMusic.play().catch(e => {
+                    console.log("播放失败，可能需要用户交互");
+                });
+                muteBtn.textContent = "🔊 静音";
+            }
+        });
+        
+        // 功德回向
+        dedicateBtn.addEventListener('click', function() {
+            dedicationModal.style.display = 'flex';
+        });
+        
+        // 确认回向
+        confirmDedication.addEventListener('click', function() {
+            const dedication = dedicationText.value.trim();
+            const message = dedication ? 
+                `功德回向成功！回向文：${dedication}` : 
+                "功德回向成功！愿此功德普及于一切，我等与众生皆共成佛道。";
+            
+            alert(message);
+            dedicationModal.style.display = 'none';
+            dedicationText.value = "";
+            
+            // 回向后可清空进度重新开始
+            if (confirm("功德回向已完成！您想清空当前进度重新开始抄经吗？")) {
+                localStorage.removeItem('sutraProgress');
+                currentIndex = 0;
+                writtenText = "";
+                writingInput.value = "";
+                updateDisplay();
+                showAutosaveNotice("进度已清空，可以重新开始");
+            }
+        });
+        
+        // 关闭模态框
+        closeModal.addEventListener('click', function() {
+            dedicationModal.style.display = 'none';
+        });
+        
+        // 点击模态框外部关闭
+        window.addEventListener('click', function(event) {
+            if (event.target === dedicationModal) {
+                dedicationModal.style.display = 'none';
+            }
+        });
+        
+        // 初始化页面
+        init();
+    </script>
+</body>
+</html>

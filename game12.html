@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>迷宫探险游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
+            -webkit-text-size-adjust: 100%; /* 禁止字体缩放 */
+            -ms-text-size-adjust: 100%;
+            -moz-text-size-adjust: 100%;
+        }
+        
+        /* 防止双击放大 */
+        * {
+            touch-action: manipulation;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden; /* 禁止全局滚动 */
+            position: fixed; /* 固定位置防止滚动 */
+        }
+        
+        body {
+            background: linear-gradient(135deg, rgba(26, 26, 46, 0.9) 0%, rgba(22, 33, 62, 0.9) 100%), 
+                        url('https://amitofo.icu/lianchi.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            overflow: hidden; /* 防止内容溢出 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        
+        /* 添加背景覆盖层增强可读性 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: -1;
+        }
+        
+        /* 更多游戏角标 */
+        .more-games-corner {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: linear-gradient(135deg, #ff6b6b, #ff9a00);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .more-games-corner:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, #ff9a00, #ff6b6b);
+        }
+        
+        .more-games-corner:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .game-wrapper {
+            width: 100%;
+            height: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            flex-shrink: 0;
+            padding: 0 5px;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            background: linear-gradient(90deg, #ff9a00, #ff6b6b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            padding: 3px;
+            line-height: 1.2;
+        }
+        
+        .subtitle {
+            font-size: 0.9rem;
+            color: #e0e0e0;
+            margin-bottom: 8px;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding: 5px 10px;
+            border-radius: 8px;
+            display: inline-block;
+            line-height: 1.2;
+        }
+        
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+            gap: 10px;
+            min-height: 0; /* 关键：允许flex子项收缩 */
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            padding: 8px 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 80px;
+            margin: 3px 0;
+        }
+        
+        .info-label {
+            font-size: 0.75rem;
+            color: #b0b0d0;
+            margin-bottom: 2px;
+        }
+        
+        .info-value {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ffcc00;
+            text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+        }
+        
+        .maze-section {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 0; /* 关键：允许flex子项收缩 */
+            overflow: hidden;
+        }
+        
+        .maze-container {
+            width: 100%;
+            height: 100%;
+            max-width: 500px;
+            max-height: 500px;
+            background-color: rgba(13, 16, 33, 0.85);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
+            border: 2px solid rgba(74, 74, 109, 0.7);
+            backdrop-filter: blur(3px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        
+        #maze {
+            display: grid;
+            width: 100%;
+            height: 100%;
+            touch-action: none; /* 防止触摸默认行为 */
+        }
+        
+        .cell {
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .wall {
+            background-color: rgba(42, 42, 74, 0.85);
+            background-image: radial-gradient(circle at 30% 30%, rgba(58, 58, 106, 0.85), rgba(26, 26, 58, 0.85));
+        }
+        
+        .path {
+            background-color: rgba(26, 26, 46, 0.7);
+        }
+        
+        .player {
+            background-color: #4dff4d;
+            border-radius: 50%;
+            width: 65%;
+            height: 65%;
+            box-shadow: 0 0 8px #4dff4d, 0 0 15px #4dff4d;
+            z-index: 10;
+            position: relative;
+            animation: pulse 1.5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { transform: scale(0.9); }
+            to { transform: scale(1.05); }
+        }
+        
+        .exit {
+            background-color: #ff6b6b;
+            border-radius: 50%;
+            width: 75%;
+            height: 75%;
+            box-shadow: 0 0 12px #ff6b6b, 0 0 20px #ff6b6b;
+            animation: exitGlow 2s infinite alternate;
+        }
+        
+        @keyframes exitGlow {
+            from { box-shadow: 0 0 8px #ff6b6b, 0 0 15px #ff6b6b; }
+            to { box-shadow: 0 0 15px #ff6b6b, 0 0 25px #ff6b6b, 0 0 35px #ff6b6b; }
+        }
+        
+        .gem {
+            background-color: #00ccff;
+            width: 55%;
+            height: 55%;
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+            box-shadow: 0 0 8px #00ccff, 0 0 12px #00ccff;
+            animation: spin 3s infinite linear;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .monster {
+            background-color: #ff3399;
+            width: 65%;
+            height: 65%;
+            border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+            box-shadow: 0 0 8px #ff3399, 0 0 12px #ff3399;
+            animation: wobble 1s infinite alternate;
+        }
+        
+        @keyframes wobble {
+            from { transform: scale(1) rotate(0deg); }
+            to { transform: scale(1.05) rotate(3deg); }
+        }
+        
+        .controls-section {
+            flex-shrink: 0;
+            padding: 5px 0;
+        }
+        
+        .direction-controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 6px;
+            max-width: 220px;
+            margin: 0 auto 8px;
+        }
+        
+        .control-btn {
+            background-color: rgba(42, 42, 74, 0.85);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 1.3rem;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 rgba(26, 26, 58, 0.85);
+            backdrop-filter: blur(3px);
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        .control-btn:hover {
+            background-color: rgba(58, 58, 106, 0.95);
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 rgba(26, 26, 58, 0.85);
+        }
+        
+        .control-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 rgba(26, 26, 58, 0.85);
+        }
+        
+        .control-btn.up { grid-column: 2; grid-row: 1; }
+        .control-btn.left { grid-column: 1; grid-row: 2; }
+        .control-btn.right { grid-column: 3; grid-row: 2; }
+        .control-btn.down { grid-column: 2; grid-row: 3; }
+        
+        .button-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            background: linear-gradient(to bottom, #ff6b6b, #ff4757);
+            border: none;
+            border-radius: 40px;
+            color: white;
+            font-size: 0.9rem;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 0 #c44569;
+            backdrop-filter: blur(3px);
+            min-width: 100px;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 0 #c44569;
+        }
+        
+        .action-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #c44569;
+        }
+        
+        .action-btn.reset {
+            background: linear-gradient(to bottom, #3742fa, #2f3542);
+            box-shadow: 0 4px 0 #1e2127;
+        }
+        
+        .action-btn.reset:hover {
+            box-shadow: 0 6px 0 #1e2127;
+        }
+        
+        .action-btn.reset:active {
+            box-shadow: 0 2px 0 #1e2127;
+        }
+        
+        .audio-controls {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        
+        .audio-btn {
+            background: linear-gradient(to bottom, #00ccff, #0099ff);
+            border: none;
+            border-radius: 40px;
+            color: white;
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 3px 0 #0066cc;
+            min-width: 90px;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        .audio-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 0 #0066cc;
+        }
+        
+        .audio-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 0 #0066cc;
+        }
+        
+        .audio-btn.sound {
+            background: linear-gradient(to bottom, #9b59b6, #8e44ad);
+            box-shadow: 0 3px 0 #6c3483;
+        }
+        
+        .audio-btn.sound:hover {
+            box-shadow: 0 5px 0 #6c3483;
+        }
+        
+        .audio-btn.sound:active {
+            box-shadow: 0 1px 0 #6c3483;
+        }
+        
+        .instructions {
+            background-color: rgba(0, 0, 0, 0.45);
+            border-radius: 10px;
+            padding: 10px;
+            margin-top: 8px;
+            width: 100%;
+            border-left: 4px solid #ff9a00;
+            backdrop-filter: blur(5px);
+            flex-shrink: 0;
+            overflow-y: auto;
+            max-height: 120px;
+        }
+        
+        .instructions h2 {
+            color: #ff9a00;
+            margin-bottom: 5px;
+            font-size: 1.1rem;
+        }
+        
+        .instructions p {
+            margin-bottom: 4px;
+            line-height: 1.3;
+            font-size: 0.8rem;
+        }
+        
+        .key {
+            display: inline-block;
+            background-color: rgba(42, 42, 74, 0.85);
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 0 2px;
+            font-size: 0.8rem;
+        }
+        
+        /* 天雨香花动画效果 */
+        .flower-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+            overflow: hidden;
+        }
+        
+        .flower {
+            position: absolute;
+            font-size: 1.5rem;
+            opacity: 0;
+            z-index: 51;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        /* 不同花的样式 */
+        .flower-blossom { color: #ff6b9d; }
+        .flower-sakura { color: #ffb8d9; }
+        .flower-lotus { color: #ff9a8b; }
+        .flower-orchid { color: #d8a7ff; }
+        .flower-peony { color: #ff6b6b; }
+        .flower-chrysanthemum { color: #ffcc00; }
+        .flower-plum { color: #ff8e8e; }
+        
+        /* 花瓣飘落动画 */
+        @keyframes petalFall {
+            0% {
+                transform: translateY(-10%) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes petalFloat {
+            0% {
+                transform: translateY(-10%) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) translateX(calc(var(--float-x) * 100px)) rotate(calc(var(--rotate) * 1deg));
+                opacity: 0;
+            }
+        }
+        
+        /* 花雨爆发效果 */
+        @keyframes flowerBurst {
+            0% {
+                transform: scale(0) translateY(0);
+                opacity: 0;
+            }
+            20% {
+                transform: scale(1.2) translateY(-20px);
+                opacity: 1;
+            }
+            40% {
+                transform: scale(1) translateY(-40px);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0.5) translateY(100vh);
+                opacity: 0;
+            }
+        }
+        
+        /* 庆祝消息样式 */
+        .celebration-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(135deg, rgba(26, 26, 46, 0.97), rgba(22, 33, 62, 0.97));
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.9);
+            z-index: 60;
+            width: 90%;
+            max-width: 500px;
+            border: 4px solid transparent;
+            background-clip: padding-box;
+            backdrop-filter: blur(15px);
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.5);
+            overflow: hidden;
+        }
+        
+        .celebration-message.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        .celebration-message::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, 
+                #ff6b6b, #ff9a00, #ffcc00, 
+                #4dff4d, #00ccff, #9b59b6, 
+                #ff6b6b);
+            background-size: 400% 400%;
+            z-index: -1;
+            border-radius: 22px;
+            animation: borderGlow 3s ease infinite;
+        }
+        
+        @keyframes borderGlow {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+        
+        .celebration-title {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #ffcc00;
+            text-shadow: 0 0 15px rgba(255, 204, 0, 0.7);
+            background: linear-gradient(90deg, #ff9a00, #ff6b6b, #9b59b6, #00ccff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: titleGlow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes titleGlow {
+            from {
+                text-shadow: 0 0 10px rgba(255, 204, 0, 0.5),
+                             0 0 20px rgba(255, 154, 0, 0.3),
+                             0 0 30px rgba(255, 107, 107, 0.2);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(255, 204, 0, 0.8),
+                             0 0 30px rgba(255, 154, 0, 0.5),
+                             0 0 40px rgba(255, 107, 107, 0.3),
+                             0 0 50px rgba(155, 89, 182, 0.2);
+            }
+        }
+        
+        .celebration-text {
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            color: #e0e0ff;
+            line-height: 1.6;
+        }
+        
+        .stats-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 25px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .stat-label {
+            color: #b0b0d0;
+        }
+        
+        .stat-value {
+            color: #ffcc00;
+            font-weight: bold;
+        }
+        
+        .celebration-btn {
+            background: linear-gradient(to bottom, #00ccff, #0099ff);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 1.2rem;
+            padding: 15px 40px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 6px 0 #0066cc, 0 0 20px rgba(0, 204, 255, 0.5);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .celebration-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 0 #0066cc, 0 0 30px rgba(0, 204, 255, 0.7);
+        }
+        
+        .celebration-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 4px 0 #0066cc, 0 0 15px rgba(0, 204, 255, 0.5);
+        }
+        
+        .celebration-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+            z-index: -1;
+        }
+        
+        .celebration-btn:hover::before {
+            left: 100%;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 49;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease;
+        }
+        
+        .overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+            
+            .game-wrapper {
+                max-width: 100%;
+            }
+            
+            h1 {
+                font-size: 1.6rem !important;
+                margin-bottom: 3px !important;
+            }
+            
+            .subtitle {
+                font-size: 0.8rem;
+                padding: 4px 8px;
+                margin-bottom: 5px;
+            }
+            
+            .game-info {
+                padding: 6px 10px !important;
+                border-radius: 8px;
+            }
+            
+            .info-item {
+                min-width: 48% !important;
+                margin: 2px 0;
+            }
+            
+            .info-label {
+                font-size: 0.7rem;
+            }
+            
+            .info-value {
+                font-size: 1.2rem;
+            }
+            
+            .maze-container {
+                max-width: 95vw;
+                max-height: 95vw;
+                border-radius: 6px;
+            }
+            
+            .control-btn {
+                width: 55px !important;
+                height: 55px !important;
+                font-size: 1.2rem;
+            }
+            
+            .action-btn, .audio-btn {
+                min-width: 90px;
+                padding: 7px 14px;
+                font-size: 0.85rem;
+            }
+            
+            .instructions {
+                padding: 8px;
+                margin-top: 5px;
+                max-height: 100px;
+            }
+            
+            .instructions h2 {
+                font-size: 1rem;
+            }
+            
+            .instructions p {
+                font-size: 0.75rem;
+            }
+            
+            /* 移动端庆祝效果调整 */
+            .celebration-message {
+                padding: 20px;
+                width: 95%;
+                max-width: 400px;
+            }
+            
+            .celebration-title {
+                font-size: 1.8rem;
+                margin-bottom: 15px;
+            }
+            
+            .celebration-text {
+                font-size: 1rem;
+                margin-bottom: 15px;
+            }
+            
+            .stats-container {
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+            
+            .stat-item {
+                font-size: 0.9rem;
+                margin-bottom: 8px;
+            }
+            
+            .celebration-btn {
+                font-size: 1rem;
+                padding: 12px 30px;
+            }
+            
+            .flower {
+                font-size: 1.2rem;
+            }
+            
+            /* 移动端更多游戏角标调整 */
+            .more-games-corner {
+                top: 8px;
+                left: 8px;
+                padding: 5px 10px;
+                font-size: 0.75rem;
+                border-radius: 18px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.4rem !important;
+            }
+            
+            .control-btn {
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 1.1rem;
+            }
+            
+            .action-btn, .audio-btn {
+                min-width: 85px;
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+            
+            .info-item {
+                min-width: 48% !important;
+            }
+            
+            .info-label {
+                font-size: 0.65rem;
+            }
+            
+            .info-value {
+                font-size: 1.1rem;
+            }
+            
+            .instructions {
+                max-height: 90px;
+            }
+            
+            .celebration-title {
+                font-size: 1.5rem;
+            }
+            
+            .celebration-text {
+                font-size: 0.9rem;
+            }
+            
+            /* 小屏幕更多游戏角标调整 */
+            .more-games-corner {
+                top: 6px;
+                left: 6px;
+                padding: 4px 8px;
+                font-size: 0.7rem;
+                border-radius: 15px;
+            }
+        }
+        
+        @media (max-height: 700px) {
+            .instructions {
+                display: none; /* 在屏幕高度不足时隐藏说明 */
+            }
+            
+            .controls-section {
+                padding: 2px 0;
+            }
+            
+            .direction-controls {
+                margin-bottom: 5px;
+            }
+        }
+        
+        @media (max-height: 600px) {
+            .subtitle {
+                display: none; /* 在屏幕高度很小时隐藏副标题 */
+            }
+            
+            .game-info {
+                padding: 5px 8px !important;
+            }
+        }
+        
+        /* 防止移动端缩放和双击 */
+        .no-zoom {
+            touch-action: pan-x pan-y;
+            -webkit-user-drag: none;
+            user-drag: none;
+        }
+        
+        /* 防止文本选择 */
+        .no-select {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="no-zoom">
+    <!-- 更多游戏角标 -->
+    <a href="https://game.amitofo.icu" target="_blank" class="more-games-corner no-zoom no-select">更多游戏</a>
+    
+    <div class="game-wrapper">
+        <div class="header">
+            <h1 class="no-select">迷宫探险</h1>
+            <div class="subtitle no-select">收集所有宝石，避开怪物，找到出口！</div>
+        </div>
+        
+        <div class="game-container">
+            <div class="game-info no-select">
+                <div class="info-item">
+                    <div class="info-label">步数</div>
+                    <div id="steps" class="info-value">0</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">宝石</div>
+                    <div id="gems" class="info-value">0/5</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">生命</div>
+                    <div id="lives" class="info-value">3</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">时间</div>
+                    <div id="time" class="info-value">60</div>
+                </div>
+            </div>
+            
+            <div class="maze-section">
+                <div class="maze-container">
+                    <div id="maze" class="no-zoom"></div>
+                </div>
+            </div>
+            
+            <div class="controls-section">
+                <div class="direction-controls no-select">
+                    <button class="control-btn up no-zoom">↑</button>
+                    <button class="control-btn left no-zoom">←</button>
+                    <button class="control-btn right no-zoom">→</button>
+                    <button class="control-btn down no-zoom">↓</button>
+                </div>
+                
+                <div class="button-row">
+                    <button id="restartBtn" class="action-btn reset no-zoom">重新开始</button>
+                </div>
+                
+                <div class="audio-controls">
+                    <button id="musicToggle" class="audio-btn no-zoom">音乐:开</button>
+                    <button id="soundToggle" class="audio-btn sound no-zoom">音效:开</button>
+                </div>
+            </div>
+            
+            <div class="instructions no-select">
+                <h2>游戏说明</h2>
+                <p>1. 使用方向键 <span class="key">↑</span><span class="key">←</span><span class="key">↓</span><span class="key">→</span> 或屏幕上的按钮移动角色</p>
+                <p>2. 收集所有 <span style="color:#00ccff">蓝色宝石</span> 可打开出口</p>
+                <p>3. 避开 <span style="color:#ff3399">粉色怪物</span>，碰到会损失生命</p>
+                <p>4. 找到 <span style="color:#ff6b6b">红色出口</span> 即可进入下一关</p>
+                <p>5. 支持触屏滑动控制</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 天雨香花动画容器 -->
+    <div id="flowerRain" class="flower-rain"></div>
+    
+    <!-- 庆祝消息 -->
+    <div id="overlay" class="overlay"></div>
+    
+    <div id="celebrationMessage" class="celebration-message">
+        <h2 class="celebration-title">恭喜通关!</h2>
+        <p class="celebration-text">你成功找到了出口并收集了所有宝石！</p>
+        
+        <div class="stats-container">
+            <div class="stat-item">
+                <span class="stat-label">步数:</span>
+                <span id="finalSteps" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">剩余时间:</span>
+                <span id="finalTime" class="stat-value">0秒</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">剩余生命:</span>
+                <span id="finalLives" class="stat-value">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">游戏评分:</span>
+                <span id="gameScore" class="stat-value">A+</span>
+            </div>
+        </div>
+        
+        <button id="celebrationBtn" class="celebration-btn no-zoom">继续挑战</button>
+    </div>
+
+    <script>
+        // 游戏配置
+        const config = {
+            mazeSize: 15,
+            initialLives: 3,
+            initialTime: 60,
+            gemsToCollect: 5,
+            monstersCount: 3,
+            hintsCount: 3
+        };
+
+        // 游戏状态
+        let gameState = {
+            playerPosition: {x: 1, y: 1},
+            exitPosition: {x: 13, y: 13},
+            gemsPositions: [],
+            monstersPositions: [],
+            walls: [],
+            steps: 0,
+            gemsCollected: 0,
+            lives: config.initialLives,
+            time: config.initialTime,
+            hints: config.hintsCount,
+            gameActive: true,
+            maze: []
+        };
+
+        // 音效控制
+        let musicEnabled = true;
+        let soundEnabled = true;
+        let gameAudio = {
+            backgroundMusic: null,
+            gemSound: null,
+            successSound: null,
+            soundsLoaded: false
+        };
+
+        // 触摸控制变量
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let lastTouchTime = 0;
+        const TOUCH_THRESHOLD = 25; // 滑动阈值
+        const DOUBLE_TAP_DELAY = 300; // 双击延迟时间
+
+        // 花雨效果变量
+        let flowerRainActive = false;
+        const flowerTypes = [
+            { class: 'flower-blossom', char: '❀' },   // 花朵
+            { class: 'flower-sakura', char: '🌸' },    // 樱花
+            { class: 'flower-lotus', char: '🪷' },     // 莲花
+            { class: 'flower-orchid', char: '🌺' },    // 兰花
+            { class: 'flower-peony', char: '🌹' },     // 牡丹
+            { class: 'flower-chrysanthemum', char: '🌼' }, // 菊花
+            { class: 'flower-plum', char: '🌺' }       // 梅花
+        ];
+
+        // 防止双击放大的全局处理
+        function preventDoubleTapZoom(e) {
+            const now = Date.now();
+            if (now - lastTouchTime < DOUBLE_TAP_DELAY) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+            lastTouchTime = now;
+        }
+
+        // 添加全局触摸事件监听防止缩放
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault(); // 防止多点触控缩放
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchend', preventDoubleTapZoom, { passive: false });
+        
+        // 防止手势缩放
+        document.addEventListener('gesturestart', function(e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gesturechange', function(e) {
+            e.preventDefault();
+        });
+        
+        document.addEventListener('gestureend', function(e) {
+            e.preventDefault();
+        });
+
+        // 加载游戏资源
+        function loadGameResources() {
+            // 背景图片已在CSS中设置
+            
+            // 预加载音效
+            try {
+                gameAudio.backgroundMusic = new Audio('https://amitofo.icu/beijing.ogg');
+                gameAudio.backgroundMusic.loop = true;
+                gameAudio.backgroundMusic.volume = 0.5;
+                gameAudio.backgroundMusic.preload = 'auto';
+                
+                gameAudio.gemSound = new Audio('https://amitofo.icu/win.mp3');
+                gameAudio.gemSound.volume = 0.3;
+                gameAudio.gemSound.preload = 'auto';
+                
+                gameAudio.successSound = new Audio('https://amitofo.icu/xiaochu.mp3');
+                gameAudio.successSound.volume = 0.3;
+                gameAudio.successSound.preload = 'auto';
+                
+                gameAudio.soundsLoaded = true;
+            } catch (error) {
+                console.log("部分音效加载失败，游戏将继续运行");
+                gameAudio.soundsLoaded = false;
+            }
+        }
+
+        // 播放音效
+        function playSound(type) {
+            if (!gameAudio.soundsLoaded) return;
+            
+            try {
+                switch(type) {
+                    case 'background':
+                        if (gameAudio.backgroundMusic && musicEnabled && gameState.gameActive) {
+                            // 重置到开头并播放
+                            gameAudio.backgroundMusic.currentTime = 0;
+                            gameAudio.backgroundMusic.play().catch(e => {});
+                        }
+                        break;
+                    case 'gem':
+                        if (gameAudio.gemSound && soundEnabled) {
+                            gameAudio.gemSound.currentTime = 0;
+                            gameAudio.gemSound.play().catch(e => {});
+                        }
+                        break;
+                    case 'success':
+                        if (gameAudio.successSound && soundEnabled) {
+                            gameAudio.successSound.currentTime = 0;
+                            gameAudio.successSound.play().catch(e => {});
+                        }
+                        break;
+                    case 'stopBackground':
+                        if (gameAudio.backgroundMusic) {
+                            gameAudio.backgroundMusic.pause();
+                            // 注意：不清除 currentTime，以便恢复时从当前位置继续
+                        }
+                        break;
+                }
+            } catch (error) {
+                // 静默处理音效错误
+            }
+        }
+
+        // 创建一朵花
+        function createFlower(x, y, isBurst = false) {
+            const flowerRain = document.getElementById('flowerRain');
+            if (!flowerRain) return null;
+            
+            const flowerType = flowerTypes[Math.floor(Math.random() * flowerTypes.length)];
+            const flower = document.createElement('div');
+            flower.className = `flower ${flowerType.class}`;
+            flower.textContent = flowerType.char;
+            flower.style.left = `${x}px`;
+            flower.style.top = `${y}px`;
+            
+            // 随机大小
+            const size = Math.random() * 0.5 + 0.8;
+            flower.style.fontSize = `${size}rem`;
+            
+            // 随机旋转
+            const rotate = Math.random() * 360;
+            flower.style.setProperty('--rotate', rotate);
+            
+            // 随机浮动方向
+            const floatX = Math.random() * 2 - 1;
+            flower.style.setProperty('--float-x', floatX);
+            
+            // 动画设置
+            if (isBurst) {
+                // 爆发式动画
+                const duration = Math.random() * 3 + 2;
+                flower.style.animation = `flowerBurst ${duration}s ease-in forwards`;
+                
+                // 随机延迟
+                const delay = Math.random() * 0.5;
+                flower.style.animationDelay = `${delay}s`;
+            } else {
+                // 飘落式动画
+                const duration = Math.random() * 5 + 3;
+                flower.style.animation = `petalFloat ${duration}s linear forwards`;
+                
+                // 随机延迟
+                const delay = Math.random() * 2;
+                flower.style.animationDelay = `${delay}s`;
+            }
+            
+            flowerRain.appendChild(flower);
+            
+            // 动画结束后移除元素
+            setTimeout(() => {
+                if (flower.parentNode) {
+                    flower.parentNode.removeChild(flower);
+                }
+            }, 5000);
+            
+            return flower;
+        }
+
+        // 创建花雨效果
+        function createFlowerRain() {
+            if (flowerRainActive) return;
+            flowerRainActive = true;
+            
+            const container = document.getElementById('flowerRain');
+            if (!container) return;
+            
+            // 先清除可能存在的旧花
+            container.innerHTML = '';
+            
+            // 创建大量花朵
+            const flowerCount = Math.min(100, Math.floor(window.innerWidth / 10));
+            
+            // 从顶部飘落的花朵
+            for (let i = 0; i < flowerCount; i++) {
+                const x = Math.random() * window.innerWidth;
+                const y = Math.random() * 100 - 100; // 从屏幕上方开始
+                setTimeout(() => createFlower(x, y), Math.random() * 2000);
+            }
+            
+            // 爆发效果：从中心向外扩散
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            
+            setTimeout(() => {
+                for (let i = 0; i < 50; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * 100;
+                    const x = centerX + Math.cos(angle) * distance;
+                    const y = centerY + Math.sin(angle) * distance;
+                    createFlower(x, y, true);
+                }
+            }, 500);
+            
+            // 持续生成新花朵
+            const flowerInterval = setInterval(() => {
+                if (!flowerRainActive) {
+                    clearInterval(flowerInterval);
+                    return;
+                }
+                
+                const x = Math.random() * window.innerWidth;
+                const y = -50; // 从屏幕上方开始
+                createFlower(x, y);
+            }, 300);
+            
+            // 10秒后停止花雨
+            setTimeout(() => {
+                flowerRainActive = false;
+                clearInterval(flowerInterval);
+            }, 10000);
+        }
+
+        // 停止花雨
+        function stopFlowerRain() {
+            flowerRainActive = false;
+            const container = document.getElementById('flowerRain');
+            if (container) {
+                container.innerHTML = '';
+            }
+        }
+
+        // 计算游戏评分
+        function calculateGameScore() {
+            let score = 0;
+            
+            // 基于步数评分（越少越好）
+            const stepScore = Math.max(0, 100 - gameState.steps * 2);
+            score += stepScore * 0.3;
+            
+            // 基于剩余时间评分
+            const timeScore = (gameState.time / config.initialTime) * 100;
+            score += timeScore * 0.3;
+            
+            // 基于剩余生命评分
+            const lifeScore = (gameState.lives / config.initialLives) * 100;
+            score += lifeScore * 0.4;
+            
+            // 转换为字母等级
+            if (score >= 90) return "S";
+            if (score >= 80) return "A+";
+            if (score >= 70) return "A";
+            if (score >= 60) return "B";
+            if (score >= 50) return "C";
+            return "D";
+        }
+
+        // 迷宫生成算法
+        function generateMaze() {
+            const size = config.mazeSize;
+            let maze = Array(size).fill().map(() => Array(size).fill(1));
+            
+            // 确保起点和终点是通路
+            maze[1][1] = 0; // 起点
+            maze[size-2][size-2] = 0; // 终点
+            
+            // 使用递归回溯算法生成迷宫
+            function carvePath(x, y) {
+                const directions = [
+                    [0, -2], [0, 2], [-2, 0], [2, 0]
+                ].sort(() => Math.random() - 0.5);
+                
+                for (let [dx, dy] of directions) {
+                    const nx = x + dx;
+                    const ny = y + dy;
+                    
+                    if (nx > 0 && nx < size-1 && ny > 0 && ny < size-1 && maze[ny][nx] === 1) {
+                        maze[ny][nx] = 0;
+                        maze[y + dy/2][x + dx/2] = 0;
+                        carvePath(nx, ny);
+                    }
+                }
+            }
+            
+            carvePath(1, 1);
+            
+            // 确保有足够的通路
+            for (let i = 0; i < size * 2; i++) {
+                const x = Math.floor(Math.random() * (size - 2)) + 1;
+                const y = Math.floor(Math.random() * (size - 2)) + 1;
+                if (maze[y][x] === 1 && 
+                    (maze[y-1][x] === 0 || maze[y+1][x] === 0 || 
+                     maze[y][x-1] === 0 || maze[y][x+1] === 0)) {
+                    maze[y][x] = 0;
+                }
+            }
+            
+            // 确保出口至少有一个开口
+            const exitX = size-2;
+            const exitY = size-2;
+            const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+            let hasOpening = false;
+            
+            for (let [dx, dy] of directions) {
+                const nx = exitX + dx;
+                const ny = exitY + dy;
+                if (nx >= 0 && nx < size && ny >= 0 && ny < size && maze[ny][nx] === 0) {
+                    hasOpening = true;
+                    break;
+                }
+            }
+            
+            // 如果没有开口，创建一个
+            if (!hasOpening) {
+                const possibleDirections = [];
+                for (let [dx, dy] of directions) {
+                    const nx = exitX + dx;
+                    const ny = exitY + dy;
+                    if (nx > 0 && nx < size-1 && ny > 0 && ny < size-1) {
+                        possibleDirections.push([dx, dy]);
+                    }
+                }
+                
+                if (possibleDirections.length > 0) {
+                    const [dx, dy] = possibleDirections[Math.floor(Math.random() * possibleDirections.length)];
+                    maze[exitY + dy][exitX + dx] = 0;
+                }
+            }
+            
+            // 确保起点至少有一个开口
+            const startX = 1;
+            const startY = 1;
+            let startHasOpening = false;
+            
+            for (let [dx, dy] of directions) {
+                const nx = startX + dx;
+                const ny = startY + dy;
+                if (nx >= 0 && nx < size && ny >= 0 && ny < size && maze[ny][nx] === 0) {
+                    startHasOpening = true;
+                    break;
+                }
+            }
+            
+            // 如果起点没有开口，创建一个
+            if (!startHasOpening) {
+                const possibleDirections = [];
+                for (let [dx, dy] of directions) {
+                    const nx = startX + dx;
+                    const ny = startY + dy;
+                    if (nx > 0 && nx < size-1 && ny > 0 && ny < size-1) {
+                        possibleDirections.push([dx, dy]);
+                    }
+                }
+                
+                if (possibleDirections.length > 0) {
+                    const [dx, dy] = possibleDirections[Math.floor(Math.random() * possibleDirections.length)];
+                    maze[startY + dy][startX + dx] = 0;
+                }
+            }
+            
+            return maze;
+        }
+
+        // 初始化游戏
+        function initGame() {
+            // 停止花雨效果
+            stopFlowerRain();
+            
+            // 隐藏庆祝消息
+            hideCelebrationMessage();
+            
+            // 加载资源
+            loadGameResources();
+            
+            // 生成迷宫
+            gameState.maze = generateMaze();
+            
+            // 重置游戏状态
+            gameState.playerPosition = {x: 1, y: 1};
+            gameState.exitPosition = {x: config.mazeSize-2, y: config.mazeSize-2};
+            gameState.steps = 0;
+            gameState.gemsCollected = 0;
+            gameState.lives = config.initialLives;
+            gameState.time = config.initialTime;
+            gameState.hints = config.hintsCount;
+            gameState.gameActive = true;
+            
+            // 生成宝石位置
+            gameState.gemsPositions = [];
+            while (gameState.gemsPositions.length < config.gemsToCollect) {
+                const x = Math.floor(Math.random() * (config.mazeSize - 2)) + 1;
+                const y = Math.floor(Math.random() * (config.mazeSize - 2)) + 1;
+                
+                if ((x !== 1 || y !== 1) && 
+                    (x !== config.mazeSize-2 || y !== config.mazeSize-2) &&
+                    gameState.maze[y][x] === 0 &&
+                    !gameState.gemsPositions.some(gem => gem.x === x && gem.y === y)) {
+                    gameState.gemsPositions.push({x, y});
+                }
+            }
+            
+            // 生成怪物位置
+            gameState.monstersPositions = [];
+            while (gameState.monstersPositions.length < config.monstersCount) {
+                const x = Math.floor(Math.random() * (config.mazeSize - 2)) + 1;
+                const y = Math.floor(Math.random() * (config.mazeSize - 2)) + 1;
+                
+                if ((x !== 1 || y !== 1) && 
+                    (x !== config.mazeSize-2 || y !== config.mazeSize-2) &&
+                    gameState.maze[y][x] === 0 &&
+                    !gameState.gemsPositions.some(gem => gem.x === x && gem.y === y) &&
+                    !gameState.monstersPositions.some(monster => monster.x === x && monster.y === y)) {
+                    gameState.monstersPositions.push({x, y});
+                }
+            }
+            
+            // 渲染迷宫
+            renderMaze();
+            
+            // 更新UI
+            updateUI();
+            
+            // 开始计时器
+            startTimer();
+            
+            // 如果音乐已启用，恢复播放背景音乐（延迟以确保用户交互）
+            if (musicEnabled && gameAudio.soundsLoaded) {
+                setTimeout(() => {
+                    playSound('background');
+                }, 300);
+            }
+        }
+
+        // 渲染迷宫
+        function renderMaze() {
+            const mazeElement = document.getElementById('maze');
+            mazeElement.innerHTML = '';
+            
+            // 设置网格
+            mazeElement.style.gridTemplateColumns = `repeat(${config.mazeSize}, 1fr)`;
+            mazeElement.style.gridTemplateRows = `repeat(${config.mazeSize}, 1fr)`;
+            
+            for (let y = 0; y < config.mazeSize; y++) {
+                for (let x = 0; x < config.mazeSize; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    
+                    // 墙壁或路径
+                    if (gameState.maze[y][x] === 1) {
+                        cell.classList.add('wall');
+                    } else {
+                        cell.classList.add('path');
+                    }
+                    
+                    // 玩家
+                    if (x === gameState.playerPosition.x && y === gameState.playerPosition.y) {
+                        const player = document.createElement('div');
+                        player.className = 'player';
+                        cell.appendChild(player);
+                    }
+                    
+                    // 出口
+                    if (x === gameState.exitPosition.x && y === gameState.exitPosition.y) {
+                        const exit = document.createElement('div');
+                        exit.className = 'exit';
+                        cell.appendChild(exit);
+                    }
+                    
+                    // 宝石
+                    const gemHere = gameState.gemsPositions.some(gem => gem.x === x && gem.y === y);
+                    if (gemHere) {
+                        const gem = document.createElement('div');
+                        gem.className = 'gem';
+                        cell.appendChild(gem);
+                    }
+                    
+                    // 怪物
+                    const monsterHere = gameState.monstersPositions.some(monster => monster.x === x && monster.y === y);
+                    if (monsterHere) {
+                        const monster = document.createElement('div');
+                        monster.className = 'monster';
+                        cell.appendChild(monster);
+                    }
+                    
+                    mazeElement.appendChild(cell);
+                }
+            }
+        }
+
+        // 移动玩家
+        function movePlayer(dx, dy) {
+            if (!gameState.gameActive) return;
+            
+            const newX = gameState.playerPosition.x + dx;
+            const newY = gameState.playerPosition.y + dy;
+            
+            // 检查边界和墙壁
+            if (newX < 0 || newX >= config.mazeSize || 
+                newY < 0 || newY >= config.mazeSize || 
+                gameState.maze[newY][newX] === 1) {
+                return;
+            }
+            
+            // 更新玩家位置
+            gameState.playerPosition.x = newX;
+            gameState.playerPosition.y = newY;
+            gameState.steps++;
+            
+            // 检查宝石
+            const gemIndex = gameState.gemsPositions.findIndex(gem => 
+                gem.x === newX && gem.y === newY);
+            if (gemIndex !== -1) {
+                gameState.gemsPositions.splice(gemIndex, 1);
+                gameState.gemsCollected++;
+                playSound('gem');
+            }
+            
+            // 检查怪物
+            const monsterIndex = gameState.monstersPositions.findIndex(monster => 
+                monster.x === newX && monster.y === newY);
+            if (monsterIndex !== -1) {
+                gameState.lives--;
+                gameState.monstersPositions.splice(monsterIndex, 1);
+                
+                if (gameState.lives <= 0) {
+                    gameOver(false);
+                }
+            }
+            
+            // 检查出口
+            if (newX === gameState.exitPosition.x && newY === gameState.exitPosition.y) {
+                if (gameState.gemsCollected >= config.gemsToCollect) {
+                    gameOver(true);
+                } else {
+                    showMessage("需要收集所有宝石!", "你还需要收集 " + (config.gemsToCollect - gameState.gemsCollected) + " 个宝石才能打开出口。");
+                }
+            }
+            
+            // 渲染更新后的迷宫
+            renderMaze();
+            updateUI();
+        }
+
+        // 更新UI
+        function updateUI() {
+            document.getElementById('steps').textContent = gameState.steps;
+            document.getElementById('gems').textContent = `${gameState.gemsCollected}/${config.gemsToCollect}`;
+            document.getElementById('lives').textContent = gameState.lives;
+            document.getElementById('time').textContent = gameState.time;
+        }
+
+        // 开始计时器
+        let timerInterval;
+        function startTimer() {
+            clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                if (!gameState.gameActive) return;
+                
+                gameState.time--;
+                document.getElementById('time').textContent = gameState.time;
+                
+                if (gameState.time <= 0) {
+                    gameOver(false);
+                }
+            }, 1000);
+        }
+
+        // 游戏结束
+        function gameOver(success) {
+            gameState.gameActive = false;
+            clearInterval(timerInterval);
+            
+            // 停止背景音乐（无论成功或失败）
+            playSound('stopBackground');
+            
+            if (success) {
+                playSound('success');
+                // 显示庆祝消息和花雨效果
+                showCelebrationMessage();
+                createFlowerRain();
+            } else {
+                showMessage(
+                    "游戏结束", 
+                    `你未能在时间内逃离迷宫。\n收集的宝石: ${gameState.gemsCollected}/${config.gemsToCollect}\n步数: ${gameState.steps}`,
+                    "重新开始"
+                );
+            }
+        }
+
+        // 显示庆祝消息
+        function showCelebrationMessage() {
+            // 更新统计数据
+            document.getElementById('finalSteps').textContent = gameState.steps;
+            document.getElementById('finalTime').textContent = `${gameState.time}秒`;
+            document.getElementById('finalLives').textContent = gameState.lives;
+            document.getElementById('gameScore').textContent = calculateGameScore();
+            
+            // 显示消息
+            document.getElementById('overlay').classList.add('show');
+            document.getElementById('celebrationMessage').classList.add('show');
+        }
+
+        // 隐藏庆祝消息
+        function hideCelebrationMessage() {
+            document.getElementById('overlay').classList.remove('show');
+            document.getElementById('celebrationMessage').classList.remove('show');
+        }
+
+        // 显示普通消息（用于错误提示等）
+        function showMessage(title, text, buttonText = "确定") {
+            alert(`${title}\n\n${text}`);
+        }
+
+        // 触摸控制
+        function setupTouchControls() {
+            const mazeElement = document.getElementById('maze');
+            
+            mazeElement.addEventListener('touchstart', function(e) {
+                if (e.touches.length > 1) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+                lastTouchTime = Date.now();
+            }, { passive: false });
+            
+            mazeElement.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+            
+            mazeElement.addEventListener('touchend', function(e) {
+                if (!gameState.gameActive) return;
+                e.preventDefault();
+                
+                const touch = e.changedTouches[0];
+                const deltaX = touch.clientX - touchStartX;
+                const deltaY = touch.clientY - touchStartY;
+                
+                // 确定滑动方向
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    if (Math.abs(deltaX) > TOUCH_THRESHOLD) {
+                        if (deltaX > 0) {
+                            movePlayer(1, 0);
+                        } else {
+                            movePlayer(-1, 0);
+                        }
+                    }
+                } else {
+                    if (Math.abs(deltaY) > TOUCH_THRESHOLD) {
+                        if (deltaY > 0) {
+                            movePlayer(0, 1);
+                        } else {
+                            movePlayer(0, -1);
+                        }
+                    }
+                }
+            }, { passive: false });
+        }
+
+        // 事件监听
+        document.addEventListener('DOMContentLoaded', () => {
+            // 初始化游戏
+            initGame();
+            
+            // 方向按钮事件
+            const directionButtons = document.querySelectorAll('.control-btn');
+            directionButtons.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const direction = btn.classList[1];
+                    switch(direction) {
+                        case 'up': movePlayer(0, -1); break;
+                        case 'down': movePlayer(0, 1); break;
+                        case 'left': movePlayer(-1, 0); break;
+                        case 'right': movePlayer(1, 0); break;
+                    }
+                });
+            });
+            
+            // 键盘控制
+            document.addEventListener('keydown', (e) => {
+                if (!gameState.gameActive) return;
+                
+                switch(e.key) {
+                    case 'ArrowUp': 
+                    case 'w': 
+                    case 'W': 
+                        movePlayer(0, -1); 
+                        e.preventDefault();
+                        break;
+                    case 'ArrowDown': 
+                    case 's': 
+                    case 'S': 
+                        movePlayer(0, 1); 
+                        e.preventDefault();
+                        break;
+                    case 'ArrowLeft': 
+                    case 'a': 
+                    case 'A': 
+                        movePlayer(-1, 0); 
+                        e.preventDefault();
+                        break;
+                    case 'ArrowRight': 
+                    case 'd': 
+                    case 'D': 
+                        movePlayer(1, 0); 
+                        e.preventDefault();
+                        break;
+                }
+            });
+            
+            // 重新开始按钮
+            document.getElementById('restartBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                // 注意：这里不再调用 playSound('stopBackground')，游戏会自动重新开始
+                initGame();
+            });
+            
+            // 庆祝消息按钮
+            document.getElementById('celebrationBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                hideCelebrationMessage();
+                stopFlowerRain();
+                initGame();
+            });
+            
+            // 音乐控制按钮
+            document.getElementById('musicToggle').addEventListener('click', function(e) {
+                e.preventDefault();
+                musicEnabled = !musicEnabled;
+                this.textContent = musicEnabled ? "音乐:开" : "音乐:关";
+                
+                if (musicEnabled && gameState.gameActive) {
+                    // 只有在游戏进行中才播放音乐
+                    playSound('background');
+                } else {
+                    playSound('stopBackground');
+                }
+            });
+            
+            // 音效控制按钮
+            document.getElementById('soundToggle').addEventListener('click', function(e) {
+                e.preventDefault();
+                soundEnabled = !soundEnabled;
+                this.textContent = soundEnabled ? "音效:开" : "音效:关";
+            });
+            
+            // 设置触摸控制
+            setupTouchControls();
+            
+            // 添加用户交互以启用音频
+            document.addEventListener('click', function initAudio() {
+                if (musicEnabled && gameState.gameActive && gameAudio.backgroundMusic) {
+                    playSound('background');
+                }
+                document.removeEventListener('click', initAudio);
+            });
+            
+            // 防止页面滚动
+            document.addEventListener('wheel', function(e) {
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // 防止上下文菜单
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+        });
+    </script>
+</body>
+</html>
