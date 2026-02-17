@@ -26,6 +26,43 @@
             margin: 0 auto;
             position: relative;
         }
+        /* 左上角更多游戏角标 */
+        .more-games-corner {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            z-index: 30;
+            transform: rotate(-2deg);
+            filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.4));
+        }
+        .more-games-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #ffd966;
+            color: #023047;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 1.2rem;
+            padding: 0.6rem 1.5rem 0.6rem 1.2rem;
+            border-radius: 60px 20px 60px 20px;
+            border: 3px solid white;
+            box-shadow: 0 6px 0 #b38b2a, 0 10px 15px rgba(0,0,0,0.3);
+            transition: 0.1s ease;
+            letter-spacing: 1px;
+            backdrop-filter: blur(4px);
+            background: linear-gradient(145deg, #ffe086, #f0c45a);
+            touch-action: manipulation;
+        }
+        .more-games-link:active {
+            transform: translateY(6px);
+            box-shadow: 0 2px 0 #b38b2a, 0 10px 15px rgba(0,0,0,0.3);
+        }
+        .more-games-link span {
+            font-size: 1.8rem;
+            line-height: 1;
+            filter: drop-shadow(2px 2px 0 #b38b2a);
+        }
         .game-container {
             background: #aac8e0;
             padding: 1.2rem 1rem 1.5rem 1rem;
@@ -228,11 +265,25 @@
             .footer-tip {
                 font-size: 0.9rem;
             }
+            .more-games-link {
+                font-size: 1rem;
+                padding: 0.4rem 1.2rem 0.4rem 0.8rem;
+            }
+            .more-games-link span {
+                font-size: 1.4rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="game-wrapper">
+        <!-- 左上角角标：更多游戏 -->
+        <div class="more-games-corner">
+            <a href="https://amitofoicu.github.io/home/main.html" class="more-games-link" target="_blank" rel="noopener noreferrer">
+                <span>🎮</span> 更多游戏
+            </a>
+        </div>
+
         <div class="game-container" id="gameContainer">
             <div class="game-title">
                 <span>🥌 冰壶小游戏 🥌</span>
