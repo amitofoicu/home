@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>🥌 冰壶小游戏</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(145deg, #0b2b44 0%, #1c4e72 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            padding: 10px;
+        }
+        .game-wrapper {
+            width: 100%;
+            max-width: 850px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .game-container {
+            background: #aac8e0;
+            padding: 1.2rem 1rem 1.5rem 1rem;
+            border-radius: 2rem;
+            box-shadow: 0 25px 35px rgba(0, 0, 0, 0.5), inset 0 0 0 2px #eef9ff, inset 0 0 15px #7fa3c0;
+            position: relative;
+        }
+        .game-title {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #ffd966;
+            text-shadow: 4px 4px 0 #2d5269, 6px 6px 0 #0a3142;
+            letter-spacing: 4px;
+            word-break: keep-all;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        .game-title span {
+            display: inline-block;
+            transform: rotate(-2deg);
+            background: rgba(255,255,240,0.2);
+            padding: 0 15px;
+            border-radius: 60px 20px 60px 20px;
+        }
+        /* 静音按钮 */
+        .mute-btn {
+            background: #406e89;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 5px 0 #1d3f52, 0 8px 12px #0000006e;
+            transition: 0.08s linear;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            touch-action: manipulation;
+        }
+        .mute-btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 2px 0 #1d3f52, 0 8px 12px #0000006e;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            width: 100%;
+            height: auto;
+            aspect-ratio: 800 / 400;
+            border-radius: 10px;
+            background: #edf5fc;
+            box-shadow: inset 0 8px 12px rgba(0,20,40,0.3), inset 0 -4px 8px #ffffffcc, 0 18px 25px #0a1e2e;
+            cursor: grab;
+            touch-action: none;
+            -webkit-touch-callout: none;
+        }
+        canvas:active {
+            cursor: grabbing;
+        }
+        .ice-panel {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.2rem;
+            padding: 0 0.2rem;
+            color: #052c3f;
+            text-shadow: 2px 2px 0 #c7e3ff;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        .scoreboard {
+            background: #183d57;
+            border-radius: 100px;
+            padding: 0.3rem 1.5rem;
+            color: white;
+            text-shadow: 2px 2px 0 #02141e;
+            box-shadow: inset 0 2px 7px #9fc8f0, 0 5px 0 #06212e;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            min-width: 200px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .turn-indicator {
+            background: #ffd966;
+            border-radius: 3rem;
+            padding: 0.3rem 1.5rem;
+            font-size: 1.3rem;
+            box-shadow: inset 0 -3px 0 #bb8f39, 0 5px 0 #6b4f20;
+            color: #2f220c;
+            min-width: 280px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .footer-tip {
+            margin-top: 1rem;
+            color: #d2ebff;
+            text-align: center;
+            font-weight: 500;
+            text-shadow: 1px 1px 0 #0a3142;
+            font-size: 1rem;
+            padding: 0 5px;
+        }
+        .victory-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 215, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            backdrop-filter: blur(3px);
+            border-radius: 2rem;
+            animation: glowPulse 0.5s infinite alternate;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .victory-text {
+            font-size: clamp(2rem, 12vw, 4rem);
+            font-weight: 900;
+            color: gold;
+            text-shadow: 0 0 30px white, 0 0 60px orange;
+            animation: bounce 0.6s infinite alternate;
+            margin-bottom: 30px;
+            text-align: center;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+        .rematch-button {
+            background: #ffd966;
+            border: none;
+            border-radius: 3rem;
+            padding: 1rem 2.5rem;
+            font-size: clamp(1.5rem, 6vw, 2rem);
+            font-weight: bold;
+            color: #023047;
+            box-shadow: 0 10px 0 #b38b2a, 0 15px 20px #0000006e;
+            cursor: pointer;
+            transition: 0.08s linear;
+            border: 2px solid white;
+            animation: fadeIn 0.5s;
+            touch-action: manipulation;
+            min-width: 200px;
+        }
+        .rematch-button:active {
+            transform: translateY(10px);
+            box-shadow: 0 5px 0 #b38b2a, 0 15px 20px #0000006e;
+        }
+        @keyframes glowPulse {
+            from { box-shadow: 0 0 30px gold; }
+            to { box-shadow: 0 0 100px orange; }
+        }
+        @keyframes bounce {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .audio-hidden {
+            display: none;
+        }
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .game-container {
+                padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
+            }
+        }
+        @media (max-width: 500px) {
+            .game-title {
+                font-size: 1.8rem;
+            }
+            .mute-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.4rem;
+            }
+            .scoreboard {
+                font-size: 1.2rem;
+                padding: 0.2rem 1rem;
+                min-width: 160px;
+            }
+            .turn-indicator {
+                font-size: 1rem;
+                padding: 0.2rem 1rem;
+                min-width: 240px;
+            }
+            .footer-tip {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-wrapper">
+        <div class="game-container" id="gameContainer">
+            <div class="game-title">
+                <span>🥌 冰壶小游戏 🥌</span>
+                <button class="mute-btn" id="muteBtn">🔊</button>
+            </div>
+            
+            <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+            <div class="ice-panel">
+                <div class="scoreboard" id="scoreDisplay">
+                    红方 0 : 0 黄方
+                </div>
+                <div class="turn-indicator" id="turnDisplay">
+                    🔴 红队回合 (0/8)
+                </div>
+            </div>
+            
+            <div class="footer-tip">
+                👆 在左侧地毯区按住·向右拉(绿色虚线)松手投掷 · 红队先手 · 静止后计分
+            </div>
+
+            <div id="victoryOverlay" class="victory-overlay" style="display: none;">
+                <div class="victory-text" id="victoryMessage">🏆 胜利 🏆</div>
+                <button class="rematch-button" id="rematchBtn">⚡ 再来一局 ⚡</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 背景音乐 -->
+    <audio id="bgMusic" class="audio-hidden" loop preload="auto">
+        <source src="https://amitofoicu.github.io/home/beijing.ogg" type="audio/ogg">
+        <source src="https://amitofoicu.github.io/home/beijing.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- 胜利音乐 -->
+    <audio id="victoryMusic" class="audio-hidden" preload="auto">
+        <source src="https://amitofoicu.github.io/home/xiaochu.mp3" type="audio/mpeg">
+        <source src="https://amitofoicu.github.io/home/xiaochu.ogg" type="audio/ogg">
+    </audio>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const gameContainer = document.getElementById('gameContainer');
+            const victoryOverlay = document.getElementById('victoryOverlay');
+            const victoryMessage = document.getElementById('victoryMessage');
+            const bgMusic = document.getElementById('bgMusic');
+            const victoryMusic = document.getElementById('victoryMusic');
+            const rematchBtn = document.getElementById('rematchBtn');
+            const muteBtn = document.getElementById('muteBtn');
+
+            // 静音状态
+            let isMuted = false;
+
+            // 静音切换
+            muteBtn.addEventListener('click', () => {
+                isMuted = !isMuted;
+                bgMusic.muted = isMuted;
+                victoryMusic.muted = isMuted;
+                muteBtn.textContent = isMuted ? '🔇' : '🔊';
+            });
+
+            // 设置背景图片
+            const backgroundImage = new Image();
+            backgroundImage.src = 'https://amitofoicu.github.io/home/lianchi.jpg';
+            backgroundImage.crossOrigin = 'anonymous';
+            
+            // 显示元素
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const turnDisplay = document.getElementById('turnDisplay');
+
+            // 物理参数
+            const FRICTION = 0.985;
+            const MIN_SPEED = 0.03;
+            const MAX_DRAG_DIST = 160;
+            const PULL_FACTOR = 0.2;
+            const STONE_RADIUS = 16;
+
+            // 奥运规则参数
+            const HOUSE_CENTER = { x: 650, y: 200 };
+            const HOUSE_RADIUS = 90;
+            
+            const STONES_PER_TEAM = 8;
+            const THROW_ZONE = { xMin: 30, xMax: 270, yMin: 80, yMax: 320 };
+
+            // 游戏状态
+            let stones = [];
+            let removedStones = [];
+            let gameActive = true;
+            let gameOver = false;
+            let victoryTimer = null;
+            
+            let currentTurn = 'red';
+            let redThrowsLeft = STONES_PER_TEAM;
+            let yellowThrowsLeft = STONES_PER_TEAM;
+            let redThrown = 0;
+            let yellowThrown = 0;
+            
+            let waitingForAI = false;
+            let aiTimer = null;
+
+            let isDragging = false;
+            let dragStart = { x: 0, y: 0 };
+            let currentMousePos = { x: 0, y: 0 };
+
+            let redScore = 0;
+            let yellowScore = 0;
+
+            let activeTouchId = null;
+
+            // 背景音乐播放尝试
+            function playBgMusic() {
+                if (isMuted) return;
+                bgMusic.volume = 0.4;
+                bgMusic.play().catch(e => {
+                    console.log('背景音乐自动播放失败，等待用户交互', e);
+                    const playOnInteraction = () => {
+                        if (!isMuted) bgMusic.play().catch(console.log);
+                        canvas.removeEventListener('touchstart', playOnInteraction);
+                        canvas.removeEventListener('mousedown', playOnInteraction);
+                    };
+                    canvas.addEventListener('touchstart', playOnInteraction, { once: true });
+                    canvas.addEventListener('mousedown', playOnInteraction, { once: true });
+                });
+            }
+
+            function initGame() {
+                stones = [];
+                removedStones = [];
+                gameActive = true;
+                gameOver = false;
+                
+                victoryOverlay.style.display = 'none';
+                if (victoryTimer) {
+                    clearTimeout(victoryTimer);
+                    victoryTimer = null;
+                }
+                victoryMusic.pause();
+                victoryMusic.currentTime = 0;
+                
+                currentTurn = 'red';
+                redThrowsLeft = STONES_PER_TEAM;
+                yellowThrowsLeft = STONES_PER_TEAM;
+                redThrown = 0;
+                yellowThrown = 0;
+                redScore = 0;
+                yellowScore = 0;
+                
+                waitingForAI = false;
+                if (aiTimer) {
+                    clearTimeout(aiTimer);
+                    aiTimer = null;
+                }
+                activeTouchId = null;
+                
+                playBgMusic();
+                
+                updateScoreDisplay();
+                updateTurnDisplay();
+            }
+
+            function createStone(team, startX, startY, velocityX, velocityY) {
+                const stoneNumber = team === 'red' 
+                    ? (STONES_PER_TEAM - redThrowsLeft + 1)
+                    : (STONES_PER_TEAM - yellowThrowsLeft + 1);
+                
+                const newStone = {
+                    x: startX,
+                    y: startY,
+                    vx: velocityX,
+                    vy: velocityY,
+                    team: team,
+                    number: stoneNumber,
+                    id: Date.now() + Math.random()
+                };
+                stones.push(newStone);
+                
+                if (team === 'red') {
+                    redThrowsLeft--;
+                    redThrown++;
+                } else {
+                    yellowThrowsLeft--;
+                    yellowThrown++;
+                }
+                return newStone;
+            }
+
+            function isStoneMoving(stone) {
+                return Math.abs(stone.vx) > MIN_SPEED || Math.abs(stone.vy) > MIN_SPEED;
+            }
+
+            function anyStoneMoving() {
+                return stones.some(s => isStoneMoving(s));
+            }
+
+            function removeOutOfBoundsStones() {
+                stones = stones.filter(stone => {
+                    if (stone.x - STONE_RADIUS > 800 || stone.x - STONE_RADIUS > HOUSE_CENTER.x + HOUSE_RADIUS + 80) {
+                        removedStones.push(stone);
+                        return false;
+                    }
+                    return true;
+                });
+            }
+
+            function calculateScore() {
+                const redInHouse = stones.filter(s => 
+                    s.team === 'red' && 
+                    Math.hypot(s.x - HOUSE_CENTER.x, s.y - HOUSE_CENTER.y) <= HOUSE_RADIUS
+                );
+                const yellowInHouse = stones.filter(s => 
+                    s.team === 'yellow' && 
+                    Math.hypot(s.x - HOUSE_CENTER.x, s.y - HOUSE_CENTER.y) <= HOUSE_RADIUS
+                );
+
+                if (redInHouse.length === 0 && yellowInHouse.length === 0) {
+                    return { red: 0, yellow: 0 };
+                }
+
+                const redDistances = redInHouse.map(s => Math.hypot(s.x - HOUSE_CENTER.x, s.y - HOUSE_CENTER.y));
+                const yellowDistances = yellowInHouse.map(s => Math.hypot(s.x - HOUSE_CENTER.x, s.y - HOUSE_CENTER.y));
+
+                redDistances.sort((a, b) => a - b);
+                yellowDistances.sort((a, b) => a - b);
+
+                const redClosest = redDistances[0] || Infinity;
+                const yellowClosest = yellowDistances[0] || Infinity;
+
+                let redScore = 0;
+                let yellowScore = 0;
+
+                if (redClosest < yellowClosest) {
+                    redScore = redDistances.filter(d => d < yellowClosest).length;
+                } else if (yellowClosest < redClosest) {
+                    yellowScore = yellowDistances.filter(d => d < redClosest).length;
+                }
+
+                return { red: redScore, yellow: yellowScore };
+            }
+
+            function endGame() {
+                if (gameOver) return;
+                
+                const scores = calculateScore();
+                redScore = scores.red;
+                yellowScore = scores.yellow;
+                
+                updateScoreDisplay();
+                gameActive = false;
+                gameOver = true;
+                
+                bgMusic.pause();
+                if (!isMuted) {
+                    victoryMusic.currentTime = 0;
+                    victoryMusic.play().catch(e => console.log('胜利音乐播放失败', e));
+                }
+                
+                if (redScore > yellowScore) {
+                    victoryMessage.innerHTML = '🏆 红队胜利 🏆';
+                } else if (yellowScore > redScore) {
+                    victoryMessage.innerHTML = '🏆 黄队胜利 🏆';
+                } else {
+                    victoryMessage.innerHTML = '🤝 平局 🤝';
+                }
+                
+                victoryOverlay.style.display = 'flex';
+            }
+
+            function checkGameCompletion() {
+                if (!gameActive) return false;
+                
+                if (redThrowsLeft === 0 && yellowThrowsLeft === 0 && !anyStoneMoving()) {
+                    endGame();
+                    return true;
+                }
+                return false;
+            }
+
+            function aiTakeTurn() {
+                if (!(yellowThrowsLeft > 0 && !anyStoneMoving() && currentTurn === 'yellow' && gameActive)) return;
+
+                waitingForAI = true;
+
+                aiTimer = setTimeout(() => {
+                    if (!(yellowThrowsLeft > 0 && !anyStoneMoving() && currentTurn === 'yellow' && gameActive)) {
+                        waitingForAI = false;
+                        return;
+                    }
+
+                    const startX = THROW_ZONE.xMin + Math.random() * (THROW_ZONE.xMax - THROW_ZONE.xMin);
+                    const startY = THROW_ZONE.yMin + Math.random() * (THROW_ZONE.yMax - THROW_ZONE.yMin);
+                    
+                    let targetX, targetY;
+                    
+                    const redInHouse = stones.filter(s => s.team === 'red' && 
+                        Math.hypot(s.x - HOUSE_CENTER.x, s.y - HOUSE_CENTER.y) <= HOUSE_RADIUS);
+                    
+                    if (redInHouse.length > 0 && yellowThrown > 2) {
+                        const target = redInHouse[0];
+                        targetX = target.x + (Math.random() * 20 - 10);
+                        targetY = target.y + (Math.random() * 20 - 10);
+                    } else {
+                        targetX = HOUSE_CENTER.x + (Math.random() * 40 - 20);
+                        targetY = HOUSE_CENTER.y + (Math.random() * 60 - 30);
+                    }
+
+                    const targetDistance = Math.hypot(targetX - startX, targetY - startY);
+                    
+                    let speedFactor = (redInHouse.length > 0 && yellowThrown > 2) ? 0.12 : 0.10;
+                    let speed = targetDistance * speedFactor;
+                    
+                    const MAX_SPEED = 10;
+                    if (speed > MAX_SPEED) speed = MAX_SPEED;
+                    
+                    if (yellowThrown > 4) speed = speed * 0.9;
+                    
+                    const dx = targetX - startX;
+                    const dy = targetY - startY;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    const vx = (dx / dist) * speed;
+                    const vy = (dy / dist) * speed;
+
+                    createStone('yellow', startX, startY, vx, vy);
+
+                    currentTurn = 'red';
+                    waitingForAI = false;
+                    updateTurnDisplay();
+
+                    aiTimer = null;
+                    checkGameCompletion();
+                }, 600);
+            }
+
+            function getCanvasCoords(clientX, clientY) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                return {
+                    x: (clientX - rect.left) * scaleX,
+                    y: (clientY - rect.top) * scaleY
+                };
+            }
+
+            function startDrag(clientX, clientY) {
+                if (isDragging || !(redThrowsLeft > 0 && !anyStoneMoving() && currentTurn === 'red' && gameActive)) return;
+                
+                const { x: canvasX, y: canvasY } = getCanvasCoords(clientX, clientY);
+
+                if (canvasX >= THROW_ZONE.xMin && canvasX <= THROW_ZONE.xMax && 
+                    canvasY >= THROW_ZONE.yMin && canvasY <= THROW_ZONE.yMax) {
+                    
+                    isDragging = true;
+                    dragStart.x = canvasX;
+                    dragStart.y = canvasY;
+                    currentMousePos.x = canvasX;
+                    currentMousePos.y = canvasY;
+                }
+            }
+
+            function onDragMove(clientX, clientY) {
+                if (!isDragging) return;
+                
+                const { x: canvasX, y: canvasY } = getCanvasCoords(clientX, clientY);
+                currentMousePos.x = canvasX;
+                currentMousePos.y = canvasY;
+            }
+
+            function endDrag(clientX, clientY) {
+                if (!isDragging || !(redThrowsLeft > 0 && !anyStoneMoving() && currentTurn === 'red' && gameActive)) {
+                    isDragging = false;
+                    activeTouchId = null;
+                    return;
+                }
+
+                const { x: canvasX, y: canvasY } = getCanvasCoords(clientX, clientY);
+
+                const dx = canvasX - dragStart.x;
+                const dy = canvasY - dragStart.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (dist < 5) {
+                    isDragging = false;
+                    activeTouchId = null;
+                    return;
+                }
+                
+                if (dist > MAX_DRAG_DIST) dist = MAX_DRAG_DIST;
+                
+                const angle = Math.atan2(dy, dx);
+                const speed = dist * PULL_FACTOR;
+
+                const vx = Math.cos(angle) * speed;
+                const vy = Math.sin(angle) * speed;
+                
+                createStone('red', dragStart.x, dragStart.y, vx, vy);
+
+                isDragging = false;
+                activeTouchId = null;
+
+                if (yellowThrowsLeft > 0) {
+                    currentTurn = 'yellow';
+                    updateTurnDisplay();
+                    aiTakeTurn();
+                } else {
+                    currentTurn = null;
+                    updateTurnDisplay();
+                }
+                
+                checkGameCompletion();
+            }
+
+            // 物理更新函数
+            function handleCollisions() {
+                const n = stones.length;
+                for (let i = 0; i < n; i++) {
+                    for (let j = i + 1; j < n; j++) {
+                        const s1 = stones[i];
+                        const s2 = stones[j];
+                        const dx = s2.x - s1.x;
+                        const dy = s2.y - s1.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        const minDist = STONE_RADIUS * 2;
+                        if (dist < minDist && dist > 0.001) {
+                            const overlap = minDist - dist;
+                            const nx = dx / dist;
+                            const ny = dy / dist;
+                            
+                            s1.x -= nx * overlap * 0.5;
+                            s1.y -= ny * overlap * 0.5;
+                            s2.x += nx * overlap * 0.5;
+                            s2.y += ny * overlap * 0.5;
+
+                            const v1n = s1.vx * nx + s1.vy * ny;
+                            const v2n = s2.vx * nx + s2.vy * ny;
+                            
+                            if (v1n - v2n > 0) {
+                                const v1t_x = s1.vx - v1n * nx;
+                                const v1t_y = s1.vy - v1n * ny;
+                                const v2t_x = s2.vx - v2n * nx;
+                                const v2t_y = s2.vy - v2n * ny;
+                                
+                                s1.vx = v2n * nx + v1t_x;
+                                s1.vy = v2n * ny + v1t_y;
+                                s2.vx = v1n * nx + v2t_x;
+                                s2.vy = v1n * ny + v2t_y;
+                            }
+                        }
+                    }
+                }
+            }
+
+            function applyBoundary() {
+                stones.forEach(s => {
+                    if (s.x - STONE_RADIUS < 5) {
+                        s.x = 5 + STONE_RADIUS;
+                        s.vx *= -0.4;
+                    }
+                    if (s.y - STONE_RADIUS < 5) {
+                        s.y = 5 + STONE_RADIUS;
+                        s.vy *= -0.4;
+                    }
+                    if (s.y + STONE_RADIUS > 395) {
+                        s.y = 395 - STONE_RADIUS;
+                        s.vy *= -0.4;
+                    }
+                });
+            }
+
+            function updatePhysics() {
+                stones.forEach(s => {
+                    if (Math.abs(s.vx) > MIN_SPEED || Math.abs(s.vy) > MIN_SPEED) {
+                        s.vx *= FRICTION;
+                        s.vy *= FRICTION;
+                        if (Math.abs(s.vx) < MIN_SPEED) s.vx = 0;
+                        if (Math.abs(s.vy) < MIN_SPEED) s.vy = 0;
+                    }
+                    s.x += s.vx;
+                    s.y += s.vy;
+                });
+
+                for (let iter = 0; iter < 3; iter++) {
+                    handleCollisions();
+                    applyBoundary();
+                }
+
+                removeOutOfBoundsStones();
+
+                if (!anyStoneMoving()) {
+                    if (yellowThrowsLeft > 0 && currentTurn === 'yellow' && gameActive && !waitingForAI) {
+                        aiTakeTurn();
+                    }
+                    checkGameCompletion();
+                }
+            }
+
+            // 绘制函数
+            function draw() {
+                ctx.clearRect(0, 0, 800, 400);
+                
+                // 背景
+                if (backgroundImage.complete && backgroundImage.naturalHeight > 0) {
+                    ctx.drawImage(backgroundImage, 0, 0, 800, 400);
+                } else {
+                    ctx.fillStyle = '#edf5fc';
+                    ctx.fillRect(0, 0, 800, 400);
+                }
+                
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+                ctx.fillRect(0, 0, 800, 400);
+                
+                // 冰面纹理
+                ctx.strokeStyle = '#ffffff60';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < 800; i += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(i, 0);
+                    ctx.lineTo(i, 400);
+                    ctx.strokeStyle = '#ffffff40';
+                    ctx.stroke();
+                }
+                for (let i = 0; i < 400; i += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, i);
+                    ctx.lineTo(800, i);
+                    ctx.strokeStyle = '#ffffff40';
+                    ctx.stroke();
+                }
+                
+                // ===== 投掷区标识 =====
+                // 半透明底色
+                ctx.fillStyle = '#8b6b4d60';
+                ctx.fillRect(THROW_ZONE.xMin, THROW_ZONE.yMin, 
+                           THROW_ZONE.xMax - THROW_ZONE.xMin, 
+                           THROW_ZONE.yMax - THROW_ZONE.yMin);
+                
+                // 边界虚线
+                ctx.strokeStyle = '#ffaa00';
+                ctx.lineWidth = 4;
+                ctx.setLineDash([15, 15]);
+                ctx.strokeRect(THROW_ZONE.xMin, THROW_ZONE.yMin, 
+                              THROW_ZONE.xMax - THROW_ZONE.xMin, 
+                              THROW_ZONE.yMax - THROW_ZONE.yMin);
+                
+                // 区域文字
+                ctx.font = 'bold 20px "Segoe UI"';
+                ctx.fillStyle = '#ffaa00';
+                ctx.shadowColor = 'black';
+                ctx.shadowBlur = 6;
+                ctx.fillText('🚩 投掷区', THROW_ZONE.xMin + 30, THROW_ZONE.yMin + 50);
+                
+                // ===== 目标区标识 =====
+                // 大本营周围半透明高亮
+                ctx.beginPath();
+                ctx.arc(HOUSE_CENTER.x, HOUSE_CENTER.y, HOUSE_RADIUS + 10, 0, 2 * Math.PI);
+                ctx.fillStyle = '#ffff0030';
+                ctx.fill();
+                
+                // 大本营外圈发光
+                ctx.beginPath();
+                ctx.arc(HOUSE_CENTER.x, HOUSE_CENTER.y, HOUSE_RADIUS, 0, 2 * Math.PI);
+                ctx.strokeStyle = '#ffff00';
+                ctx.lineWidth = 5;
+                ctx.setLineDash([]);
+                ctx.stroke();
+                
+                // 目标文字
+                ctx.font = 'bold 22px "Segoe UI"';
+                ctx.fillStyle = '#ffff00';
+                ctx.shadowColor = 'black';
+                ctx.shadowBlur = 8;
+                ctx.fillText('🎯 目标区', HOUSE_CENTER.x - 70, HOUSE_CENTER.y - 50);
+                
+                // 大本营内部
+                ctx.beginPath();
+                ctx.arc(HOUSE_CENTER.x, HOUSE_CENTER.y, HOUSE_RADIUS, 0, 2 * Math.PI);
+                ctx.strokeStyle = '#3f6b8f';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(HOUSE_CENTER.x, HOUSE_CENTER.y, 60, 0, 2 * Math.PI);
+                ctx.strokeStyle = '#3f6b8f';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(HOUSE_CENTER.x, HOUSE_CENTER.y, 30, 0, 2 * Math.PI);
+                ctx.strokeStyle = '#c74e3a';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                
+                // 左侧装饰大本营
+                ctx.beginPath();
+                ctx.arc(150, 200, HOUSE_RADIUS, 0, 2 * Math.PI);
+                ctx.strokeStyle = '#7aa5c2';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 中线
+                ctx.beginPath();
+                ctx.moveTo(400, 0);
+                ctx.lineTo(400, 400);
+                ctx.strokeStyle = '#ffffff80';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([12, 16]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // 绿色瞄准辅助线
+                ctx.beginPath();
+                ctx.moveTo(200, 200);
+                ctx.lineTo(600, 200);
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(200, 200, 5, 0, 2 * Math.PI);
+                ctx.fillStyle = '#00ff00';
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(600, 200, 5, 0, 2 * Math.PI);
+                ctx.fillStyle = '#00ff00';
+                ctx.fill();
+                
+                // 方向箭头
+                ctx.shadowBlur = 0;
+                ctx.beginPath();
+                ctx.moveTo(300, 180);
+                ctx.lineTo(550, 180);
+                ctx.strokeStyle = '#ffffff80';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                for (let i = 0; i < 5; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(500 + i * 12, 170);
+                    ctx.lineTo(520 + i * 12, 180);
+                    ctx.lineTo(500 + i * 12, 190);
+                    ctx.fillStyle = '#ffffff80';
+                    ctx.fill();
+                }
+                
+                // 出界警示
+                ctx.beginPath();
+                ctx.moveTo(780, 0);
+                ctx.lineTo(780, 400);
+                ctx.strokeStyle = '#ff000040';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // 冰壶
+                stones.forEach(s => {
+                    ctx.shadowColor = '#00000040';
+                    ctx.shadowBlur = 8;
+                    ctx.shadowOffsetY = 3;
+                    
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, STONE_RADIUS, 0, 2 * Math.PI);
+                    
+                    const gradient = ctx.createRadialGradient(s.x-4, s.y-4, 3, s.x, s.y, STONE_RADIUS+3);
+                    if (s.team === 'red') {
+                        gradient.addColorStop(0, '#e63946');
+                        gradient.addColorStop(0.8, '#a6111f');
+                    } else {
+                        gradient.addColorStop(0, '#f5e56b');
+                        gradient.addColorStop(0.8, '#b38b2a');
+                    }
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                    
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetY = 0;
+                    ctx.strokeStyle = '#ffffffcc';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, STONE_RADIUS*0.4, 0, 2 * Math.PI);
+                    ctx.fillStyle = '#333c';
+                    ctx.fill();
+                    ctx.strokeStyle = '#aaa';
+                    ctx.lineWidth = 1.2;
+                    ctx.stroke();
+                    
+                    ctx.font = 'bold 12px "Segoe UI"';
+                    ctx.fillStyle = 'white';
+                    ctx.shadowColor = 'black';
+                    ctx.shadowBlur = 4;
+                    ctx.shadowOffsetX = 1;
+                    ctx.shadowOffsetY = 1;
+                    ctx.fillText(s.number, s.x-7, s.y+5);
+                    ctx.shadowBlur = 0;
+                    ctx.shadowOffsetX = 0;
+                    ctx.shadowOffsetY = 0;
+                });
+                
+                // 拖拽线
+                if (isDragging && redThrowsLeft > 0) {
+                    ctx.shadowBlur = 0;
+                    ctx.beginPath();
+                    ctx.moveTo(dragStart.x, dragStart.y);
+                    
+                    let dx = currentMousePos.x - dragStart.x;
+                    let dy = currentMousePos.y - dragStart.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist > MAX_DRAG_DIST) {
+                        dx = (dx / dist) * MAX_DRAG_DIST;
+                        dy = (dy / dist) * MAX_DRAG_DIST;
+                    }
+                    
+                    ctx.lineTo(dragStart.x + dx, dragStart.y + dy);
+                    ctx.strokeStyle = '#00ff00';
+                    ctx.lineWidth = 4;
+                    ctx.setLineDash([8, 8]);
+                    ctx.stroke();
+                    
+                    ctx.beginPath();
+                    ctx.arc(dragStart.x + dx*0.2, dragStart.y + dy*0.2, 6, 0, 2*Math.PI);
+                    ctx.fillStyle = '#00ff00cc';
+                    ctx.fill();
+                    ctx.setLineDash([]);
+                }
+            }
+
+            function updateScoreDisplay() {
+                scoreDisplay.innerText = `🥌 红方 ${redScore} : ${yellowScore} 黄方`;
+            }
+
+            function updateTurnDisplay() {
+                if (gameOver) {
+                    turnDisplay.innerHTML = `比赛结束 · ${redThrown}/8 : ${yellowThrown}/8`;
+                    return;
+                }
+                let turnText = '';
+                if (currentTurn === 'red') {
+                    turnText = `🔴 红队 · ${redThrown}/8  |  黄队 ${yellowThrown}/8`;
+                } else if (currentTurn === 'yellow') {
+                    turnText = `🟡 黄队 · ${yellowThrown}/8  |  红队 ${redThrown}/8`;
+                } else {
+                    turnText = `⏳ 等待 · ${redThrown}/8 : ${yellowThrown}/8`;
+                }
+                turnDisplay.innerHTML = turnText;
+            }
+
+            function resetGame() {
+                initGame();
+                updateScoreDisplay();
+                updateTurnDisplay();
+            }
+
+            rematchBtn.addEventListener('click', resetGame);
+
+            // 事件处理
+            function handlePointerStart(e) {
+                e.preventDefault();
+                const clientX = e.clientX ?? (e.touches?.[0]?.clientX);
+                const clientY = e.clientY ?? (e.touches?.[0]?.clientY);
+                if (clientX !== undefined) {
+                    if (e.touches) {
+                        if (activeTouchId === null) {
+                            activeTouchId = e.touches[0].identifier;
+                            startDrag(clientX, clientY);
+                        }
+                    } else {
+                        startDrag(clientX, clientY);
+                    }
+                }
+            }
+
+            function handlePointerMove(e) {
+                e.preventDefault();
+                if (!isDragging) return;
+                
+                let clientX, clientY;
+                if (e.touches) {
+                    for (let i = 0; i < e.touches.length; i++) {
+                        if (e.touches[i].identifier === activeTouchId) {
+                            clientX = e.touches[i].clientX;
+                            clientY = e.touches[i].clientY;
+                            break;
+                        }
+                    }
+                    if (clientX === undefined) return;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                onDragMove(clientX, clientY);
+            }
+
+            function handlePointerEnd(e) {
+                e.preventDefault();
+                if (!isDragging) return;
+                
+                let clientX, clientY;
+                if (e.changedTouches) {
+                    for (let i = 0; i < e.changedTouches.length; i++) {
+                        if (e.changedTouches[i].identifier === activeTouchId) {
+                            clientX = e.changedTouches[i].clientX;
+                            clientY = e.changedTouches[i].clientY;
+                            break;
+                        }
+                    }
+                    if (clientX === undefined) return;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+                endDrag(clientX, clientY);
+            }
+
+            function handlePointerCancel(e) {
+                isDragging = false;
+                activeTouchId = null;
+            }
+
+            canvas.addEventListener('mousedown', handlePointerStart);
+            canvas.addEventListener('mousemove', handlePointerMove);
+            canvas.addEventListener('mouseup', handlePointerEnd);
+            canvas.addEventListener('mouseleave', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    activeTouchId = null;
+                }
+            });
+            
+            canvas.addEventListener('touchstart', handlePointerStart, { passive: false });
+            canvas.addEventListener('touchmove', handlePointerMove, { passive: false });
+            canvas.addEventListener('touchend', handlePointerEnd, { passive: false });
+            canvas.addEventListener('touchcancel', handlePointerCancel, { passive: false });
+
+            initGame();
+
+            function gameLoop() {
+                updatePhysics();
+                draw();
+                requestAnimationFrame(gameLoop);
+            }
+            gameLoop();
+        })();
+    </script>
+</body>
+</html>
