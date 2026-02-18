@@ -21,7 +21,7 @@
             justify-content: center;
             font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
             padding: 5px;
-            touch-action: pan-y pinch-zoom; 
+            touch-action: none; 
         }
         .game-wrapper {
             width: 100%;
@@ -751,7 +751,6 @@
 
             // 统一事件入口
             function onPointerStart(e) {
-                e.preventDefault();
                 
                 let clientX, clientY;
                 if (e.touches) {
