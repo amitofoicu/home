@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🥌 冰壶小游戏 · iPhone深度优化</title>
+    <title>🥌 冰壶小游戏 · iPhone最终修复</title>
     <style>
+        /* 样式保持与之前完全一致，为节省篇幅省略，实际使用时应保留完整样式 */
         * {
             box-sizing: border-box;
             user-select: none;
@@ -240,7 +241,6 @@
         .audio-hidden {
             display: none;
         }
-        /* 横屏特殊优化 */
         @media (orientation: landscape) and (max-height: 500px) {
             body {
                 padding: 2px;
@@ -384,13 +384,9 @@
             const turnDisplay = document.getElementById('turnDisplay');
 
             // ========== iPhone专项优化参数 ==========
-            // 调大摩擦系数，让冰壶更快停下（原0.985 → 0.975）
             const FRICTION = 0.975;          
-            // 降低最小速度阈值，避免冰壶微动不停（原0.03 → 0.025）
             const MIN_SPEED = 0.025;           
-            // 最大拖拽距离略微减小，避免用力过猛（原160 → 140）
             const MAX_DRAG_DIST = 140;         
-            // 降低拉力系数，让轻弹更柔和（原0.2 → 0.17）
             const PULL_FACTOR = 0.17;           
             const STONE_RADIUS = 16;
 
@@ -417,9 +413,9 @@
             let waitingForAI = false;
             let aiTimer = null;
 
-            // ========== 重构拖拽状态管理，防止iPhone触摸丢失 ==========
+            // ========== 修复：触摸状态管理 ==========
             let isDragging = false;             // 是否正在拖拽
-            let dragStart = { x: 0, y: 0 };      // 拖拽起点（冰壶出生点）
+            let dragStart = { x: 0, y: 0 };      // 拖拽起点
             let currentDragPos = { x: 0, y: 0 }; // 当前触摸点
             let activeTouchId = null;            // 当前跟踪的触摸点ID
             let dragLocked = false;               // 确保一次只处理一个拖拽
@@ -621,28 +617,24 @@
                         Math.hypot(s.x - HOUSE_CENTER.x, s.y - HOUSE_CENTER.y) <= HOUSE_RADIUS);
                     
                     if (redInHouse.length > 0 && yellowThrown > 2) {
-                        // 瞄准红方冰壶，但要考虑新摩擦系数，适当增加力度
                         const target = redInHouse[0];
                         targetX = target.x + (Math.random() * 20 - 10);
                         targetY = target.y + (Math.random() * 20 - 10);
                     } else {
-                        // 瞄准大本营中心，略微随机偏移
                         targetX = HOUSE_CENTER.x + (Math.random() * 40 - 20);
                         targetY = HOUSE_CENTER.y + (Math.random() * 60 - 30);
                     }
 
                     const targetDistance = Math.hypot(targetX - startX, targetY - startY);
                     
-                    // ===== 修复力度：根据新摩擦系数调整AI投掷力度 =====
-                    // 原系数0.12/0.10，新摩擦系数更大了，需要提高力度补偿
-                    let speedFactor = (redInHouse.length > 0 && yellowThrown > 2) ? 0.18 : 0.16; // 从0.12/0.10提高
+                    // 提高AI力度补偿新摩擦系数
+                    let speedFactor = (redInHouse.length > 0 && yellowThrown > 2) ? 0.18 : 0.16;
                     let speed = targetDistance * speedFactor;
                     
-                    const MAX_SPEED = 12; // 略微提高最大速度限制
+                    const MAX_SPEED = 12;
                     if (speed > MAX_SPEED) speed = MAX_SPEED;
                     
-                    // 后期冰壶适当减速，但不要减太多
-                    if (yellowThrown > 4) speed = speed * 0.95; // 从0.9提高到0.95
+                    if (yellowThrown > 4) speed = speed * 0.95;
                     
                     const dx = targetX - startX;
                     const dy = targetY - startY;
@@ -653,8 +645,15 @@
 
                     createStone('yellow', startX, startY, vx, vy);
 
+                    // ===== 关键修复：AI投掷后，强制切换到红方回合，并清除所有拖拽状态 =====
                     currentTurn = 'red';
                     waitingForAI = false;
+                    
+                    // 强制清理所有触摸状态，确保红方可以重新拖拽
+                    isDragging = false;
+                    activeTouchId = null;
+                    dragLocked = false;
+                    
                     updateTurnDisplay();
 
                     aiTimer = null;
@@ -672,9 +671,9 @@
                 };
             }
 
-            // ========== 重构后的触摸事件处理器 ==========
+            // ========== 触摸事件处理器 ==========
             function handleDragStart(clientX, clientY) {
-                // 严格条件检查
+                // 严格条件检查 - 确保只有红方回合且游戏活跃才能拖拽
                 if (!gameActive || waitingForAI || gameOver || isDragging || dragLocked) return;
                 if (!(redThrowsLeft > 0 && !anyStoneMoving() && currentTurn === 'red')) return;
 
@@ -690,6 +689,8 @@
                     dragStart.y = canvasY;
                     currentDragPos.x = canvasX;
                     currentDragPos.y = canvasY;
+                    
+                    console.log('拖拽开始'); // 调试用
                 }
             }
 
@@ -734,7 +735,7 @@
                 const vx = Math.cos(angle) * speed;
                 const vy = Math.sin(angle) * speed;
                 
-                // 创建冰壶（使用dragStart作为投掷起点）
+                // 创建冰壶
                 createStone('red', dragStart.x, dragStart.y, vx, vy);
 
                 // 立即释放所有拖拽状态
@@ -742,11 +743,11 @@
                 activeTouchId = null;
                 dragLocked = false;
 
-                // 切换回合
+                // 切换回合到黄方
                 if (yellowThrowsLeft > 0) {
                     currentTurn = 'yellow';
                     updateTurnDisplay();
-                    aiTakeTurn();
+                    aiTakeTurn(); // AI会在600ms后投掷
                 } else {
                     currentTurn = null;
                     updateTurnDisplay();
@@ -755,7 +756,7 @@
                 checkGameCompletion();
             }
 
-            // ========== 统一的事件入口（兼容触摸和鼠标） ==========
+            // ========== 统一的事件入口 ==========
             function onPointerStart(e) {
                 e.preventDefault(); // 关键：阻止默认滚动/缩放
                 
