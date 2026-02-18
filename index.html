@@ -1,194 +1,755 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-  <title>阿弥陀佛 • 遇见</title>
-
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      font-family: system-ui, -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", serif; /* 改为serif字体 */
-      background: #f5f1e8; /* 宣纸米黄色背景 */
-      overflow-x: hidden;
-    }
-
-    /* ====================== 头部导航 - 书法风格 ====================== */
-    .header-nav {
-      background: linear-gradient(135deg, #5d4037, #3e2723); /* 深褐色渐变 */
-      padding: 12px 0;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      width: 100%;
-      box-sizing: border-box;
-      border-bottom: 2px solid #d7ccc8; /* 浅褐色边框 */
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .nav-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      overflow-x: auto;
-      padding: 0 10px;
-      box-sizing: border-box;
-    }
-
-    .nav-container::-webkit-scrollbar {
-      display: none;
-    }
-
-    .nav-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 10px 16px;
-      background: rgba(255, 253, 231, 0.15); /* 淡米黄色背景 */
-      color: #fff8e1; /* 米白色文字 */
-      text-decoration: none;
-      border-radius: 6px;
-      font-size: 15px;
-      border: 1px solid rgba(169, 145, 109, 0.5); /* 古铜色边框 */
-      margin: 0 5px;
-      flex-shrink: 0;
-      box-sizing: border-box;
-      transition: all 0.3s ease;
-      letter-spacing: 0.5px; /* 增加字间距 */
-    }
-
-    .nav-btn:hover {
-      background: rgba(255, 253, 231, 0.25);
-      transform: translateY(-2px);
-      color: #fff;
-      border-color: #d7a55e; /* 金色边框 */
-    }
-
-    .nav-btn.active {
-      background: rgba(215, 167, 94, 0.25); /* 金色背景 */
-      border-color: #d7a55e;
-      color: #fff;
-      font-weight: 600;
-    }
-
-    @media (max-width: 768px) {
-      .header-nav {
-        padding: 10px 0;
-      }
-      
-      .nav-container {
-        justify-content: flex-start;
-        padding: 0 15px;
-      }
-      
-      .nav-btn {
-        padding: 10px 14px;
-        font-size: 14px;
-        margin: 0 4px;
-      }
-    }
-
-    /* ====================== 顶部图片 ====================== */
-      .top-image {
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-      box-sizing: border-box;
-      width: 100%;
-    }
-
-    .top-image img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 8px 24px rgba(60, 45, 30, 0.15);
-      display: block;
-      border: 1px solid #d7ccc8;
-    }
-
-    @media (max-width: 768px) {
-      .top-image {
-        padding: 15px;
-      }
-    }
-
-    /* ====================== 中间单张图片 ====================== */
-    .center-pic-container {
-      display: flex;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .center-pic-container img {
-      width: auto;
-      max-width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    /* ====================== 页脚 ====================== */
-    .footer {
-      background: linear-gradient(135deg, #5d4037, #3e2723);
-      color: #fff8e1;
-      text-align: center;
-      padding: 25px 20px;
-      font-size: 14px;
-      border-top: 2px solid #d7ccc8;
-      position: relative;
-      box-sizing: border-box;
-      width: 100%;
-    }
-
-    .footer p {
-      margin: 8px 0;
-      opacity: 0.9;
-      line-height: 1.5;
-    }
-
-    /* ====================== 添加黄实线效果 ====================== */
-    .footer::before {
-      content: "";
-      display: block;
-      width: 80px;
-      height: 2px;
-      background: #d7a55e;
-      margin: 0 auto 15px auto;
-    }
-
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>轻松小游戏合集 · 新增冰壶</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #f1f1f1;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 50px 20px;
+            background: rgba(15, 15, 35, 0.7);
+            border-radius: 20px;
+            margin-bottom: 50px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(100, 100, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #ff0080, #ff8c00, #40e0d0, #ff0080);
+            background-size: 300% 100%;
+            animation: gradientMove 5s infinite linear;
+        }
+        
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 300% 50%; }
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #ff0080, #ff8c00, #40e0d0);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 5px 15px rgba(255, 255, 255, 0.1);
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            color: #b8b8d1;
+            max-width: 800px;
+            margin: 0 auto 25px;
+            line-height: 1.7;
+        }
+        
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0 30px;
+        }
+        
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ddd;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            background: linear-gradient(90deg, #ff0080, #ff8c00);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(255, 0, 128, 0.3);
+        }
+        
+        .game-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 35px;
+            margin-top: 20px;
+        }
+        
+        .game-card {
+            background: rgba(25, 25, 50, 0.8);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(100, 100, 255, 0.2);
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+        
+        .game-card:hover {
+            transform: translateY(-15px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border-color: rgba(255, 0, 128, 0.5);
+        }
+        
+        .game-thumbnail {
+            height: 200px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-thumbnail::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.7));
+        }
+        
+        .game-thumbnail i, .game-thumbnail img {
+            font-size: 5rem;
+            z-index: 1;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
+            transition: transform 0.4s ease;
+        }
+        
+        .game-thumbnail img {
+            max-width: 80%;
+            max-height: 80%;
+            object-fit: contain;
+        }
+        
+        .game-number {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 0, 128, 0.9);
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.3rem;
+            z-index: 2;
+            box-shadow: 0 5px 15px rgba(255, 0, 128, 0.4);
+            transition: transform 0.3s ease;
+        }
+        
+        .game-type {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(64, 224, 208, 0.9);
+            color: #111;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            z-index: 2;
+            backdrop-filter: blur(2px);
+        }
+        
+        .game-content {
+            padding: 25px;
+        }
+        
+        .game-title {
+            font-size: 1.6rem;
+            margin-bottom: 12px;
+            color: #40e0d0;
+        }
+        
+        .game-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        .game-rating {
+            color: #ff8c00;
+        }
+        
+        .game-description {
+            color: #b8b8d1;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            height: 72px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+        
+        .game-link {
+            display: inline-block;
+            background: linear-gradient(90deg, #ff0080, #ff8c00);
+            color: white;
+            padding: 14px 25px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .game-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff8c00, #ff0080);
+            transition: left 0.5s ease;
+            z-index: -1;
+        }
+        
+        .game-link:hover::before {
+            left: 0;
+        }
+        
+        .game-link:hover {
+            box-shadow: 0 10px 20px rgba(255, 0, 128, 0.4);
+            transform: translateY(-3px);
+        }
+        
+        .game-link i {
+            margin-left: 8px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 70px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #8a8ab5;
+            font-size: 0.95rem;
+        }
+        
+        .footer-links a {
+            color: #b8b8d1;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .footer-links a:hover {
+            color: #40e0d0;
+        }
+        
+        /* 新增游戏卡片特殊样式 */
+        .game-card[data-type="sports"] .game-thumbnail {
+            background: linear-gradient(45deg, #1e7fb0, #3a9bd5, #5bb3e8) !important;
+        }
+        .game-card[data-type="sports"] .game-type {
+            background: #1e7fb0;
+            color: white;
+        }
+        .game-card[data-type="tool"] .game-thumbnail {
+            background: linear-gradient(45deg, #2c3e50, #3498db, #2980b9) !important;
+        }
+        .game-card[data-type="tool"] .game-type {
+            background: #3498db;
+            color: white;
+        }
+        .game-card[data-type="classic"] .game-thumbnail {
+            background: linear-gradient(45deg, #b8860b, #d4a017, #8b4513) !important;
+        }
+        .game-card[data-type="classic"] .game-type {
+            background: #d4a017;
+            color: #1e1e1e;
+            font-weight: 800;
+        }
+        
+        @media (max-width: 1200px) {
+            .game-list {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .game-list {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+                margin: 0 auto;
+            }
+            
+            h1 {
+                font-size: 2.8rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 15px;
+            }
+            
+            header {
+                padding: 30px 15px;
+            }
+            
+            h1 {
+                font-size: 2.3rem;
+            }
+            
+            .filters {
+                gap: 10px;
+            }
+            
+            .filter-btn {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
 </head>
-
 <body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-gamepad"></i> 轻松小游戏合集</h1>
+            <p class="subtitle">令人身心愉悦且放松小游戏！<br>新增 · 冰壶对战</p>
+            
+            <div class="filters">
+                <button class="filter-btn active" data-filter="all">所有游戏</button>
+                <button class="filter-btn" data-filter="puzzle">益智</button>
+                <button class="filter-btn" data-filter="strategy">策略</button>
+                <button class="filter-btn" data-filter="arcade">街机</button>
+                <button class="filter-btn" data-filter="audio">音频</button>
+                <button class="filter-btn" data-filter="card">卡牌</button>
+                <button class="filter-btn" data-filter="meditation">静心</button>
+                <button class="filter-btn" data-filter="relaxation">休闲</button>
+                <button class="filter-btn" data-filter="adventure">冒险</button>
+                <button class="filter-btn" data-filter="classic">经典</button>
+                <button class="filter-btn" data-filter="tool">工具</button>
+                <button class="filter-btn" data-filter="sports">体育</button> 
+            </div>
+        </header>
+        
+        <div class="game-list">
+            <!-- 新增：冰壶小游戏 (置顶突出) -->
+            <div class="game-card" data-type="sports">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #0b2b44, #1c4e72, #2f6f9c);">
+                    <i class="fas fa-broom"></i>
+                    <div class="game-number">1</div>
+                    <div class="game-type">体育</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">🥌 冰壶小游戏</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 5.0/5</span>
+                        <span><i class="far fa-clock"></i> 5-15分钟</span>
+                    </div>
+                    <p class="game-description">红队vs黄队AI，拖动投掷冰壶，物理碰撞真实，大本营计分，奥运规则，支持触摸屏。</p>
+                    <a href="https://amitofoicu.github.io/home/game14.html" class="game-link" target="_blank">开始冰壶 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
 
-<!-- 头部导航 -->
-<header class="header-nav">
-  <nav class="nav-container">
-    <a href="https://amitofoicu.github.io/home/jingwen.html" class="nav-btn">无量寿经</a>
-    <a href="https://amitofoicu.github.io/home/yiqu.html" class="nav-btn" >经文义趣</a>
-    <a href="https://amitofoicu.github.io/home/sound.html" class="nav-btn">天籁梵音</a>
-    <a href="https://amitofoicu.github.io/home/art.html" class="nav-btn">大德墨宝</a>
-  </nav>
-</header>
+            <!-- 念经助手 (2号) -->
+            <div class="game-card" data-type="tool">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #2c3e50, #3498db, #2980b9);">
+                    <i class="fas fa-pray"></i>
+                    <div class="game-number">2</div>
+                    <div class="game-type">工具</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">念经助手 · 木鱼伴读</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 5.0/5</span>
+                        <span><i class="far fa-clock"></i> 自由时长</span>
+                    </div>
+                    <p class="game-description">逐字念经工具，支持导入TXT经文，自动跳过标点/括号/行末空格，鼠标点击或键盘空格键跟读，木鱼声反馈。</p>
+                    <a href="https://amitofoicu.github.io/home/nianjingzhushou.html" class="game-link" target="_blank">开始念经 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
 
-<!-- 顶部图片 -->
-<a href="https://amitofoicu.github.io/home">
-  <div class="top-image">
-    <img src="https://amitofoicu.github.io/home/MB-03-0041_preview.jpg" alt="南无阿弥陀佛">
-  </div>
-</a>
+            <!-- 弟子规 (3号) -->
+            <div class="game-card" data-type="classic">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #b8860b, #d4a017, #8b4513);">
+                    <i class="fas fa-feather-alt"></i>
+                    <div class="game-number">3</div>
+                    <div class="game-type">经典</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">抄经典 · 弟子规</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 5.0/5</span>
+                        <span><i class="far fa-clock"></i> 10-40分钟</span>
+                    </div>
+                    <p class="game-description">网页版摹写《弟子规》，一字一句，澄净心灵。可自由书写、对照描红，沉浸于传统蒙学智慧。</p>
+                    <a href="https://amitofoicu.github.io/home/dizigui.html" class="game-link" target="_blank">静心抄写 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
 
-<!-- 中间单张图片 -->
-<div class="center-pic-container">
-  <img src="https://amitofoicu.github.io/home/wuliangsofo_s.jpg" alt="无量寿佛">
-</div>
-
-<!-- 页脚 -->
-<div class="footer">
-  <p>愿以此功德 庄严佛净土 上报四重恩 下济三途苦</p>
-  <p>若有见闻者 悉发菩提心 尽此一报身 同生极乐国</p>
-</div>
-
-</body>
-</html>
+            <!-- 静心抄经 (4号) -->
+            <div class="game-card" data-type="meditation">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #8A2BE2, #4B0082);">
+                    <i class="fas fa-pen-fancy"></i>
+                    <div class="game-number">4</div>
+                    <div class="game-type">静心</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">静心抄经</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 5.0/5</span>
+                        <span><i class="far fa-clock"></i> 15-60分钟</span>
+                    </div>
+                    <p class="game-description">一笔一划，静心修慧。在线抄写《般若波罗蜜多心经》，培养专注力与平和心境。</p>
+                    <a href="https://amitofoicu.github.io/home/xinjing.html" class="game-link" target="_blank">立即体验 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+            
+            <!-- 俄罗斯方块 (5号) -->
+            <div class="game-card" data-type="puzzle">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #ff0080, #ff8c00);">
+                    <i class="fas fa-th-large"></i>
+                    <div class="game-number">5</div>
+                    <div class="game-type">益智</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">俄罗斯方块</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 4.9/5</span>
+                        <span><i class="far fa-clock"></i> 5-30分钟</span>
+                    </div>
+                    <p class="game-description">经典俄罗斯方块游戏，针对电脑与移动特别端优化</p>
+                    <a href="https://amitofoicu.github.io/home/game.html" class="game-link" target="_blank">立即游玩 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+            
+            <!-- 五子棋 (6号) -->
+            <div class="game-card" data-type="strategy">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #40e0d0, #20b2aa);">
+                    <i class="fas fa-table-cells-large"></i>
+                    <div class="game-number">6</div>
+                    <div class="game-type">策略</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">五子棋</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 4.7/5</span>
+                        <span><i class="far fa-clock"></i> 10-30分钟</span>
+                    </div>
+                    <p class="game-description">可自选与四个等级难度的AI对弈</p>
+                    <a href="https://amitofoicu.github.io/home/game2.html" class="game-link" target="_blank">立即游玩 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+            
+            <!-- 斗地主 (7号) -->
+            <div class="game-card" data-type="card">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #9d50bb, #6e48aa);">
+                    <i class="fas fa-heart"></i>
+                    <div class="game-number">7</div>
+                    <div class="game-type">卡牌</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">斗地主</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 4.8/5</span>
+                        <span><i class="far fa-clock"></i> 15-45分钟</span>
+                    </div>
+                    <p class="game-description">传统扑克牌游戏</p>
+                    <a href="https://amitofoicu.github.io/home/game3.html" class="game-link" target="_blank">立即游玩 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+            
+            <!-- 拼图游戏 (8号) -->
+            <div class="game-card" data-type="puzzle">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #ff8c00, #ff4500);">
+                    <i class="fas fa-puzzle-piece"></i>
+                    <div class="game-number">8</div>
+                    <div class="game-type">益智</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">拼图游戏</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 4.6/5</span>
+                        <span><i class="far fa-clock"></i> 20-60分钟</span>
+                    </div>
+                    <p class="game-description">16格拼图，可自选多种图案</p>
+                    <a href="https://amitofoicu.github.io/home/game4.html" class="game-link" target="_blank">立即游玩 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+            
+            <!-- 声音听辨小游戏 (9号) -->
+            <div class="game-card" data-type="audio">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #00c9ff, #92fe9d);">
+                    <i class="fas fa-volume-up"></i>
+                    <div class="game-number">9</div>
+                    <div class="game-type">音频</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">声音听辨游戏</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 4.5/5</span>
+                        <span><i class="far fa-clock"></i> 5-15分钟</span>
+                    </div>
+                    <p class="game-description">练习听力与专注力的小游戏</p>
+                    <a href="https://amitofoicu.github.io/home/game5.html" class="game-link" target="_blank">立即游玩 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+            
+            <!-- 贪吃蛇 (10号) -->
+            <div class="game-card" data-type="arcade">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #da22ff, #9733ee);">
+                    <i class="fas fa-snake"></i>
+                    <div class="game-number">10</div>
+                    <div class="game-type">街机</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">贪吃蛇</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 4.7/5</span>
+                        <span><i class="far fa-clock"></i> 5-20分钟</span>
+                    </div>
+                    <p class="game-description">经典贪吃蛇</p>
+                    <a href="https://amitofoicu.github.io/home/game6.html" class="game-link" target="_blank">立即游玩 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+            
+            <!-- 消消乐 (11号) -->
+            <div class="game-card" data-type="puzzle">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #f46b45, #eea849);">
+                    <i class="fas fa-gem"></i>
+                    <div class="game-number">11</div>
+                    <div class="game-type">益智</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">消消乐</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 4.8/5</span>
+                        <span><i class="far fa-clock"></i> 10-30分钟</span>
+                    </div>
+                    <p class="game-description">纯净放松版的消消乐</p>
+                    <a href="https://amitofoicu.github.io/home/game7.html" class="game-link" target="_blank">立即游玩 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+            
+            <!-- 数字华容道 (12号) -->
+            <div class="game-card" data-type="puzzle">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #00b4db, #0083b0);">
+                    <i class="fas fa-th-large"></i>
+                    <div class="game-number">12</div>
+                    <div class="game-type">益智</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">数字华容道</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 4.8/5</span>
+                        <span><i class="far fa-clock"></i> 10-30分钟</span>
+                    </div>
+                    <p class="game-description">经典数字滑块拼图游戏，锻炼逻辑思维与空间能力</p>
+                    <a href="https://amitofoicu.github.io/home/game9.html" class="game-link" target="_blank">立即游玩 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+            
+            <!-- 射击小游戏 (13号) -->
+            <div class="game-card" data-type="arcade">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #667eea, #764ba2);">
+                    <i class="fas fa-crosshairs"></i>
+                    <div class="game-number">13</div>
+                    <div class="game-type">街机</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">射击小游戏</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 4.6/5</span>
+                        <span><i class="far fa-clock"></i> 10-25 min</span>
+                    </div>
+                    <p class="game-description">纯净放松版的射击小游戏</p>
+                    <a href="https://amitofoicu.github.io/home/game8.html" class="game-link" target="_blank">立即游玩 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+            
+            <!-- 数字融合2048 (14号) -->
+            <div class="game-card" data-type="puzzle">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #9C27B0, #673AB7);">
+                    <i class="fas fa-sort-numeric-up"></i>
+                    <div class="game-number">14</div>
+                    <div class="game-type">益智</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">数字融合2048</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 4.9/5</span>
+                        <span><i class="far fa-clock"></i> 10-40分钟</span>
+                    </div>
+                    <p class="game-description">数字方块合并游戏，通过方向键移动，相同数字合并，目标合成2048！</p>
+                    <a href="https://amitofoicu.github.io/home/game11.html" class="game-link" target="_blank">立即游玩 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+            
+            <!-- 荷花采集小游戏 (15号) -->
+            <div class="game-card" data-type="relaxation">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #0a3d3d, #00a8cc);">
+                    <i class="fas fa-water-lily"></i>
+                    <div class="game-number">15</div>
+                    <div class="game-type">休闲</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">荷花采集小游戏</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 4.8/5</span>
+                        <span><i class="far fa-clock"></i> 5-15分钟</span>
+                    </div>
+                    <p class="game-description">轻触荷花进行采集，享受禅意时光，放松身心的小游戏。</p>
+                    <a href="https://amitofoicu.github.io/home/game10.html" class="game-link" target="_blank">立即游玩 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+            
+            <!-- 迷宫探险游戏 (16号) -->
+            <div class="game-card" data-type="adventure">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #4a148c, #8e24aa);">
+                    <i class="fas fa-dungeon"></i>
+                    <div class="game-number">16</div>
+                    <div class="game-type">冒险</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">迷宫探险游戏</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 4.9/5</span>
+                        <span><i class="far fa-clock"></i> 10-30分钟</span>
+                    </div>
+                    <p class="game-description">在迷宫中收集宝石，避开怪物，找到出口！支持键盘和触屏控制。</p>
+                    <a href="https://amitofoicu.github.io/home/game12.html" class="game-link" target="_blank">立即游玩 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+            
+            <!-- 单人壁球挑战赛 (17号) -->
+            <div class="game-card" data-type="arcade">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #FFD700, #FFA500, #FF6347);">
+                    <i class="fas fa-basketball-ball"></i>
+                    <div class="game-number">17</div>
+                    <div class="game-type">街机</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">单人壁球挑战赛</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 4.8/5</span>
+                        <span><i class="far fa-clock"></i> 10-30分钟</span>
+                    </div>
+                    <p class="game-description">用球拍发射球，击中目标得分！每100分触发花朵特效，支持PC和移动设备。</p>
+                    <a href="https://amitofoicu.github.io/home/game13.html" class="game-link" target="_blank">立即游玩 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <div class="footer-links">
+                <a href="https://amitofoicu.github.io/home/main.html">关于我们</a> · 
+                <a href="https://amitofoicu.github.io/home/curling.html">冰壶游戏</a> · 
+                <a href="https://amitofoicu.github.io/home/nianjingzhushou.html">念经助手</a>
+            </div>
+            <div style="margin-top: 15px;">✨ 静心 · 放松 · 愉悦 ✨</div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const gameCards = document.querySelectorAll('.game-card');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            
+            // Filter games by category
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const filterValue = this.getAttribute('data-filter');
+                    
+                    gameCards.forEach(card => {
+                        if (filterValue === 'all' || card.getAttribute('data-type') === filterValue) {
+                            card.style.display = 'block';
+                            setTimeout(() => {
+                                card.style.opacity = '1';
+                                card.style.transform = 'translateY(0)';
+                            }, 10);
+                        } else {
+                            card.style.opacity = '0';
+                            card.style.transform = 'translateY(20px)';
+                            setTimeout(() => {
+                                card.style.display = 'none';
+                            }, 300);
+                        }
+                    });
+                });
+            });
+            
+            // Hover effects
+            gameCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    const icon = this.querySelector('.game-thumbnail i, .game-thumbnail img');
+                    if (icon) {
+                        icon.style.transform = 'scale(1.2) rotate(10deg)';
+                    }
+                    
+                    const gameNumber = this.querySelector('.game-number');
+                    if (gameNumber) {
+                        gameNumber.style.transform = 'scale(1.1)';
+                    }
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    const icon = this.querySelector('.game-thumbnail i, .game-thumbnail img');
+                    if (icon) {
+                        icon.style.transform = 'scale(1) rotate(0deg)';
+                    }
+                    
+                    const gameNumber = this.querySelector('.game-number');
+                    if (gameNumber) {
+                        gameNumber.style.transform = 'scale(1)';
+                    }
+                });
+            });
+            
+            // Animation on load
+            setTimeout(() => {
+                document.querySelector('header').style.opacity = '1';
+                document.querySelector('header').style.transform = 'translateY(0)';
+                
+                gameCards.forEach((card, index) => {
+                    setTimeout(() => {
+                        card.style.opacity =
