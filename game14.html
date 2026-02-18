@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>🥌 冰壶小游戏 · iPhone最终修复</title>
+    <title>🥌 冰壶小游戏 · 双背景</title>
     <style>
-        /* 样式保持与之前完全一致，为节省篇幅省略，实际使用时应保留完整样式 */
         * {
             box-sizing: border-box;
             user-select: none;
@@ -14,7 +13,9 @@
         body {
             margin: 0;
             min-height: 100vh;
-            background: linear-gradient(145deg, #0b2b44 0%, #1c4e72 100%);
+            /* 外部背景：lianchi6.jpg */
+            background: url('https://amitofoicu.github.io/home/lianchi6.jpg') no-repeat center center fixed;
+            background-size: cover;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -65,7 +66,8 @@
             filter: drop-shadow(2px 2px 0 #b38b2a);
         }
         .game-container {
-            background: #aac8e0;
+            background: rgba(170, 200, 224, 0.7); /* 半透明让外部背景透出 */
+            backdrop-filter: blur(5px);
             padding: 0.8rem 0.8rem 1.2rem 0.8rem;
             border-radius: 2rem;
             box-shadow: 0 25px 35px rgba(0, 0, 0, 0.5), inset 0 0 0 2px #eef9ff, inset 0 0 15px #7fa3c0;
@@ -121,7 +123,8 @@
             height: auto;
             aspect-ratio: 800 / 400;
             border-radius: 10px;
-            background: #edf5fc;
+            /* canvas内部背景由JS绘制lianchi6.jpg，此处留透明或默认 */
+            background: transparent;
             box-shadow: inset 0 8px 12px rgba(0,20,40,0.3), inset 0 -4px 8px #ffffffcc, 0 18px 25px #0a1e2e;
             cursor: grab;
             touch-action: none; 
@@ -319,6 +322,7 @@
                 <button class="mute-btn" id="muteBtn">🔊</button>
             </div>
             
+            <!-- 画布背景将在JS中用lianchi6.jpg绘制 -->
             <canvas id="gameCanvas" width="800" height="400"></canvas>
 
             <div class="ice-panel">
@@ -374,10 +378,12 @@
                 muteBtn.textContent = isMuted ? '🔇' : '🔊';
             });
 
-            // 设置背景图片
-            const backgroundImage = new Image();
-            backgroundImage.src = 'https://amitofoicu.github.io/home/lianchi.jpg';
-            backgroundImage.crossOrigin = 'anonymous';
+            // ===== 设置两个背景图片 =====
+            // 外部背景已在CSS中设置：body使用lianchi6.jpg
+            // 画布内部背景：lianchi6.jpg
+            const canvasBackground = new Image();
+            canvasBackground.src = 'https://amitofoicu.github.io/home/lianchi6.jpg';
+            canvasBackground.crossOrigin = 'anonymous';
             
             // 显示元素
             const scoreDisplay = document.getElementById('scoreDisplay');
@@ -413,12 +419,12 @@
             let waitingForAI = false;
             let aiTimer = null;
 
-            // ========== 修复：触摸状态管理 ==========
-            let isDragging = false;             // 是否正在拖拽
-            let dragStart = { x: 0, y: 0 };      // 拖拽起点
-            let currentDragPos = { x: 0, y: 0 }; // 当前触摸点
-            let activeTouchId = null;            // 当前跟踪的触摸点ID
-            let dragLocked = false;               // 确保一次只处理一个拖拽
+            // 触摸状态管理
+            let isDragging = false;
+            let dragStart = { x: 0, y: 0 };
+            let currentDragPos = { x: 0, y: 0 };
+            let activeTouchId = null;
+            let dragLocked = false;
 
             let redScore = 0;
             let yellowScore = 0;
@@ -595,7 +601,7 @@
                 return false;
             }
 
-            // ========== 修复AI投掷力度 ==========
+            // AI投掷
             function aiTakeTurn() {
                 if (!(yellowThrowsLeft > 0 && !anyStoneMoving() && currentTurn === 'yellow' && gameActive)) return;
 
@@ -627,7 +633,6 @@
 
                     const targetDistance = Math.hypot(targetX - startX, targetY - startY);
                     
-                    // 提高AI力度补偿新摩擦系数
                     let speedFactor = (redInHouse.length > 0 && yellowThrown > 2) ? 0.18 : 0.16;
                     let speed = targetDistance * speedFactor;
                     
@@ -645,11 +650,10 @@
 
                     createStone('yellow', startX, startY, vx, vy);
 
-                    // ===== 关键修复：AI投掷后，强制切换到红方回合，并清除所有拖拽状态 =====
+                    // 强制切换回红方并清理触摸状态
                     currentTurn = 'red';
                     waitingForAI = false;
                     
-                    // 强制清理所有触摸状态，确保红方可以重新拖拽
                     isDragging = false;
                     activeTouchId = null;
                     dragLocked = false;
@@ -671,15 +675,13 @@
                 };
             }
 
-            // ========== 触摸事件处理器 ==========
+            // 触摸事件处理器
             function handleDragStart(clientX, clientY) {
-                // 严格条件检查 - 确保只有红方回合且游戏活跃才能拖拽
                 if (!gameActive || waitingForAI || gameOver || isDragging || dragLocked) return;
                 if (!(redThrowsLeft > 0 && !anyStoneMoving() && currentTurn === 'red')) return;
 
                 const { x: canvasX, y: canvasY } = getCanvasCoords(clientX, clientY);
 
-                // 检查是否在投掷区内
                 if (canvasX >= THROW_ZONE.xMin && canvasX <= THROW_ZONE.xMax && 
                     canvasY >= THROW_ZONE.yMin && canvasY <= THROW_ZONE.yMax) {
                     
@@ -689,8 +691,6 @@
                     dragStart.y = canvasY;
                     currentDragPos.x = canvasX;
                     currentDragPos.y = canvasY;
-                    
-                    console.log('拖拽开始'); // 调试用
                 }
             }
 
@@ -703,9 +703,7 @@
             }
 
             function handleDragEnd(clientX, clientY) {
-                // 必须正在拖拽且满足投掷条件
                 if (!isDragging || !gameActive || waitingForAI || gameOver) {
-                    // 清理拖拽状态
                     isDragging = false;
                     activeTouchId = null;
                     dragLocked = false;
@@ -718,7 +716,6 @@
                 const dy = canvasY - dragStart.y;
                 let dist = Math.sqrt(dx*dx + dy*dy);
                 
-                // 最小拖动距离，避免误触
                 if (dist < 5) {
                     isDragging = false;
                     activeTouchId = null;
@@ -726,7 +723,6 @@
                     return;
                 }
                 
-                // 限制最大拖拽距离
                 if (dist > MAX_DRAG_DIST) dist = MAX_DRAG_DIST;
                 
                 const angle = Math.atan2(dy, dx);
@@ -735,19 +731,16 @@
                 const vx = Math.cos(angle) * speed;
                 const vy = Math.sin(angle) * speed;
                 
-                // 创建冰壶
                 createStone('red', dragStart.x, dragStart.y, vx, vy);
 
-                // 立即释放所有拖拽状态
                 isDragging = false;
                 activeTouchId = null;
                 dragLocked = false;
 
-                // 切换回合到黄方
                 if (yellowThrowsLeft > 0) {
                     currentTurn = 'yellow';
                     updateTurnDisplay();
-                    aiTakeTurn(); // AI会在600ms后投掷
+                    aiTakeTurn();
                 } else {
                     currentTurn = null;
                     updateTurnDisplay();
@@ -756,13 +749,12 @@
                 checkGameCompletion();
             }
 
-            // ========== 统一的事件入口 ==========
+            // 统一事件入口
             function onPointerStart(e) {
-                e.preventDefault(); // 关键：阻止默认滚动/缩放
+                e.preventDefault();
                 
                 let clientX, clientY;
                 if (e.touches) {
-                    // 触摸事件：只跟踪第一个触摸点
                     if (activeTouchId === null) {
                         activeTouchId = e.touches[0].identifier;
                         clientX = e.touches[0].clientX;
@@ -770,7 +762,6 @@
                         handleDragStart(clientX, clientY);
                     }
                 } else {
-                    // 鼠标事件
                     clientX = e.clientX;
                     clientY = e.clientY;
                     handleDragStart(clientX, clientY);
@@ -784,7 +775,6 @@
                 
                 let clientX, clientY;
                 if (e.touches) {
-                    // 查找我们正在跟踪的触摸点
                     for (let i = 0; i < e.touches.length; i++) {
                         if (e.touches[i].identifier === activeTouchId) {
                             clientX = e.touches[i].clientX;
@@ -792,7 +782,6 @@
                             break;
                         }
                     }
-                    // 如果找不到跟踪的触摸点，可能已经结束，终止拖拽
                     if (clientX === undefined) {
                         isDragging = false;
                         activeTouchId = null;
@@ -813,7 +802,6 @@
                 
                 let clientX, clientY;
                 if (e.changedTouches) {
-                    // 查找结束的触摸点是否是我们跟踪的那个
                     for (let i = 0; i < e.changedTouches.length; i++) {
                         if (e.changedTouches[i].identifier === activeTouchId) {
                             clientX = e.changedTouches[i].clientX;
@@ -822,7 +810,6 @@
                         }
                     }
                     if (clientX === undefined) {
-                        // 不是我们跟踪的点，只清理状态
                         isDragging = false;
                         activeTouchId = null;
                         dragLocked = false;
@@ -834,19 +821,16 @@
                 }
                 
                 handleDragEnd(clientX, clientY);
-                // 确保清除触摸ID
                 activeTouchId = null;
             }
 
             function onPointerCancel(e) {
                 e.preventDefault();
-                // 触摸被系统取消，清理所有状态
                 isDragging = false;
                 activeTouchId = null;
                 dragLocked = false;
             }
 
-            // 添加事件监听器（全部使用非被动模式）
             canvas.addEventListener('touchstart', onPointerStart, { passive: false });
             canvas.addEventListener('touchmove', onPointerMove, { passive: false });
             canvas.addEventListener('touchend', onPointerEnd, { passive: false });
@@ -857,14 +841,13 @@
             canvas.addEventListener('mouseup', onPointerEnd);
             canvas.addEventListener('mouseleave', (e) => {
                 if (isDragging) {
-                    // 鼠标离开画布，视为取消拖拽
                     isDragging = false;
                     activeTouchId = null;
                     dragLocked = false;
                 }
             });
 
-            // 物理更新函数
+            // 物理更新
             function handleCollisions() {
                 const n = stones.length;
                 for (let i = 0; i < n; i++) {
@@ -948,18 +931,20 @@
                 }
             }
 
-            // 绘制函数
+            // 绘制函数 - 使用canvasBackground作为画布内部背景
             function draw() {
                 ctx.clearRect(0, 0, 800, 400);
                 
-                // 背景
-                if (backgroundImage.complete && backgroundImage.naturalHeight > 0) {
-                    ctx.drawImage(backgroundImage, 0, 0, 800, 400);
+                // 画布内部背景：lianchi6.jpg
+                if (canvasBackground.complete && canvasBackground.naturalHeight > 0) {
+                    ctx.drawImage(canvasBackground, 0, 0, 800, 400);
                 } else {
-                    ctx.fillStyle = '#edf5fc';
+                    // 背景图片未加载时使用淡蓝色占位
+                    ctx.fillStyle = '#c9e2f0';
                     ctx.fillRect(0, 0, 800, 400);
                 }
                 
+                // 半透明白色覆盖层（冰面效果）
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
                 ctx.fillRect(0, 0, 800, 400);
                 
@@ -976,7 +961,7 @@
                 for (let i = 0; i < 400; i += 40) {
                     ctx.beginPath();
                     ctx.moveTo(0, i);
-                    ctx.lineTo(400, i);
+                    ctx.lineTo(800, i);
                     ctx.strokeStyle = '#ffffff40';
                     ctx.stroke();
                 }
@@ -1216,7 +1201,6 @@
             }
             gameLoop();
 
-            // 窗口尺寸变化时，确保画布正确显示
             window.addEventListener('resize', () => {});
         })();
     </script>
