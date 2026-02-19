@@ -419,12 +419,12 @@
             let waitingForAI = false;
             let aiTimer = null;
 
-            // 触摸状态管理
+            // 触摸状态管理 (iPhone修复重点: 确保每次触摸独立且及时释放)
             let isDragging = false;
             let dragStart = { x: 0, y: 0 };
             let currentDragPos = { x: 0, y: 0 };
-            let activeTouchId = null;
-            let dragLocked = false;
+            let activeTouchId = null;          // 跟踪当前触摸点
+            // 移除 dragLocked 标志，用 activeTouchId + isDragging 即可，防止锁死
 
             let redScore = 0;
             let yellowScore = 0;
@@ -476,7 +476,6 @@
                 // 重置拖拽状态
                 isDragging = false;
                 activeTouchId = null;
-                dragLocked = false;
                 
                 playBgMusic();
                 
@@ -656,7 +655,6 @@
                     
                     isDragging = false;
                     activeTouchId = null;
-                    dragLocked = false;
                     
                     updateTurnDisplay();
 
@@ -675,18 +673,24 @@
                 };
             }
 
-            // 触摸事件处理器
+            // 触摸事件处理器 —— 修复iPhone投掷问题的核心：
+            // 1. 确保每个触摸点独立识别，防止多个触摸互相干扰
+            // 2. 只在条件完全满足时开始拖拽
+            // 3. 结束拖拽后立即重置 activeTouchId
             function handleDragStart(clientX, clientY) {
-                if (!gameActive || waitingForAI || gameOver || isDragging || dragLocked) return;
+                // 只有红队回合、无石头移动、游戏活跃、未在拖拽、且未等待AI时才允许
+                if (!gameActive || waitingForAI || gameOver) return;
                 if (!(redThrowsLeft > 0 && !anyStoneMoving() && currentTurn === 'red')) return;
+                // 如果已经在拖拽，忽略新的触摸（但iPhone上通常只有一个活动触摸，这里为了安全）
+                if (isDragging) return;
 
                 const { x: canvasX, y: canvasY } = getCanvasCoords(clientX, clientY);
 
+                // 严格限定在投掷区内
                 if (canvasX >= THROW_ZONE.xMin && canvasX <= THROW_ZONE.xMax && 
                     canvasY >= THROW_ZONE.yMin && canvasY <= THROW_ZONE.yMax) {
                     
                     isDragging = true;
-                    dragLocked = true;
                     dragStart.x = canvasX;
                     dragStart.y = canvasY;
                     currentDragPos.x = canvasX;
@@ -698,15 +702,20 @@
                 if (!isDragging) return;
                 
                 const { x: canvasX, y: canvasY } = getCanvasCoords(clientX, clientY);
+                // 限制currentDragPos仅在合理范围内，不影响拖拽线绘制
                 currentDragPos.x = canvasX;
                 currentDragPos.y = canvasY;
             }
 
             function handleDragEnd(clientX, clientY) {
-                if (!isDragging || !gameActive || waitingForAI || gameOver) {
+                // 如果不在拖拽状态，直接重置触摸id并返回
+                if (!isDragging) {
+                    activeTouchId = null;
+                    return;
+                }
+                if (!gameActive || waitingForAI || gameOver) {
                     isDragging = false;
                     activeTouchId = null;
-                    dragLocked = false;
                     return;
                 }
 
@@ -716,10 +725,10 @@
                 const dy = canvasY - dragStart.y;
                 let dist = Math.sqrt(dx*dx + dy*dy);
                 
+                // 拖拽距离太小则忽略投掷
                 if (dist < 5) {
                     isDragging = false;
                     activeTouchId = null;
-                    dragLocked = false;
                     return;
                 }
                 
@@ -731,16 +740,18 @@
                 const vx = Math.cos(angle) * speed;
                 const vy = Math.sin(angle) * speed;
                 
+                // 创建红方冰壶
                 createStone('red', dragStart.x, dragStart.y, vx, vy);
 
+                // 重置拖拽状态
                 isDragging = false;
-                activeTouchId = null;
-                dragLocked = false;
+                activeTouchId = null;   // 关键：释放触摸ID
 
+                // 切换回合
                 if (yellowThrowsLeft > 0) {
                     currentTurn = 'yellow';
                     updateTurnDisplay();
-                    aiTakeTurn();
+                    aiTakeTurn();        // 黄队AI
                 } else {
                     currentTurn = null;
                     updateTurnDisplay();
@@ -749,21 +760,23 @@
                 checkGameCompletion();
             }
 
-            // 统一事件入口
+            // 统一事件入口 —— 严格遵循苹果触摸事件模型
             function onPointerStart(e) {
+                e.preventDefault();   // 禁止页面滚动/缩放
                 
-                let clientX, clientY;
+                // 只处理主触摸点（第一个手指）
                 if (e.touches) {
+                    // 如果没有激活的触摸id，则锁定第一个触摸
                     if (activeTouchId === null) {
                         activeTouchId = e.touches[0].identifier;
-                        clientX = e.touches[0].clientX;
-                        clientY = e.touches[0].clientY;
+                        const clientX = e.touches[0].clientX;
+                        const clientY = e.touches[0].clientY;
                         handleDragStart(clientX, clientY);
                     }
+                    // 如果有激活的触摸，忽略其他触摸点
                 } else {
-                    clientX = e.clientX;
-                    clientY = e.clientY;
-                    handleDragStart(clientX, clientY);
+                    // 鼠标事件
+                    handleDragStart(e.clientX, e.clientY);
                 }
             }
 
@@ -772,64 +785,63 @@
                 
                 if (!isDragging) return;
                 
-                let clientX, clientY;
                 if (e.touches) {
+                    // 找到与activeTouchId匹配的触摸点
+                    let matchedTouch = null;
                     for (let i = 0; i < e.touches.length; i++) {
                         if (e.touches[i].identifier === activeTouchId) {
-                            clientX = e.touches[i].clientX;
-                            clientY = e.touches[i].clientY;
+                            matchedTouch = e.touches[i];
                             break;
                         }
                     }
-                    if (clientX === undefined) {
+                    if (matchedTouch) {
+                        handleDragMove(matchedTouch.clientX, matchedTouch.clientY);
+                    } else {
+                        // 如果找不到匹配的触摸（理论上不会），终止拖拽
                         isDragging = false;
                         activeTouchId = null;
-                        dragLocked = false;
-                        return;
                     }
                 } else {
-                    clientX = e.clientX;
-                    clientY = e.clientY;
+                    handleDragMove(e.clientX, e.clientY);
                 }
-                handleDragMove(clientX, clientY);
             }
 
             function onPointerEnd(e) {
                 e.preventDefault();
                 
-                if (!isDragging) return;
-                
-                let clientX, clientY;
+                // 针对touchend，检查changedTouches中是否有活动的触摸
                 if (e.changedTouches) {
+                    let endedActive = false;
                     for (let i = 0; i < e.changedTouches.length; i++) {
                         if (e.changedTouches[i].identifier === activeTouchId) {
-                            clientX = e.changedTouches[i].clientX;
-                            clientY = e.changedTouches[i].clientY;
+                            // 这个结束的触摸正是我们正在跟踪的
+                            handleDragEnd(e.changedTouches[i].clientX, e.changedTouches[i].clientY);
+                            endedActive = true;
                             break;
                         }
                     }
-                    if (clientX === undefined) {
-                        isDragging = false;
-                        activeTouchId = null;
-                        dragLocked = false;
-                        return;
+                    // 如果结束的不是活动触摸，但仍有可能需要清理（例如被系统取消）
+                    if (!endedActive) {
+                        // 但为了安全，如果没有任何触摸点存在了，清空activeTouchId
+                        if (e.touches.length === 0) {
+                            activeTouchId = null;
+                            isDragging = false;
+                        }
                     }
                 } else {
-                    clientX = e.clientX;
-                    clientY = e.clientY;
+                    // 鼠标事件
+                    handleDragEnd(e.clientX, e.clientY);
                 }
-                
-                handleDragEnd(clientX, clientY);
-                activeTouchId = null;
             }
 
             function onPointerCancel(e) {
                 e.preventDefault();
+                // 触摸取消时（例如手势识别），重置所有状态
                 isDragging = false;
                 activeTouchId = null;
-                dragLocked = false;
             }
 
+            // 添加事件监听，使用非被动模式以允许 preventDefault
             canvas.addEventListener('touchstart', onPointerStart, { passive: false });
             canvas.addEventListener('touchmove', onPointerMove, { passive: false });
             canvas.addEventListener('touchend', onPointerEnd, { passive: false });
@@ -839,10 +851,10 @@
             canvas.addEventListener('mousemove', onPointerMove);
             canvas.addEventListener('mouseup', onPointerEnd);
             canvas.addEventListener('mouseleave', (e) => {
+                // 鼠标离开画布时，如果还在拖拽，取消拖拽
                 if (isDragging) {
                     isDragging = false;
                     activeTouchId = null;
-                    dragLocked = false;
                 }
             });
 
@@ -1181,7 +1193,6 @@
                 waitingForAI = false;
                 isDragging = false;
                 activeTouchId = null;
-                dragLocked = false;
                 initGame();
                 updateScoreDisplay();
                 updateTurnDisplay();
