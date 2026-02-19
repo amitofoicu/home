@@ -1,4 +1,4 @@
 git status
 git add .
-git commit -m ""
+git commit -m "add game18.html to main.html"
 git push origin main

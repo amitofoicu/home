@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>轻松小游戏合集 · 新增冰壶</title>
+    <title>轻松小游戏合集 · 迷你高尔夫已加入</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -281,7 +281,7 @@
             color: #40e0d0;
         }
         
-        /* 新增游戏卡片特殊样式 */
+        /* 游戏卡片特殊样式 */
         .game-card[data-type="sports"] .game-thumbnail {
             background: linear-gradient(45deg, #1e7fb0, #3a9bd5, #5bb3e8) !important;
         }
@@ -303,6 +303,15 @@
             background: #d4a017;
             color: #1e1e1e;
             font-weight: 800;
+        }
+        .game-card[data-type="golf"] .game-thumbnail,
+        .game-card[data-type="sports"] .game-thumbnail {
+            background: linear-gradient(45deg, #0f4e3a, #1f7a5a, #2ea87d) !important;
+        }
+        .game-card[data-type="golf"] .game-type,
+        .game-card[data-type="sports"] .game-type {
+            background: #0f4e3a;
+            color: white;
         }
         
         @media (max-width: 1200px) {
@@ -351,7 +360,7 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-gamepad"></i> 轻松小游戏合集</h1>
-            <p class="subtitle">令人身心愉悦且放松小游戏！<br>新增 · 冰壶对战</p>
+            <p class="subtitle">令人身心愉悦且放松小游戏！<br>新增 · 迷你高尔夫 · 坡度挑战  ⛳</p>
             
             <div class="filters">
                 <button class="filter-btn active" data-filter="all">所有游戏</button>
@@ -366,11 +375,12 @@
                 <button class="filter-btn" data-filter="classic">经典</button>
                 <button class="filter-btn" data-filter="tool">工具</button>
                 <button class="filter-btn" data-filter="sports">体育</button> 
+                <button class="filter-btn" data-filter="golf">高尔夫</button>
             </div>
         </header>
         
         <div class="game-list">
-            <!-- 新增：冰壶小游戏 (置顶突出) -->
+            <!-- 1号：冰壶小游戏 (置顶) -->
             <div class="game-card" data-type="sports">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #0b2b44, #1c4e72, #2f6f9c);">
                     <i class="fas fa-broom"></i>
@@ -388,11 +398,29 @@
                 </div>
             </div>
 
-            <!-- 念经助手 (2号) -->
+            <!-- 2号：迷你高尔夫·全新加入 -->
+            <div class="game-card" data-type="golf sports">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #0f4e3a, #1f7a5a, #2ea87d);">
+                    <i class="fas fa-golf-ball-tee"></i>
+                    <div class="game-number">2</div>
+                    <div class="game-type">高尔夫</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">⛳ 迷你高尔夫 · 坡度挑战</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 5.0/5</span>
+                        <span><i class="far fa-clock"></i> 3-10分钟</span>
+                    </div>
+                    <p class="game-description">点击拖拽小球拉远增加力度，进洞速度过快会反弹！第2关起有随机坡度影响滚动，iPhone触摸优化，杆数越少越好。</p>
+                    <a href="https://amitofoicu.github.io/home/game15.html" class="game-link" target="_blank">开球！ ⛳ <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
+
+            <!-- 3号：念经助手 -->
             <div class="game-card" data-type="tool">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #2c3e50, #3498db, #2980b9);">
                     <i class="fas fa-pray"></i>
-                    <div class="game-number">2</div>
+                    <div class="game-number">3</div>
                     <div class="game-type">工具</div>
                 </div>
                 <div class="game-content">
@@ -406,11 +434,11 @@
                 </div>
             </div>
 
-            <!-- 弟子规 (3号) -->
+            <!-- 4号：弟子规 -->
             <div class="game-card" data-type="classic">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #b8860b, #d4a017, #8b4513);">
                     <i class="fas fa-feather-alt"></i>
-                    <div class="game-number">3</div>
+                    <div class="game-number">4</div>
                     <div class="game-type">经典</div>
                 </div>
                 <div class="game-content">
@@ -424,11 +452,11 @@
                 </div>
             </div>
 
-            <!-- 静心抄经 (4号) -->
+            <!-- 5号：静心抄经 -->
             <div class="game-card" data-type="meditation">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #8A2BE2, #4B0082);">
                     <i class="fas fa-pen-fancy"></i>
-                    <div class="game-number">4</div>
+                    <div class="game-number">5</div>
                     <div class="game-type">静心</div>
                 </div>
                 <div class="game-content">
@@ -442,11 +470,11 @@
                 </div>
             </div>
             
-            <!-- 俄罗斯方块 (5号) -->
+            <!-- 6号：俄罗斯方块 -->
             <div class="game-card" data-type="puzzle">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #ff0080, #ff8c00);">
                     <i class="fas fa-th-large"></i>
-                    <div class="game-number">5</div>
+                    <div class="game-number">6</div>
                     <div class="game-type">益智</div>
                 </div>
                 <div class="game-content">
@@ -460,11 +488,11 @@
                 </div>
             </div>
             
-            <!-- 五子棋 (6号) -->
+            <!-- 7号：五子棋 -->
             <div class="game-card" data-type="strategy">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #40e0d0, #20b2aa);">
                     <i class="fas fa-table-cells-large"></i>
-                    <div class="game-number">6</div>
+                    <div class="game-number">7</div>
                     <div class="game-type">策略</div>
                 </div>
                 <div class="game-content">
@@ -478,11 +506,11 @@
                 </div>
             </div>
             
-            <!-- 斗地主 (7号) -->
+            <!-- 8号：斗地主 -->
             <div class="game-card" data-type="card">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #9d50bb, #6e48aa);">
                     <i class="fas fa-heart"></i>
-                    <div class="game-number">7</div>
+                    <div class="game-number">8</div>
                     <div class="game-type">卡牌</div>
                 </div>
                 <div class="game-content">
@@ -496,11 +524,11 @@
                 </div>
             </div>
             
-            <!-- 拼图游戏 (8号) -->
+            <!-- 9号：拼图游戏 -->
             <div class="game-card" data-type="puzzle">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #ff8c00, #ff4500);">
                     <i class="fas fa-puzzle-piece"></i>
-                    <div class="game-number">8</div>
+                    <div class="game-number">9</div>
                     <div class="game-type">益智</div>
                 </div>
                 <div class="game-content">
@@ -514,11 +542,11 @@
                 </div>
             </div>
             
-            <!-- 声音听辨小游戏 (9号) -->
+            <!-- 10号：声音听辨小游戏 -->
             <div class="game-card" data-type="audio">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #00c9ff, #92fe9d);">
                     <i class="fas fa-volume-up"></i>
-                    <div class="game-number">9</div>
+                    <div class="game-number">10</div>
                     <div class="game-type">音频</div>
                 </div>
                 <div class="game-content">
@@ -532,11 +560,11 @@
                 </div>
             </div>
             
-            <!-- 贪吃蛇 (10号) -->
+            <!-- 11号：贪吃蛇 -->
             <div class="game-card" data-type="arcade">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #da22ff, #9733ee);">
                     <i class="fas fa-snake"></i>
-                    <div class="game-number">10</div>
+                    <div class="game-number">11</div>
                     <div class="game-type">街机</div>
                 </div>
                 <div class="game-content">
@@ -550,11 +578,11 @@
                 </div>
             </div>
             
-            <!-- 消消乐 (11号) -->
+            <!-- 12号：消消乐 -->
             <div class="game-card" data-type="puzzle">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #f46b45, #eea849);">
                     <i class="fas fa-gem"></i>
-                    <div class="game-number">11</div>
+                    <div class="game-number">12</div>
                     <div class="game-type">益智</div>
                 </div>
                 <div class="game-content">
@@ -568,11 +596,11 @@
                 </div>
             </div>
             
-            <!-- 数字华容道 (12号) -->
+            <!-- 13号：数字华容道 -->
             <div class="game-card" data-type="puzzle">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #00b4db, #0083b0);">
                     <i class="fas fa-th-large"></i>
-                    <div class="game-number">12</div>
+                    <div class="game-number">13</div>
                     <div class="game-type">益智</div>
                 </div>
                 <div class="game-content">
@@ -586,11 +614,11 @@
                 </div>
             </div>
             
-            <!-- 射击小游戏 (13号) -->
+            <!-- 14号：射击小游戏 -->
             <div class="game-card" data-type="arcade">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #667eea, #764ba2);">
                     <i class="fas fa-crosshairs"></i>
-                    <div class="game-number">13</div>
+                    <div class="game-number">14</div>
                     <div class="game-type">街机</div>
                 </div>
                 <div class="game-content">
@@ -604,11 +632,11 @@
                 </div>
             </div>
             
-            <!-- 数字融合2048 (14号) -->
+            <!-- 15号：数字融合2048 -->
             <div class="game-card" data-type="puzzle">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #9C27B0, #673AB7);">
                     <i class="fas fa-sort-numeric-up"></i>
-                    <div class="game-number">14</div>
+                    <div class="game-number">15</div>
                     <div class="game-type">益智</div>
                 </div>
                 <div class="game-content">
@@ -622,11 +650,11 @@
                 </div>
             </div>
             
-            <!-- 荷花采集小游戏 (15号) -->
+            <!-- 16号：荷花采集小游戏 -->
             <div class="game-card" data-type="relaxation">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #0a3d3d, #00a8cc);">
                     <i class="fas fa-water-lily"></i>
-                    <div class="game-number">15</div>
+                    <div class="game-number">16</div>
                     <div class="game-type">休闲</div>
                 </div>
                 <div class="game-content">
@@ -640,11 +668,11 @@
                 </div>
             </div>
             
-            <!-- 迷宫探险游戏 (16号) -->
+            <!-- 17号：迷宫探险游戏 -->
             <div class="game-card" data-type="adventure">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #4a148c, #8e24aa);">
                     <i class="fas fa-dungeon"></i>
-                    <div class="game-number">16</div>
+                    <div class="game-number">17</div>
                     <div class="game-type">冒险</div>
                 </div>
                 <div class="game-content">
@@ -658,11 +686,11 @@
                 </div>
             </div>
             
-            <!-- 单人壁球挑战赛 (17号) -->
+            <!-- 18号：单人壁球挑战赛 -->
             <div class="game-card" data-type="arcade">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #FFD700, #FFA500, #FF6347);">
                     <i class="fas fa-basketball-ball"></i>
-                    <div class="game-number">17</div>
+                    <div class="game-number">18</div>
                     <div class="game-type">街机</div>
                 </div>
                 <div class="game-content">
@@ -679,9 +707,10 @@
         
         <div class="footer">
             <div class="footer-links">
-                <a href="https://amitofoicu.github.io/home">更多发现</a>
+                <a href="https://amitofoicu.github.io/home">更多发现</a> · 
+                <a href="#" onclick="window.location.reload();">刷新</a>
             </div>
-            <div style="margin-top: 15px;">✨ 静心 · 放松 · 愉悦 ✨</div>
+            <div style="margin-top: 15px;">✨ 静心 · 放松 · 愉悦 · 现在包括迷你高尔夫 ✨</div>
         </div>
     </div>
     
@@ -699,7 +728,9 @@
                     const filterValue = this.getAttribute('data-filter');
                     
                     gameCards.forEach(card => {
-                        if (filterValue === 'all' || card.getAttribute('data-type') === filterValue) {
+                        const cardTypes = card.getAttribute('data-type') || '';
+                        
+                        if (filterValue === 'all' || cardTypes.includes(filterValue)) {
                             card.style.display = 'block';
                             setTimeout(() => {
                                 card.style.opacity = '1';
@@ -721,7 +752,7 @@
                 card.addEventListener('mouseenter', function() {
                     const icon = this.querySelector('.game-thumbnail i, .game-thumbnail img');
                     if (icon) {
-                        icon.style.transform = 'scale(1.2) rotate(10deg)';
+                        icon.style.transform = 'scale(1.2) rotate(5deg)';
                     }
                     
                     const gameNumber = this.querySelector('.game-number');
@@ -743,11 +774,16 @@
                 });
             });
             
-            // Animation on load
-            setTimeout(() => {
-                document.querySelector('header').style.opacity = '1';
-                document.querySelector('header').style.transform = 'translateY(0)';
-                
-                gameCards.forEach((card, index) => {
-                    setTimeout(() => {
-                        card.style.opacity =
+            // Initial subtle entrance
+            document.querySelector('header').style.opacity = '1';
+            
+            gameCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+        });
+    </script>
+</body>
+</html>
