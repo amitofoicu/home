@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>迷你高尔夫 · 五彩小花+球速提示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background-image: url('https://amitofoicu.github.io/home/lianchi6.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .game-container {
+            background: rgba(39, 99, 53, 0.85);
+            backdrop-filter: blur(3px);
+            padding: 25px 30px 35px;
+            border-radius: 60px 60px 45px 45px;
+            box-shadow: 0 30px 30px rgba(0,20,0,0.7), inset 0 3px 10px #b3e0b3;
+            border: 5px solid #73a774;
+            position: relative;
+            width: fit-content;
+        }
+        .game-title {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 3rem;
+            font-weight: 900;
+            color: #ffecaa;
+            text-shadow: 4px 4px 0 #1a5a2a, 8px 8px 0 #0a3a1a;
+            letter-spacing: 4px;
+            transform: perspective(400px) rotateX(5deg);
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 36px;
+            background: #4b8c5c;
+            box-shadow: inset 0 0 0 4px #1b5e2b, inset 0 0 30px #1b4e25, 0 15px 12px #1b3720;
+            cursor: crosshair;
+            width: 850px;
+            height: 500px;
+        }
+        .info-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 0 15px;
+            color: #fef9cf;
+        }
+        .course-badge {
+            background: #2a5a32;
+            color: #ffffff;
+            padding: 10px 30px;
+            border-radius: 60px;
+            font-weight: 800;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 0 #154d1f, inset 0 2px 8px #b3ffb3;
+            border: 2px solid #ffecaa;
+            text-shadow: 2px 2px 0 #1a3f1a;
+            min-width: 320px;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        .power-meter {
+            background: #332715;
+            width: 260px;
+            height: 28px;
+            border-radius: 30px;
+            border: 3px solid #c79f4a;
+            overflow: hidden;
+            box-shadow: inset 0 4px 8px #1e2e1a;
+        }
+        .power-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #fde16d, #ffa726, #f56a2c);
+            border-radius: 30px;
+            transition: width 0.02s;
+        }
+        .stroke-indicator {
+            font-size: 1.8rem;
+            background: #2a5a32;
+            padding: 8px 35px;
+            border-radius: 50px;
+            box-shadow: 0 4px 0 #103a16, inset 0 2px 8px #b3ffb3;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 2px solid #ffecaa;
+            text-shadow: 2px 2px 0 #1a3f1a;
+        }
+        .strokes-text {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+        .stroke-icon {
+            font-size: 1.6rem;
+            margin-right: 5px;
+        }
+        .button-bar {
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+            margin-top: 20px;
+            align-items: center;
+        }
+        button {
+            background: #f2e2ab;
+            border: none;
+            padding: 12px 45px;
+            border-radius: 60px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #165a27;
+            box-shadow: 0 9px 0 #826d3a, 0 5px 15px black;
+            cursor: pointer;
+            transition: 0.05s linear;
+            border: 2px solid #ffffcf;
+        }
+        button:active {
+            transform: translateY(7px);
+            box-shadow: 0 2px 0 #826d3a;
+        }
+        button:disabled {
+            opacity: 0.4;
+            transform: translateY(6px);
+            box-shadow: 0 4px 0 #695530;
+            pointer-events: none;
+        }
+        .mute-button {
+            background: #3a6b42;
+            border: 3px solid #ffecaa;
+            color: white;
+            font-size: 2rem;
+            padding: 8px 25px;
+            border-radius: 60px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #1a4a22;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.05s linear;
+        }
+        .mute-button:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #1a4a22;
+        }
+        .victory-text {
+            font-size: 2.2rem;
+            font-weight: 900;
+            text-align: center;
+            color: #fff2a3;
+            text-shadow: 3px 3px 0 #0d541d;
+            min-height: 60px;
+            margin-top: 10px;
+        }
+        .next-level-prompt {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 60px;
+            font-size: 2.2rem;
+            font-weight: bold;
+            border: 4px solid #ffd966;
+            box-shadow: 0 0 30px gold;
+            z-index: 100;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 400px;
+        }
+        .next-level-prompt button {
+            background: #ffd966;
+            color: #1d542d;
+            font-size: 2rem;
+            padding: 15px 30px;
+            margin: 0 10px;
+            box-shadow: 0 6px 0 #b68b30;
+        }
+        .prompt-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        /* 球速过快提示样式 */
+        .speed-warning {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 80, 80, 0.9);
+            color: white;
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            border: 4px solid #ffff00;
+            box-shadow: 0 0 30px red;
+            z-index: 200;
+            display: none;
+            white-space: nowrap;
+            animation: pulse 0.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.1); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div class="game-title">🏌️ 迷你高尔夫 🏌️</div>
+    
+    <canvas id="golfCanvas" width="850" height="500"></canvas>
+
+    <div class="info-panel">
+        <span class="course-badge" id="courseDisplay">第1关：直线场地</span>
+        <div class="power-meter">
+            <div class="power-fill" id="powerFill"></div>
+        </div>
+        <span class="stroke-indicator" id="strokeDisplay">
+            <span class="stroke-icon">⛳</span>
+            <span class="strokes-text" id="strokesValue">0</span>
+            <span style="font-size: 1.2rem; margin-left: 5px;">杆数</span>
+        </span>
+    </div>
+
+    <div class="button-bar">
+        <button id="nextCourseBtn">🔄 下一关</button>
+        <button id="resetHoleBtn">🔁 重打此洞</button>
+        <div id="muteButton" class="mute-button">
+            <span id="muteIcon">🔊</span>
+            <span>音乐</span>
+        </div>
+    </div>
+    <div id="victoryMessage" class="victory-text"></div>
+    
+    <!-- 球速过快提示 -->
+    <div id="speedWarning" class="speed-warning">💨 速度太快，滑过了!</div>
+    
+    <!-- 下一关提示弹窗 -->
+    <div id="nextLevelPrompt" class="next-level-prompt">
+        <div id="promptMessage">🏆 恭喜进洞！</div>
+        <div class="prompt-buttons">
+            <button id="confirmNextLevel">⏩ 进入下一关</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const canvas = document.getElementById('golfCanvas');
+    const ctx = canvas.getContext('2d');
+    const courseDisplay = document.getElementById('courseDisplay');
+    const powerFill = document.getElementById('powerFill');
+    const strokesValue = document.getElementById('strokesValue');
+    const nextCourseBtn = document.getElementById('nextCourseBtn');
+    const resetBtn = document.getElementById('resetHoleBtn');
+    const victoryMsg = document.getElementById('victoryMessage');
+    const nextLevelPrompt = document.getElementById('nextLevelPrompt');
+    const promptMessage = document.getElementById('promptMessage');
+    const confirmNextLevel = document.getElementById('confirmNextLevel');
+    const muteButton = document.getElementById('muteButton');
+    const muteIcon = document.getElementById('muteIcon');
+    const speedWarning = document.getElementById('speedWarning');
+
+    // ---------- 音频 ----------
+    const bgMusic = new Audio('https://amitofoicu.github.io/home/beijing.ogg');
+    bgMusic.loop = true;
+    bgMusic.volume = 0.4;
+    
+    const victoryAudio = new Audio('https://amitofoicu.github.io/home/xiaochu.mp3');
+    victoryAudio.volume = 0.8;
+    
+    let isMuted = false;
+
+    // 默认播放音频（尝试自动播放）
+    function initAudio() {
+        bgMusic.play().then(() => {
+            console.log('背景音乐播放成功');
+        }).catch(e => {
+            console.log('背景音乐自动播放失败，等待用户交互');
+            // 添加一次性交互监听
+            const playOnInteraction = () => {
+                bgMusic.play().catch(console.error);
+                document.removeEventListener('click', playOnInteraction);
+                document.removeEventListener('touchstart', playOnInteraction);
+            };
+            document.addEventListener('click', playOnInteraction);
+            document.addEventListener('touchstart', playOnInteraction);
+        });
+    }
+    
+    // 页面加载后尝试播放
+    setTimeout(initAudio, 500);
+
+    // 静音切换
+    muteButton.addEventListener('click', () => {
+        isMuted = !isMuted;
+        bgMusic.muted = isMuted;
+        victoryAudio.muted = isMuted;
+        muteIcon.innerText = isMuted ? '🔇' : '🔊';
+    });
+
+    // ---------- 固定参数 ----------
+    const BALL_RADIUS = 8;
+    const HOLE_RADIUS = 17;
+    const HOLE_POS = { x: 680, y: 240 };
+
+    const TEE_FIRST = { x: 180, y: 240 };
+    const TEE_SECOND = { x: 200, y: 330 };
+
+    const FRICTION = 0.985;
+    const MIN_SPEED = 0.15;
+    
+    const POWER_COEFF = 0.22;
+    const MAX_POWER = 16;
+    const MAX_HOLE_SPEED = 3.5;       
+
+    // ---------- 全局状态 ----------
+    let currentLevel = 1;
+    let strokes = 0;
+    let victory = false;
+    let promptActive = false;
+
+    let ball = {
+        x: TEE_FIRST.x,
+        y: TEE_FIRST.y,
+        vx: 0, 
+        vy: 0,
+        isMoving: false
+    };
+
+    // ------- 坡度参数 -------
+    let slopeActive = false;
+    let slopeAngle = 0;
+    let slopeStrength = 0.18;
+    let slopeRadius = 150;
+
+    let currentSlopeAngle = 0;
+    let currentSlopeDirection = 0;
+
+    function updateLevelDisplay() {
+        if (currentLevel === 1) {
+            courseDisplay.innerText = '第1关：直线场地';
+            slopeActive = false;
+        } else {
+            const dir = currentSlopeDirection;
+            let arrow = '→';
+            if (dir >= 45 && dir < 135) arrow = '↓';
+            else if (dir >= 135 && dir < 225) arrow = '←';
+            else if (dir >= 225 && dir < 315) arrow = '↑';
+            
+            courseDisplay.innerText = `第${currentLevel}关：坡度${currentSlopeAngle}° 方向${dir}° ${arrow}`;
+            slopeActive = true;
+        }
+    }
+
+    function generateRandomSlope() {
+        currentSlopeAngle = Math.floor(Math.random() * 14) + 1;
+        slopeStrength = currentSlopeAngle / 60;
+        slopeAngle = Math.random() * 2 * Math.PI;
+        currentSlopeDirection = Math.round((slopeAngle * 180 / Math.PI + 360) % 360);
+        if (currentSlopeDirection === 360) currentSlopeDirection = 0;
+    }
+
+    function resetLevel() {
+        ball.isMoving = false;
+        ball.vx = 0; 
+        ball.vy = 0;
+        strokes = 0;
+        victory = false;
+        promptActive = false;
+        nextLevelPrompt.style.display = 'none';
+        speedWarning.style.display = 'none';
+        nextCourseBtn.disabled = false;
+        victoryMsg.innerText = '';
+
+        if (currentLevel === 1) {
+            ball.x = TEE_FIRST.x;
+            ball.y = TEE_FIRST.y;
+            slopeActive = false;
+        } else {
+            ball.x = TEE_SECOND.x;
+            ball.y = TEE_SECOND.y;
+            slopeActive = true;
+        }
+        updateLevelDisplay();
+        updateStrokeDisplay();
+        draw();
+    }
+
+    function goToNextLevel() {
+        currentLevel++;
+        generateRandomSlope();
+        
+        victoryMsg.innerText = `⏩ 进入第${currentLevel}关...`;
+        setTimeout(() => {
+            if (!victory) victoryMsg.innerText = '';
+        }, 1000);
+        
+        resetLevel();
+        nextLevelPrompt.style.display = 'none';
+        promptActive = false;
+    }
+
+    function resetCurrentHole() {
+        if (promptActive) {
+            nextLevelPrompt.style.display = 'none';
+            promptActive = false;
+        }
+        resetLevel();
+    }
+
+    function showNextLevelPrompt() {
+        promptMessage.innerText = `🏆 恭喜！杆数：${strokes}`;
+        nextLevelPrompt.style.display = 'flex';
+        promptActive = true;
+    }
+
+    function showSpeedWarning() {
+        speedWarning.style.display = 'block';
+        setTimeout(() => {
+            speedWarning.style.display = 'none';
+        }, 2000); // 停留2秒
+    }
+
+    function updateStrokeDisplay() {
+        strokesValue.innerText = strokes;
+    }
+
+    // ---------- 拖拽状态 ----------
+    let isDragging = false;
+    let dragX = 0, dragY = 0;
+
+    // ---------- 五颜六色小花动画 ----------
+    let flowers = [];
+    
+    function createColorfulFlowers() {
+        flowers = [];
+        const flowerCount = 40; // 小花数量
+        
+        for (let i = 0; i < flowerCount; i++) {
+            // 随机颜色（鲜艳多彩）
+            const hue = Math.random() * 360;
+            flowers.push({
+                x: HOLE_POS.x,
+                y: HOLE_POS.y,
+                vx: (Math.random() - 0.5) * 8,
+                vy: (Math.random() - 1.5) * 6 - 2, // 向上弹出
+                size: 4 + Math.random() * 8,
+                rotation: Math.random() * Math.PI * 2,
+                rotSpeed: (Math.random() - 0.5) * 0.1,
+                color: `hsl(${hue}, 90%, 65%)`,
+                life: 1.0,
+                gravity: 0.15
+            });
+        }
+    }
+
+    function updateFlowers() {
+        if (!victory) return;
+        
+        let allDead = true;
+        for (let f of flowers) {
+            if (f.life <= 0) continue;
+            
+            f.x += f.vx;
+            f.y += f.vy;
+            f.vy += f.gravity; // 重力影响
+            f.rotation += f.rotSpeed;
+            f.life -= 0.005; // 逐渐消失
+            
+            if (f.life > 0) allDead = false;
+        }
+        
+        // 如果所有花都消失了，可以重新触发或者保持空
+        if (allDead) {
+            flowers = [];
+        }
+    }
+
+    function drawFlowers() {
+        if (!victory || flowers.length === 0) return;
+        
+        for (let f of flowers) {
+            if (f.life <= 0) continue;
+            
+            ctx.save();
+            ctx.translate(f.x, f.y);
+            ctx.rotate(f.rotation);
+            ctx.globalAlpha = f.life;
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = 8;
+            
+            // 绘制五瓣小花
+            ctx.beginPath();
+            for (let i = 0; i < 5; i++) {
+                const angle = (i / 5) * Math.PI * 2;
+                const petalX = Math.cos(angle) * f.size * 1.2;
+                const petalY = Math.sin(angle) * f.size * 1.2;
+                ctx.ellipse(petalX, petalY, f.size * 0.8, f.size * 0.4, 0, 0, Math.PI * 2);
+            }
+            ctx.fillStyle = f.color;
+            ctx.fill();
+            
+            // 花蕊
+            ctx.beginPath();
+            ctx.arc(0, 0, f.size * 0.4, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffff99';
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1.0;
+    }
+
+    // ---------- 3D绘制 ----------
+    function draw3DGolf() {
+        ctx.clearRect(0, 0, 850, 500);
+
+        // 基础底色
+        const gradBase = ctx.createLinearGradient(0, 0, 0, 500);
+        gradBase.addColorStop(0, '#509e63');
+        gradBase.addColorStop(0.8, '#377a45');
+        ctx.fillStyle = gradBase;
+        ctx.fillRect(0, 0, 850, 500);
+
+        // 网格线
+        ctx.lineWidth = 1;
+        for (let i = 0; i < 850; i += 35) {
+            ctx.beginPath();
+            ctx.moveTo(i, 0);
+            ctx.lineTo(i + 20, 500);
+            ctx.strokeStyle = '#439955';
+            ctx.globalAlpha = 0.15;
+            ctx.stroke();
+        }
+        ctx.globalAlpha = 1.0;
+
+        // 绘制小花（在球洞上层）
+        drawFlowers();
+
+        // 坡度场地视觉
+        if (currentLevel > 1 && slopeActive) {
+            const cx = HOLE_POS.x;
+            const cy = HOLE_POS.y;
+
+            const lightOffset = 25;
+            const lightX = cx + Math.cos(slopeAngle) * lightOffset;
+            const lightY = cy + Math.sin(slopeAngle) * lightOffset;
+
+            const highlightGrad = ctx.createRadialGradient(lightX, lightY, 20, cx, cy, slopeRadius);
+            highlightGrad.addColorStop(0, '#d4f0b0');
+            highlightGrad.addColorStop(0.5, '#92c97e');
+            highlightGrad.addColorStop(1, '#469657');
+            ctx.beginPath();
+            ctx.arc(cx, cy, slopeRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = highlightGrad;
+            ctx.globalAlpha = 0.8;
+            ctx.fill();
+
+            const shadowX = cx - Math.cos(slopeAngle) * 40;
+            const shadowY = cy - Math.sin(slopeAngle) * 40;
+            const shadowGrad = ctx.createRadialGradient(shadowX, shadowY, 15, cx, cy, slopeRadius);
+            shadowGrad.addColorStop(0, '#316f3d');
+            shadowGrad.addColorStop(0.7, '#439555');
+            shadowGrad.addColorStop(1, '#4eaa64');
+            ctx.beginPath();
+            ctx.arc(cx, cy, slopeRadius, 0, 2 * Math.PI);
+            ctx.fillStyle = shadowGrad;
+            ctx.globalAlpha = 0.6;
+            ctx.fill();
+            ctx.globalAlpha = 1.0;
+
+            // 箭头 - 显示坡度角度（数字字号调小）
+            const arrowCount = 16;
+            for (let i = 0; i < arrowCount; i++) {
+                let r = 60 + (i % 7) * 12;
+                let angleOffset = (i / arrowCount) * 2 * Math.PI;
+                let baseX = cx + Math.cos(angleOffset) * r;
+                let baseY = cy + Math.sin(angleOffset) * r;
+
+                let tipX = baseX + Math.cos(slopeAngle) * 32;
+                let tipY = baseY + Math.sin(slopeAngle) * 32;
+
+                ctx.shadowColor = '#102010';
+                ctx.shadowBlur = 8;
+                ctx.shadowOffsetY = 2;
+                ctx.beginPath();
+                ctx.moveTo(baseX, baseY);
+                ctx.lineTo(tipX, tipY);
+                ctx.strokeStyle = '#f6ffb0';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.translate(tipX, tipY);
+                ctx.rotate(slopeAngle);
+                ctx.moveTo(0, 0);
+                ctx.lineTo(-12, -7);
+                ctx.lineTo(-12, 7);
+                ctx.closePath();
+                ctx.fillStyle = '#ffec80';
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+                // 在箭头中部显示坡度角度 - 字号调小为14px
+                if (i % 3 === 0) {
+                    const midX = (baseX + tipX) / 2;
+                    const midY = (baseY + tipY) / 2;
+                    
+                    ctx.save();
+                    ctx.translate(midX, midY);
+                    ctx.rotate(slopeAngle);
+                    ctx.font = 'bold 14px "Segoe UI"'; // 调小字号
+                    ctx.fillStyle = '#ffffff';
+                    ctx.shadowColor = '#000000';
+                    ctx.shadowBlur = 6;
+                    ctx.shadowOffsetX = 1;
+                    ctx.shadowOffsetY = 1;
+                    
+                    const displayText = currentSlopeAngle + '°';
+                    const metrics = ctx.measureText(displayText);
+                    const textWidth = metrics.width;
+                    
+                    ctx.fillText(displayText, -textWidth/2, -8);
+                    ctx.restore();
+                }
+            }
+            
+            // 在洞口上方显示坡度信息 - 字号也稍微调小
+            ctx.save();
+            ctx.translate(cx + 20, cy - 35);
+            ctx.font = 'bold 18px "Segoe UI"'; // 稍小
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#000000';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            
+            let dirArrow = '→';
+            const dir = currentSlopeDirection;
+            if (dir >= 45 && dir < 135) dirArrow = '↓';
+            else if (dir >= 135 && dir < 225) dirArrow = '←';
+            else if (dir >= 225 && dir < 315) dirArrow = '↑';
+            
+            ctx.fillText(`${currentSlopeAngle}° ${dirArrow}`, 0, 0);
+            ctx.restore();
+            
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+        } else {
+            ctx.beginPath();
+            ctx.arc(HOLE_POS.x, HOLE_POS.y, 110, 0, 2 * Math.PI);
+            ctx.fillStyle = '#62ac76';
+            ctx.globalAlpha = 0.3;
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            
+            ctx.save();
+            ctx.translate(HOLE_POS.x + 20, HOLE_POS.y - 35);
+            ctx.font = 'bold 18px "Segoe UI"';
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#000000';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 2;
+            ctx.shadowOffsetY = 2;
+            ctx.fillText(`平地 0°`, 0, 0);
+            ctx.restore();
+        }
+
+        // 球洞
+        ctx.shadowColor = '#1f401f';
+        ctx.shadowBlur = 15;
+        ctx.shadowOffsetY = 3;
+        ctx.beginPath();
+        ctx.arc(HOLE_POS.x, HOLE_POS.y, HOLE_RADIUS + 4, 0, 2 * Math.PI);
+        ctx.fillStyle = '#3c7a47';
+        ctx.fill();
+        ctx.shadowBlur = 5;
+        ctx.beginPath();
+        ctx.arc(HOLE_POS.x, HOLE_POS.y, HOLE_RADIUS-1, 0, 2 * Math.PI);
+        ctx.fillStyle = '#2a2a1c';
+        ctx.fill();
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.moveTo(HOLE_POS.x+6, HOLE_POS.y-30);
+        ctx.lineTo(HOLE_POS.x+6, HOLE_POS.y-8);
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = '#b5915a';
+        ctx.stroke();
+        ctx.fillStyle = '#dd5566';
+        ctx.beginPath();
+        ctx.moveTo(HOLE_POS.x+8, HOLE_POS.y-32);
+        ctx.lineTo(HOLE_POS.x+33, HOLE_POS.y-23);
+        ctx.lineTo(HOLE_POS.x+8, HOLE_POS.y-14);
+        ctx.fill();
+        ctx.fillStyle = '#f5cb5e';
+        ctx.beginPath();
+        ctx.arc(HOLE_POS.x+6, HOLE_POS.y-32, 4, 0, 2*Math.PI);
+        ctx.fill();
+
+        // 发球区标记
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = '#cbb07c';
+        ctx.beginPath();
+        ctx.ellipse(ball.x-8, ball.y+5, 28, 12, 0, 0, Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle = '#ead09c';
+        ctx.beginPath();
+        ctx.ellipse(ball.x-7, ball.y+2, 20, 8, 0, 0, Math.PI*2);
+        ctx.fill();
+
+        // 辅助线
+        if (isDragging && !victory && !ball.isMoving && !promptActive) {
+            ctx.beginPath();
+            ctx.moveTo(ball.x, ball.y);
+            ctx.lineTo(dragX, dragY);
+            ctx.strokeStyle = '#fffeca';
+            ctx.lineWidth = 4;
+            ctx.setLineDash([10, 8]);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.arc(dragX, dragY, 10, 0, 2 * Math.PI);
+            ctx.fillStyle = '#ffefb0';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = '#856f2b';
+            ctx.fill();
+            
+            const dx = dragX - ball.x;
+            const dy = dragY - ball.y;
+            const power = Math.min(Math.hypot(dx, dy) * POWER_COEFF, MAX_POWER);
+            const percent = Math.round((power / MAX_POWER) * 100);
+            ctx.font = 'bold 20px "Segoe UI"';
+            ctx.fillStyle = 'white';
+            ctx.shadowColor = 'black';
+            ctx.shadowBlur = 8;
+            ctx.fillText(percent + '%', dragX + 15, dragY - 15);
+            
+            ctx.setLineDash([]);
+            ctx.shadowBlur = 0;
+        }
+
+        // 球
+        ctx.shadowBlur = 14;
+        ctx.shadowColor = '#173017';
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, BALL_RADIUS, 0, 2 * Math.PI);
+        ctx.fillStyle = '#fcf9e6';
+        ctx.fill();
+        ctx.strokeStyle = '#ababab';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.shadowBlur = 4;
+        ctx.beginPath();
+        ctx.arc(ball.x-2, ball.y-2, 2.5, 0, 2*Math.PI);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+
+        ctx.shadowBlur = 0;
+        ctx.shadowOffsetY = 0;
+    }
+
+    function draw() {
+        draw3DGolf();
+    }
+
+    // ---------- 物理更新 ----------
+    function applySlopeForce() {
+        if (currentLevel === 1 || victory || !ball.isMoving) return;
+        const dx = ball.x - HOLE_POS.x;
+        const dy = ball.y - HOLE_POS.y;
+        const dist = Math.hypot(dx, dy);
+        if (dist < slopeRadius) {
+            const factor = 1 - (dist / slopeRadius);
+            const accelX = Math.cos(slopeAngle) * slopeStrength * factor;
+            const accelY = Math.sin(slopeAngle) * slopeStrength * factor;
+            ball.vx += accelX;
+            ball.vy += accelY;
+        }
+    }
+
+    function updatePhysics() {
+        if (!ball.isMoving || victory) return;
+
+        ball.vx *= FRICTION;
+        ball.vy *= FRICTION;
+
+        if (currentLevel > 1) applySlopeForce();
+
+        if (Math.abs(ball.vx) < MIN_SPEED && Math.abs(ball.vy) < MIN_SPEED) {
+            ball.vx = 0; ball.vy = 0;
+            ball.isMoving = false;
+        }
+
+        if (ball.x - BALL_RADIUS < 0) { ball.x = BALL_RADIUS; ball.vx = -ball.vx * 0.4; }
+        if (ball.x + BALL_RADIUS > 850) { ball.x = 850 - BALL_RADIUS; ball.vx = -ball.vx * 0.4; }
+        if (ball.y - BALL_RADIUS < 0) { ball.y = BALL_RADIUS; ball.vy = -ball.vy * 0.4; }
+        if (ball.y + BALL_RADIUS > 500) { ball.y = 500 - BALL_RADIUS; ball.vy = -ball.vy * 0.4; }
+
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+
+        const distToHole = Math.hypot(ball.x - HOLE_POS.x, ball.y - HOLE_POS.y);
+        const currentSpeed = Math.hypot(ball.vx, ball.vy);
+        
+        if (!victory && distToHole <= HOLE_RADIUS - 2) {
+            if (currentSpeed > MAX_HOLE_SPEED) {
+                const dx = ball.x - HOLE_POS.x;
+                const dy = ball.y - HOLE_POS.y;
+                const dist = Math.hypot(dx, dy);
+                if (dist > 0.01) {
+                    const normX = dx / dist;
+                    const normY = dy / dist;
+                    ball.x = HOLE_POS.x + normX * (HOLE_RADIUS + 2);
+                    ball.y = HOLE_POS.y + normY * (HOLE_RADIUS + 2);
+
+                    const vRadial = ball.vx * normX + ball.vy * normY;
+                    if (vRadial < 0) {
+                        ball.vx -= 2 * vRadial * normX * 0.6;
+                        ball.vy -= 2 * vRadial * normY * 0.6;
+                    }
+                }
+                // 显示球速过快提示（停留2秒）
+                showSpeedWarning();
+            } else {
+                // 进洞胜利
+                victory = true;
+                ball.isMoving = false;
+                ball.vx = 0; ball.vy = 0;
+                ball.x = HOLE_POS.x;
+                ball.y = HOLE_POS.y;
+                
+                // 播放音效
+                if (!isMuted) {
+                    victoryAudio.play().catch(e => console.log('音效播放失败:', e));
+                }
+                
+                // 创建五颜六色小花
+                createColorfulFlowers();
+                
+                // 显示下一关提示
+                setTimeout(() => {
+                    if (victory) {
+                        showNextLevelPrompt();
+                    }
+                }, 800);
+            }
+        }
+    }
+
+    function animate() {
+        if (ball.isMoving && !victory) {
+            updatePhysics();
+        }
+        if (victory) {
+            updateFlowers(); // 更新小花动画
+        }
+        draw();
+        requestAnimationFrame(animate);
+    }
+    animate();
+
+    // ---------- 鼠标事件 ----------
+    function getCanvasCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+            x: (e.clientX - rect.left) * scaleX,
+            y: (e.clientY - rect.top) * scaleY
+        };
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        if (victory || ball.isMoving || promptActive) return;
+        
+        const coord = getCanvasCoords(e);
+        const distToBall = Math.hypot(coord.x - ball.x, coord.y - ball.y);
+        
+        if (distToBall <= BALL_RADIUS + 15) {
+            isDragging = true;
+            dragX = ball.x;
+            dragY = ball.y;
+            draw();
+        }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isDragging || victory || ball.isMoving || promptActive) return;
+        e.preventDefault();
+        
+        const coord = getCanvasCoords(e);
+        dragX = coord.x;
+        dragY = coord.y;
+
+        const dx = dragX - ball.x;
+        const dy = dragY - ball.y;
+        let power = Math.hypot(dx, dy) * POWER_COEFF;
+        power = Math.min(power, MAX_POWER);
+        powerFill.style.width = (power / MAX_POWER * 100) + '%';
+        
+        draw();
+    });
+
+    window.addEventListener('mouseup', (e) => {
+        if (!isDragging || victory || ball.isMoving || promptActive) {
+            isDragging = false;
+            return;
+        }
+        e.preventDefault();
+
+        const dx = dragX - ball.x;
+        const dy = dragY - ball.y;
+        const dist = Math.hypot(dx, dy);
+        
+        if (dist > 3) {
+            let power = Math.min(dist * POWER_COEFF, MAX_POWER);
+            const angle = Math.atan2(dy, dx);
+            ball.vx = Math.cos(angle) * power;
+            ball.vy = Math.sin(angle) * power;
+            ball.isMoving = true;
+            strokes++;
+            updateStrokeDisplay();
+        }
+
+        isDragging = false;
+        powerFill.style.width = '0%';
+        draw();
+    });
+
+    window.addEventListener('mouseleave', () => {
+        if (isDragging) {
+            isDragging = false;
+            powerFill.style.width = '0%';
+            draw();
+        }
+    });
+
+    nextCourseBtn.addEventListener('click', goToNextLevel);
+    resetBtn.addEventListener('click', resetCurrentHole);
+    
+    confirmNextLevel.addEventListener('click', () => {
+        goToNextLevel();
+    });
+
+    generateRandomSlope();
+    resetLevel();
+
+    canvas.addEventListener('dragstart', (e) => e.preventDefault());
+})();
+</script>
+</body>
+</html>
