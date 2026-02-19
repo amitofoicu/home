@@ -2,87 +2,100 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>迷你高尔夫 · 五彩小花+球速提示</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>迷你高尔夫 · iPhone优化版</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             user-select: none;
+            -webkit-tap-highlight-color: transparent; /* 移除iPhone点击灰色背景 */
+            -webkit-touch-callout: none; /* 禁用长按菜单 */
         }
         body {
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             background-image: url('https://amitofoicu.github.io/home/lianchi6.jpg');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
             background-attachment: fixed;
+            padding: 10px;
         }
         .game-container {
             background: rgba(39, 99, 53, 0.85);
             backdrop-filter: blur(3px);
-            padding: 25px 30px 35px;
-            border-radius: 60px 60px 45px 45px;
-            box-shadow: 0 30px 30px rgba(0,20,0,0.7), inset 0 3px 10px #b3e0b3;
-            border: 5px solid #73a774;
-            position: relative;
-            width: fit-content;
+            -webkit-backdrop-filter: blur(3px); /* Safari支持 */
+            padding: 15px 15px 25px;
+            border-radius: 40px 40px 30px 30px;
+            box-shadow: 0 20px 20px rgba(0,20,0,0.7), inset 0 3px 10px #b3e0b3;
+            border: 4px solid #73a774;
+            width: min(950px, 98vw);
+            margin: 5px auto;
+            box-sizing: border-box;
         }
         .game-title {
             text-align: center;
-            margin-bottom: 15px;
-            font-size: 3rem;
+            margin-bottom: 10px;
+            font-size: clamp(2rem, 8vw, 3rem); /* 响应式字体 */
             font-weight: 900;
             color: #ffecaa;
-            text-shadow: 4px 4px 0 #1a5a2a, 8px 8px 0 #0a3a1a;
-            letter-spacing: 4px;
+            text-shadow: 3px 3px 0 #1a5a2a, 6px 6px 0 #0a3a1a;
+            letter-spacing: 2px;
             transform: perspective(400px) rotateX(5deg);
+            line-height: 1.2;
         }
         canvas {
             display: block;
             margin: 0 auto;
-            border-radius: 36px;
+            border-radius: 30px;
             background: #4b8c5c;
-            box-shadow: inset 0 0 0 4px #1b5e2b, inset 0 0 30px #1b4e25, 0 15px 12px #1b3720;
+            box-shadow: inset 0 0 0 3px #1b5e2b, inset 0 0 20px #1b4e25, 0 10px 10px #1b3720;
             cursor: crosshair;
-            width: 850px;
-            height: 500px;
+            width: min(850px, 95vw);
+            height: auto;
+            aspect-ratio: 850/500;
+            max-width: 100%;
+            touch-action: none; /* 防止触摸时页面滚动/缩放 */
         }
         .info-panel {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 20px;
-            padding: 0 15px;
+            margin-top: 15px;
+            padding: 0 5px;
             color: #fef9cf;
+            gap: 8px;
+            flex-wrap: wrap;
         }
         .course-badge {
             background: #2a5a32;
             color: #ffffff;
-            padding: 10px 30px;
-            border-radius: 60px;
+            padding: 8px 20px;
+            border-radius: 40px;
             font-weight: 800;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 0 #154d1f, inset 0 2px 8px #b3ffb3;
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            box-shadow: 0 4px 0 #154d1f, inset 0 2px 6px #b3ffb3;
             border: 2px solid #ffecaa;
-            text-shadow: 2px 2px 0 #1a3f1a;
-            min-width: 320px;
+            text-shadow: 1px 1px 0 #1a3f1a;
+            min-width: 200px;
             text-align: center;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+            flex: 1 1 auto;
         }
         .power-meter {
             background: #332715;
-            width: 260px;
-            height: 28px;
+            width: min(220px, 30vw);
+            height: 24px;
             border-radius: 30px;
-            border: 3px solid #c79f4a;
+            border: 2px solid #c79f4a;
             overflow: hidden;
-            box-shadow: inset 0 4px 8px #1e2e1a;
+            box-shadow: inset 0 3px 6px #1e2e1a;
+            flex: 0 1 auto;
         }
         .power-fill {
             height: 100%;
@@ -92,141 +105,206 @@
             transition: width 0.02s;
         }
         .stroke-indicator {
-            font-size: 1.8rem;
+            font-size: clamp(1.2rem, 5vw, 1.8rem);
             background: #2a5a32;
-            padding: 8px 35px;
-            border-radius: 50px;
-            box-shadow: 0 4px 0 #103a16, inset 0 2px 8px #b3ffb3;
+            padding: 6px 20px;
+            border-radius: 40px;
+            box-shadow: 0 4px 0 #103a16, inset 0 2px 6px #b3ffb3;
             color: #ffffff;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
             border: 2px solid #ffecaa;
-            text-shadow: 2px 2px 0 #1a3f1a;
+            text-shadow: 1px 1px 0 #1a3f1a;
+            white-space: nowrap;
         }
         .strokes-text {
-            font-size: 1.8rem;
             font-weight: 800;
             color: #ffffff;
         }
         .stroke-icon {
-            font-size: 1.6rem;
-            margin-right: 5px;
+            font-size: 1.2em;
         }
         .button-bar {
             display: flex;
-            gap: 25px;
+            gap: 15px;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 15px;
             align-items: center;
+            flex-wrap: wrap;
         }
         button {
             background: #f2e2ab;
             border: none;
-            padding: 12px 45px;
-            border-radius: 60px;
-            font-size: 1.5rem;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-size: clamp(1.1rem, 4vw, 1.5rem);
             font-weight: 800;
             color: #165a27;
-            box-shadow: 0 9px 0 #826d3a, 0 5px 15px black;
+            box-shadow: 0 6px 0 #826d3a, 0 3px 10px black;
             cursor: pointer;
             transition: 0.05s linear;
             border: 2px solid #ffffcf;
+            min-width: 120px;
+            flex: 0 1 auto;
+            -webkit-appearance: none; /* 移除iOS默认样式 */
+            appearance: none;
+            touch-action: manipulation; /* 优化触摸响应 */
         }
         button:active {
-            transform: translateY(7px);
+            transform: translateY(4px);
             box-shadow: 0 2px 0 #826d3a;
         }
         button:disabled {
             opacity: 0.4;
-            transform: translateY(6px);
-            box-shadow: 0 4px 0 #695530;
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 #695530;
             pointer-events: none;
         }
         .mute-button {
             background: #3a6b42;
-            border: 3px solid #ffecaa;
+            border: 2px solid #ffecaa;
             color: white;
-            font-size: 2rem;
-            padding: 8px 25px;
-            border-radius: 60px;
+            font-size: clamp(1.3rem, 5vw, 2rem);
+            padding: 8px 20px;
+            border-radius: 50px;
             cursor: pointer;
-            box-shadow: 0 6px 0 #1a4a22;
+            box-shadow: 0 5px 0 #1a4a22;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             transition: 0.05s linear;
+            touch-action: manipulation;
         }
         .mute-button:active {
-            transform: translateY(4px);
+            transform: translateY(3px);
             box-shadow: 0 2px 0 #1a4a22;
         }
         .victory-text {
-            font-size: 2.2rem;
+            font-size: clamp(1.5rem, 6vw, 2.2rem);
             font-weight: 900;
             text-align: center;
             color: #fff2a3;
-            text-shadow: 3px 3px 0 #0d541d;
-            min-height: 60px;
-            margin-top: 10px;
+            text-shadow: 2px 2px 0 #0d541d;
+            min-height: 50px;
+            margin-top: 8px;
+            line-height: 1.3;
+            padding: 0 10px;
         }
         .next-level-prompt {
-            position: absolute;
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             color: white;
-            padding: 30px 50px;
-            border-radius: 60px;
-            font-size: 2.2rem;
+            padding: 25px 30px;
+            border-radius: 40px;
+            font-size: clamp(1.5rem, 6vw, 2.2rem);
             font-weight: bold;
             border: 4px solid #ffd966;
             box-shadow: 0 0 30px gold;
-            z-index: 100;
+            z-index: 1000;
             text-align: center;
             backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
             display: none;
             flex-direction: column;
-            gap: 20px;
-            min-width: 400px;
+            gap: 15px;
+            width: min(400px, 90vw);
+            box-sizing: border-box;
         }
         .next-level-prompt button {
             background: #ffd966;
             color: #1d542d;
-            font-size: 2rem;
-            padding: 15px 30px;
-            margin: 0 10px;
-            box-shadow: 0 6px 0 #b68b30;
+            font-size: clamp(1.2rem, 5vw, 2rem);
+            padding: 12px 20px;
+            margin: 0 5px;
+            box-shadow: 0 5px 0 #b68b30;
+            width: 100%;
         }
         .prompt-buttons {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             justify-content: center;
         }
-        /* 球速过快提示样式 */
         .speed-warning {
-            position: absolute;
+            position: fixed;
             top: 30%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(255, 80, 80, 0.9);
+            background: rgba(255, 80, 80, 0.95);
             color: white;
-            padding: 20px 40px;
-            border-radius: 50px;
-            font-size: 2.5rem;
+            padding: 15px 25px;
+            border-radius: 40px;
+            font-size: clamp(1.5rem, 7vw, 2.5rem);
             font-weight: bold;
             border: 4px solid #ffff00;
             box-shadow: 0 0 30px red;
-            z-index: 200;
+            z-index: 1001;
             display: none;
             white-space: nowrap;
             animation: pulse 0.5s infinite;
+            width: auto;
+            max-width: 90vw;
+            text-align: center;
         }
         @keyframes pulse {
             0% { transform: translate(-50%, -50%) scale(1); }
-            50% { transform: translate(-50%, -50%) scale(1.1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
             100% { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        /* 小屏幕适配 */
+        @media (max-width: 600px) {
+            .info-panel {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .course-badge {
+                width: 100%;
+                font-size: 1.1rem;
+                padding: 8px 10px;
+            }
+            
+            .power-meter {
+                width: 100%;
+                height: 20px;
+            }
+            
+            .stroke-indicator {
+                justify-content: center;
+                padding: 6px 15px;
+            }
+            
+            .button-bar button {
+                padding: 10px 15px;
+                min-width: 100px;
+            }
+            
+            .game-container {
+                padding: 10px 10px 20px;
+                border-radius: 30px 30px 20px 20px;
+            }
+            
+            canvas {
+                border-radius: 20px;
+            }
+            
+            .next-level-prompt {
+                padding: 20px;
+                width: 95vw;
+            }
+        }
+
+        /* 安全区域适配（iPhone X及以上） */
+        @supports (padding: max(0px)) {
+            .game-container {
+                padding-left: max(15px, env(safe-area-inset-left));
+                padding-right: max(15px, env(safe-area-inset-right));
+                padding-bottom: max(25px, env(safe-area-inset-bottom));
+            }
         }
     </style>
 </head>
@@ -244,13 +322,13 @@
         <span class="stroke-indicator" id="strokeDisplay">
             <span class="stroke-icon">⛳</span>
             <span class="strokes-text" id="strokesValue">0</span>
-            <span style="font-size: 1.2rem; margin-left: 5px;">杆数</span>
+            <span style="font-size: 0.8em; margin-left: 3px;">杆</span>
         </span>
     </div>
 
     <div class="button-bar">
         <button id="nextCourseBtn">🔄 下一关</button>
-        <button id="resetHoleBtn">🔁 重打此洞</button>
+        <button id="resetHoleBtn">🔁 重打</button>
         <div id="muteButton" class="mute-button">
             <span id="muteIcon">🔊</span>
             <span>音乐</span>
@@ -258,14 +336,12 @@
     </div>
     <div id="victoryMessage" class="victory-text"></div>
     
-    <!-- 球速过快提示 -->
-    <div id="speedWarning" class="speed-warning">💨 速度太快，滑过了!</div>
+    <div id="speedWarning" class="speed-warning">💨 速度太快!</div>
     
-    <!-- 下一关提示弹窗 -->
     <div id="nextLevelPrompt" class="next-level-prompt">
         <div id="promptMessage">🏆 恭喜进洞！</div>
         <div class="prompt-buttons">
-            <button id="confirmNextLevel">⏩ 进入下一关</button>
+            <button id="confirmNextLevel">⏩ 下一关</button>
         </div>
     </div>
 </div>
@@ -297,32 +373,38 @@
     
     let isMuted = false;
 
-    // 默认播放音频（尝试自动播放）
+    // iOS音频自动播放处理
     function initAudio() {
-        bgMusic.play().then(() => {
-            console.log('背景音乐播放成功');
-        }).catch(e => {
-            console.log('背景音乐自动播放失败，等待用户交互');
-            // 添加一次性交互监听
-            const playOnInteraction = () => {
-                bgMusic.play().catch(console.error);
-                document.removeEventListener('click', playOnInteraction);
-                document.removeEventListener('touchstart', playOnInteraction);
-            };
-            document.addEventListener('click', playOnInteraction);
-            document.addEventListener('touchstart', playOnInteraction);
-        });
+        // iOS需要用户交互才能播放音频
+        const playAudio = () => {
+            if (!isMuted) {
+                bgMusic.play().catch(e => console.log('音频播放失败:', e));
+            }
+            document.removeEventListener('touchstart', playAudio);
+            document.removeEventListener('click', playAudio);
+        };
+        
+        document.addEventListener('touchstart', playAudio, { once: true });
+        document.addEventListener('click', playAudio, { once: true });
+        
+        // 尝试立即播放（可能失败）
+        bgMusic.play().catch(() => {});
     }
     
-    // 页面加载后尝试播放
     setTimeout(initAudio, 500);
 
     // 静音切换
-    muteButton.addEventListener('click', () => {
+    muteButton.addEventListener('click', (e) => {
+        e.preventDefault();
         isMuted = !isMuted;
         bgMusic.muted = isMuted;
         victoryAudio.muted = isMuted;
         muteIcon.innerText = isMuted ? '🔇' : '🔊';
+    });
+
+    // 触摸事件优化：防止页面滚动
+    muteButton.addEventListener('touchstart', (e) => {
+        e.preventDefault();
     });
 
     // ---------- 固定参数 ----------
@@ -374,7 +456,7 @@
             else if (dir >= 135 && dir < 225) arrow = '←';
             else if (dir >= 225 && dir < 315) arrow = '↑';
             
-            courseDisplay.innerText = `第${currentLevel}关：坡度${currentSlopeAngle}° 方向${dir}° ${arrow}`;
+            courseDisplay.innerText = `第${currentLevel}关：坡度${currentSlopeAngle}°`;
             slopeActive = true;
         }
     }
@@ -436,7 +518,7 @@
     }
 
     function showNextLevelPrompt() {
-        promptMessage.innerText = `🏆 恭喜！杆数：${strokes}`;
+        promptMessage.innerText = `🏆 杆数：${strokes}`;
         nextLevelPrompt.style.display = 'flex';
         promptActive = true;
     }
@@ -445,7 +527,7 @@
         speedWarning.style.display = 'block';
         setTimeout(() => {
             speedWarning.style.display = 'none';
-        }, 2000); // 停留2秒
+        }, 1500);
     }
 
     function updateStrokeDisplay() {
@@ -461,16 +543,15 @@
     
     function createColorfulFlowers() {
         flowers = [];
-        const flowerCount = 40; // 小花数量
+        const flowerCount = 30;
         
         for (let i = 0; i < flowerCount; i++) {
-            // 随机颜色（鲜艳多彩）
             const hue = Math.random() * 360;
             flowers.push({
                 x: HOLE_POS.x,
                 y: HOLE_POS.y,
                 vx: (Math.random() - 0.5) * 8,
-                vy: (Math.random() - 1.5) * 6 - 2, // 向上弹出
+                vy: (Math.random() - 1.5) * 6 - 2,
                 size: 4 + Math.random() * 8,
                 rotation: Math.random() * Math.PI * 2,
                 rotSpeed: (Math.random() - 0.5) * 0.1,
@@ -490,14 +571,13 @@
             
             f.x += f.vx;
             f.y += f.vy;
-            f.vy += f.gravity; // 重力影响
+            f.vy += f.gravity;
             f.rotation += f.rotSpeed;
-            f.life -= 0.005; // 逐渐消失
+            f.life -= 0.005;
             
             if (f.life > 0) allDead = false;
         }
         
-        // 如果所有花都消失了，可以重新触发或者保持空
         if (allDead) {
             flowers = [];
         }
@@ -516,7 +596,6 @@
             ctx.shadowColor = '#ffffff';
             ctx.shadowBlur = 8;
             
-            // 绘制五瓣小花
             ctx.beginPath();
             for (let i = 0; i < 5; i++) {
                 const angle = (i / 5) * Math.PI * 2;
@@ -527,7 +606,6 @@
             ctx.fillStyle = f.color;
             ctx.fill();
             
-            // 花蕊
             ctx.beginPath();
             ctx.arc(0, 0, f.size * 0.4, 0, Math.PI * 2);
             ctx.fillStyle = '#ffff99';
@@ -543,14 +621,12 @@
     function draw3DGolf() {
         ctx.clearRect(0, 0, 850, 500);
 
-        // 基础底色
         const gradBase = ctx.createLinearGradient(0, 0, 0, 500);
         gradBase.addColorStop(0, '#509e63');
         gradBase.addColorStop(0.8, '#377a45');
         ctx.fillStyle = gradBase;
         ctx.fillRect(0, 0, 850, 500);
 
-        // 网格线
         ctx.lineWidth = 1;
         for (let i = 0; i < 850; i += 35) {
             ctx.beginPath();
@@ -562,10 +638,8 @@
         }
         ctx.globalAlpha = 1.0;
 
-        // 绘制小花（在球洞上层）
         drawFlowers();
 
-        // 坡度场地视觉
         if (currentLevel > 1 && slopeActive) {
             const cx = HOLE_POS.x;
             const cy = HOLE_POS.y;
@@ -597,7 +671,6 @@
             ctx.fill();
             ctx.globalAlpha = 1.0;
 
-            // 箭头 - 显示坡度角度（数字字号调小）
             const arrowCount = 16;
             for (let i = 0; i < arrowCount; i++) {
                 let r = 60 + (i % 7) * 12;
@@ -630,7 +703,6 @@
                 ctx.fill();
                 ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-                // 在箭头中部显示坡度角度 - 字号调小为14px
                 if (i % 3 === 0) {
                     const midX = (baseX + tipX) / 2;
                     const midY = (baseY + tipY) / 2;
@@ -638,7 +710,7 @@
                     ctx.save();
                     ctx.translate(midX, midY);
                     ctx.rotate(slopeAngle);
-                    ctx.font = 'bold 14px "Segoe UI"'; // 调小字号
+                    ctx.font = 'bold 14px -apple-system, "Segoe UI"';
                     ctx.fillStyle = '#ffffff';
                     ctx.shadowColor = '#000000';
                     ctx.shadowBlur = 6;
@@ -654,10 +726,9 @@
                 }
             }
             
-            // 在洞口上方显示坡度信息 - 字号也稍微调小
             ctx.save();
             ctx.translate(cx + 20, cy - 35);
-            ctx.font = 'bold 18px "Segoe UI"'; // 稍小
+            ctx.font = 'bold 18px -apple-system, "Segoe UI"';
             ctx.fillStyle = '#ffffff';
             ctx.shadowColor = '#000000';
             ctx.shadowBlur = 8;
@@ -685,7 +756,7 @@
             
             ctx.save();
             ctx.translate(HOLE_POS.x + 20, HOLE_POS.y - 35);
-            ctx.font = 'bold 18px "Segoe UI"';
+            ctx.font = 'bold 18px -apple-system, "Segoe UI"';
             ctx.fillStyle = '#ffffff';
             ctx.shadowColor = '#000000';
             ctx.shadowBlur = 8;
@@ -695,7 +766,6 @@
             ctx.restore();
         }
 
-        // 球洞
         ctx.shadowColor = '#1f401f';
         ctx.shadowBlur = 15;
         ctx.shadowOffsetY = 3;
@@ -726,7 +796,6 @@
         ctx.arc(HOLE_POS.x+6, HOLE_POS.y-32, 4, 0, 2*Math.PI);
         ctx.fill();
 
-        // 发球区标记
         ctx.shadowBlur = 8;
         ctx.fillStyle = '#cbb07c';
         ctx.beginPath();
@@ -737,7 +806,6 @@
         ctx.ellipse(ball.x-7, ball.y+2, 20, 8, 0, 0, Math.PI*2);
         ctx.fill();
 
-        // 辅助线
         if (isDragging && !victory && !ball.isMoving && !promptActive) {
             ctx.beginPath();
             ctx.moveTo(ball.x, ball.y);
@@ -758,7 +826,7 @@
             const dy = dragY - ball.y;
             const power = Math.min(Math.hypot(dx, dy) * POWER_COEFF, MAX_POWER);
             const percent = Math.round((power / MAX_POWER) * 100);
-            ctx.font = 'bold 20px "Segoe UI"';
+            ctx.font = 'bold 20px -apple-system, "Segoe UI"';
             ctx.fillStyle = 'white';
             ctx.shadowColor = 'black';
             ctx.shadowBlur = 8;
@@ -768,7 +836,6 @@
             ctx.shadowBlur = 0;
         }
 
-        // 球
         ctx.shadowBlur = 14;
         ctx.shadowColor = '#173017';
         ctx.beginPath();
@@ -848,25 +915,20 @@
                         ball.vy -= 2 * vRadial * normY * 0.6;
                     }
                 }
-                // 显示球速过快提示（停留2秒）
                 showSpeedWarning();
             } else {
-                // 进洞胜利
                 victory = true;
                 ball.isMoving = false;
                 ball.vx = 0; ball.vy = 0;
                 ball.x = HOLE_POS.x;
                 ball.y = HOLE_POS.y;
                 
-                // 播放音效
                 if (!isMuted) {
                     victoryAudio.play().catch(e => console.log('音效播放失败:', e));
                 }
                 
-                // 创建五颜六色小花
                 createColorfulFlowers();
                 
-                // 显示下一关提示
                 setTimeout(() => {
                     if (victory) {
                         showNextLevelPrompt();
@@ -881,24 +943,51 @@
             updatePhysics();
         }
         if (victory) {
-            updateFlowers(); // 更新小花动画
+            updateFlowers();
         }
         draw();
         requestAnimationFrame(animate);
     }
     animate();
 
-    // ---------- 鼠标事件 ----------
+    // ---------- 优化的触摸/鼠标事件 ----------
     function getCanvasCoords(e) {
         const rect = canvas.getBoundingClientRect();
+        // 处理触摸事件和鼠标事件
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        // 计算缩放后的坐标
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
-        return {
-            x: (e.clientX - rect.left) * scaleX,
-            y: (e.clientY - rect.top) * scaleY
-        };
+        
+        let x = (clientX - rect.left) * scaleX;
+        let y = (clientY - rect.top) * scaleY;
+        
+        // 限制在画布范围内
+        x = Math.max(BALL_RADIUS, Math.min(canvas.width - BALL_RADIUS, x));
+        y = Math.max(BALL_RADIUS, Math.min(canvas.height - BALL_RADIUS, y));
+        
+        return { x, y };
     }
 
+    // 触摸开始
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (victory || ball.isMoving || promptActive) return;
+        
+        const coord = getCanvasCoords(e);
+        const distToBall = Math.hypot(coord.x - ball.x, coord.y - ball.y);
+        
+        if (distToBall <= BALL_RADIUS + 20) {
+            isDragging = true;
+            dragX = ball.x;
+            dragY = ball.y;
+            draw();
+        }
+    });
+
+    // 鼠标按下
     canvas.addEventListener('mousedown', (e) => {
         e.preventDefault();
         if (victory || ball.isMoving || promptActive) return;
@@ -914,6 +1003,25 @@
         }
     });
 
+    // 触摸移动
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (!isDragging || victory || ball.isMoving || promptActive) return;
+        
+        const coord = getCanvasCoords(e);
+        dragX = coord.x;
+        dragY = coord.y;
+
+        const dx = dragX - ball.x;
+        const dy = dragY - ball.y;
+        let power = Math.hypot(dx, dy) * POWER_COEFF;
+        power = Math.min(power, MAX_POWER);
+        powerFill.style.width = (power / MAX_POWER * 100) + '%';
+        
+        draw();
+    }, { passive: false });
+
+    // 鼠标移动
     window.addEventListener('mousemove', (e) => {
         if (!isDragging || victory || ball.isMoving || promptActive) return;
         e.preventDefault();
@@ -931,12 +1039,23 @@
         draw();
     });
 
+    // 触摸结束
+    canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        handleDragEnd();
+    });
+
+    // 鼠标松开
     window.addEventListener('mouseup', (e) => {
+        handleDragEnd(e);
+    });
+
+    function handleDragEnd(e) {
         if (!isDragging || victory || ball.isMoving || promptActive) {
             isDragging = false;
             return;
         }
-        e.preventDefault();
+        if (e) e.preventDefault();
 
         const dx = dragX - ball.x;
         const dy = dragY - ball.y;
@@ -955,6 +1074,14 @@
         isDragging = false;
         powerFill.style.width = '0%';
         draw();
+    }
+
+    // 触摸取消
+    canvas.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        isDragging = false;
+        powerFill.style.width = '0%';
+        draw();
     });
 
     window.addEventListener('mouseleave', () => {
@@ -965,17 +1092,40 @@
         }
     });
 
-    nextCourseBtn.addEventListener('click', goToNextLevel);
-    resetBtn.addEventListener('click', resetCurrentHole);
-    
-    confirmNextLevel.addEventListener('click', () => {
+    // 防止页面滚动
+    document.body.addEventListener('touchmove', (e) => {
+        if (isDragging) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    nextCourseBtn.addEventListener('click', (e) => {
+        e.preventDefault();
         goToNextLevel();
+    });
+    
+    resetBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        resetCurrentHole();
+    });
+    
+    confirmNextLevel.addEventListener('click', (e) => {
+        e.preventDefault();
+        goToNextLevel();
+    });
+
+    // 按钮触摸优化
+    [nextCourseBtn, resetBtn, confirmNextLevel].forEach(btn => {
+        btn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+        });
     });
 
     generateRandomSlope();
     resetLevel();
 
     canvas.addEventListener('dragstart', (e) => e.preventDefault());
+    canvas.addEventListener('gesturestart', (e) => e.preventDefault()); // 禁止双指手势
 })();
 </script>
 </body>
