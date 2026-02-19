@@ -4,6 +4,7 @@ import sys
 import random
 import json
 import os
+import select
 from PIL import Image
 
 # 配置文件路径
@@ -170,47 +171,103 @@ def get_pixel_data(screenshot):
                     pixels.append(pixel)
             return pixels
 
+def check_keyboard_input(timeout=0.1):
+    """
+    检查是否有键盘输入（非阻塞）
+    返回：'ctrl_c', 'enter', 或 None
+    """
+    if sys.platform == 'win32':
+        import msvcrt
+        if msvcrt.kbhit():
+            key = msvcrt.getch()
+            if key == b'\x03':  # Ctrl+C
+                return 'ctrl_c'
+            elif key == b'\r':   # Enter
+                return 'enter'
+    else:
+        # Unix/Linux/Mac系统
+        try:
+            import termios
+            import tty
+            
+            fd = sys.stdin.fileno()
+            old_settings = termios.tcgetattr(fd)
+            try:
+                tty.setraw(sys.stdin.fileno())
+                if select.select([sys.stdin], [], [], timeout)[0]:
+                    ch = sys.stdin.read(1)
+                    if ch == '\x03':  # Ctrl+C
+                        return 'ctrl_c'
+                    elif ch == '\r' or ch == '\n':  # Enter
+                        return 'enter'
+            finally:
+                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+        except:
+            pass
+    
+    return None
+
 def monitor_and_click_optimized(target_x, target_y, check_interval=2, max_scroll_attempts=5):
     """
     优化的监控点击函数，包含基于坐标的滚动检测机制
+    支持按Enter键恢复检测，按Ctrl+C完全停止
     """
     print(f"开始监控坐标 ({target_x}, {target_y})")
     print(f"检查间隔: {check_interval}秒")
     print(f"最大滚动尝试次数: {max_scroll_attempts}次")
-    print("按 'Ctrl+C' 停止监控")
-    print("当连续检测不到变化时，程序会暂停检测，按Enter键恢复...")
+    print("\n=== 操作说明 ===")
+    print("1. 正常运行时，程序会自动检测并点击")
+    print("2. 按 Ctrl+C 一次：暂停检测（可随时按Enter恢复）")
+    print("3. 在暂停状态下按 Ctrl+C：完全退出程序")
+    print("4. 在暂停状态下按 Enter：恢复检测")
+    print("=" * 50)
     
     click_count = 0
     no_change_count = 0
     previous_pixels = None
     scroll_attempts = 0
     paused = False
+    force_exit = False
     
     # 监控区域
     region_width, region_height = 50, 50
     region = (target_x - region_width//2, target_y - region_height//2, region_width, region_height)
     
+    last_key_check = time.time()
+    
     try:
-        while True:
-            # 检查是否暂停
-            if paused:
-                print("\n=== 检测暂停中 ===")
-                print("按Enter键恢复检测，或按Ctrl+C完全停止...")
-                try:
-                    input()  # 等待用户按Enter
+        while not force_exit:
+            # 定期检查键盘输入（每0.1秒检查一次）
+            current_time = time.time()
+            if current_time - last_key_check >= 0.1:
+                key_input = check_keyboard_input(0.01)
+                if key_input == 'ctrl_c':
+                    if paused:
+                        print("\n⚠️ 在暂停状态下检测到Ctrl+C，完全退出程序")
+                        force_exit = True
+                        break
+                    else:
+                        print("\n⏸️ 检测到Ctrl+C，暂停检测")
+                        print("按Enter键恢复检测，或再次按Ctrl+C完全退出")
+                        paused = True
+                        no_change_count = 0
+                        scroll_attempts = 0
+                        continue
+                elif key_input == 'enter' and paused:
+                    print("\n▶️ 检测到Enter键，恢复检测")
                     paused = False
                     no_change_count = 0
                     scroll_attempts = 0
                     previous_pixels = None
-                    print("恢复检测...")
                     continue
-                except KeyboardInterrupt:
-                    print("\n用户中断，停止监控")
-                    break
-                except Exception as e:
-                    print(f"恢复检测时出错: {e}")
-                    time.sleep(1)
-                    continue
+                
+                last_key_check = current_time
+            
+            # 检查是否暂停
+            if paused:
+                # 暂停状态下等待，不进行检测
+                time.sleep(0.1)
+                continue
             
             try:
                 screenshot = pyautogui.screenshot(region=region)
@@ -300,7 +357,8 @@ def monitor_and_click_optimized(target_x, target_y, check_interval=2, max_scroll
                 # 如果已经达到最大滚动次数，仍然没有变化，则暂停检测
                 elif no_change_count >= 10 and scroll_attempts >= max_scroll_attempts:
                     print(f"\n=== 已达到最大滚动次数 ({max_scroll_attempts})，连续 {no_change_count} 次无变化 ===")
-                    print("暂停检测，等待用户干预...")
+                    print("自动暂停检测，等待用户干预...")
+                    print("按Enter键恢复检测，或按Ctrl+C完全退出")
                     paused = True
                     no_change_count = 0
                     continue
@@ -308,13 +366,47 @@ def monitor_and_click_optimized(target_x, target_y, check_interval=2, max_scroll
             time.sleep(check_interval)
             
     except KeyboardInterrupt:
-        print(f"\n监控停止，总共点击 {click_count} 次")
-        # 保存当前坐标
-        save_last_coordinates(target_x, target_y)
+        # 处理主循环外的Ctrl+C
+        print("\n⚠️ 检测到Ctrl+C")
+        print("按Enter键恢复检测，或再次按Ctrl+C完全退出")
+        
+        # 进入暂停状态
+        paused = True
+        
+        # 在暂停状态下等待用户输入
+        while paused:
+            try:
+                time.sleep(0.1)
+                # 检查键盘输入
+                key_input = check_keyboard_input(0.01)
+                if key_input == 'enter':
+                    print("\n▶️ 检测到Enter键，恢复检测")
+                    paused = False
+                    # 重置状态
+                    no_change_count = 0
+                    scroll_attempts = 0
+                    previous_pixels = None
+                    # 重新进入主循环
+                    monitor_and_click_optimized(target_x, target_y, check_interval, max_scroll_attempts)
+                    break
+                elif key_input == 'ctrl_c':
+                    print("\n⏹️ 检测到Ctrl+C，完全退出程序")
+                    break
+            except:
+                break
+    
     except Exception as e:
         print(f"发生错误: {e}")
         import traceback
         traceback.print_exc()
+    
+    finally:
+        if force_exit:
+            print(f"\n程序完全退出，总共点击 {click_count} 次")
+        else:
+            print(f"\n监控停止，总共点击 {click_count} 次")
+        # 保存当前坐标
+        save_last_coordinates(target_x, target_y)
 
 def get_mouse_position():
     """获取当前鼠标位置"""
@@ -437,7 +529,6 @@ if __name__ == "__main__":
             print(f"监控坐标: ({saved_x}, {saved_y})")
             print(f"检查间隔: {interval}秒")
             print(f"最大滚动尝试: {max_scroll}次")
-            print("当连续检测不到变化时，程序会暂停检测，按Enter键恢复...")
             print("=" * 50)
             
             monitor_and_click_optimized(saved_x, saved_y, check_interval=interval, max_scroll_attempts=max_scroll)
@@ -522,7 +613,6 @@ if __name__ == "__main__":
         print(f"监控坐标: ({saved_x}, {saved_y})")
         print(f"检查间隔: {interval}秒")
         print(f"最大滚动尝试: {max_scroll}次")
-        print("当连续检测不到变化时，程序会暂停检测，按Enter键恢复...")
         print("=" * 50)
         
         monitor_and_click_optimized(saved_x, saved_y, check_interval=interval, max_scroll_attempts=max_scroll)
