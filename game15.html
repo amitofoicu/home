@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>迷你高尔夫 · iPhone优化版</title>
+    <title>迷你高尔夫 · 进洞消失版</title>
     <style>
         * {
             margin: 0;
@@ -27,7 +27,6 @@
             padding: 10px;
             position: relative;
         }
-        /* 更多游戏角标 */
         .more-games-badge {
             position: fixed;
             top: 15px;
@@ -65,7 +64,6 @@
                 font-size: 1rem;
             }
         }
-        /* 安全区域适配 */
         @supports (padding: max(0px)) {
             .more-games-badge {
                 left: max(15px, env(safe-area-inset-left));
@@ -97,7 +95,6 @@
             transform: perspective(400px) rotateX(5deg);
             line-height: 1.2;
         }
-        /* 游戏主区域：画布 + 规则面板 */
         .game-main {
             display: flex;
             gap: 15px;
@@ -108,7 +105,6 @@
             flex: 3 1 700px;
             min-width: 300px;
         }
-        /* 左侧规则面板 */
         .rules-panel {
             flex: 1 1 200px;
             background: rgba(255, 255, 230, 0.9);
@@ -373,7 +369,6 @@
             100% { transform: translate(-50%, -50%) scale(1); }
         }
 
-        /* 小屏幕适配 */
         @media (max-width: 700px) {
             .game-main {
                 flex-direction: column;
@@ -437,7 +432,6 @@
             }
         }
 
-        /* 安全区域适配 */
         @supports (padding: max(0px)) {
             .game-container {
                 padding-left: max(15px, env(safe-area-inset-left));
@@ -448,7 +442,6 @@
     </style>
 </head>
 <body>
-    <!-- 更多游戏角标 -->
     <a href="https://amitofoicu.github.io/home/main.html" class="more-games-badge" target="_blank" rel="noopener noreferrer">
         <span>🎮</span> 更多游戏
     </a>
@@ -456,9 +449,7 @@
 <div class="game-container">
     <div class="game-title">🏌️ 迷你高尔夫 🏌️</div>
     
-    <!-- 游戏主区域：左侧规则 + 右侧画布 -->
     <div class="game-main">
-        <!-- 左侧规则面板 -->
         <div class="rules-panel">
             <div class="rules-title">📋 游戏规则</div>
             <div class="rule-item">
@@ -475,14 +466,13 @@
             </div>
             <div class="rule-item">
                 <span class="rule-icon">🏆</span>
-                <span class="rule-text">杆数越少<span class="rule-highlight">越好</span></span>
+                <span class="rule-text">球进洞后<span class="rule-highlight">消失</span>并庆祝</span>
             </div>
             <div class="rule-tip">
                 ✨ 小技巧：轻推更容易进洞！
             </div>
         </div>
 
-        <!-- 右侧画布区域 -->
         <div class="canvas-wrapper">
             <canvas id="golfCanvas" width="850" height="500"></canvas>
         </div>
@@ -594,7 +584,7 @@
     // ---------- 全局状态 ----------
     let currentLevel = 1;
     let strokes = 0;
-    let victory = false;
+    let victory = false;              // 表示已进洞(球消失)
     let promptActive = false;
 
     let ball = {
@@ -602,7 +592,8 @@
         y: TEE_FIRST.y,
         vx: 0, 
         vy: 0,
-        isMoving: false
+        isMoving: false,
+        visible: true                 // <-- 新增: 球是否可见 (进洞后消失)
     };
 
     // ------- 坡度参数 -------
@@ -642,6 +633,7 @@
         ball.isMoving = false;
         ball.vx = 0; 
         ball.vy = 0;
+        ball.visible = true;           // 重置时球出现
         strokes = 0;
         victory = false;
         promptActive = false;
@@ -709,7 +701,7 @@
     let isDragging = false;
     let dragX = 0, dragY = 0;
 
-    // ---------- 五颜六色小花动画 ----------
+    // ---------- 五颜六色小花动画 (进洞庆祝) ----------
     let flowers = [];
     
     function createColorfulFlowers() {
@@ -788,7 +780,7 @@
         ctx.globalAlpha = 1.0;
     }
 
-    // ---------- 3D绘制 ----------
+    // ---------- 3D绘制 (球可见时才画) ----------
     function draw3DGolf() {
         ctx.clearRect(0, 0, 850, 500);
 
@@ -967,17 +959,21 @@
         ctx.arc(HOLE_POS.x+6, HOLE_POS.y-32, 4, 0, 2*Math.PI);
         ctx.fill();
 
-        ctx.shadowBlur = 8;
-        ctx.fillStyle = '#cbb07c';
-        ctx.beginPath();
-        ctx.ellipse(ball.x-8, ball.y+5, 28, 12, 0, 0, Math.PI*2);
-        ctx.fill();
-        ctx.fillStyle = '#ead09c';
-        ctx.beginPath();
-        ctx.ellipse(ball.x-7, ball.y+2, 20, 8, 0, 0, Math.PI*2);
-        ctx.fill();
+        // 球影 (只在球可见时绘制)
+        if (ball.visible && !victory) {
+            ctx.shadowBlur = 8;
+            ctx.fillStyle = '#cbb07c';
+            ctx.beginPath();
+            ctx.ellipse(ball.x-8, ball.y+5, 28, 12, 0, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillStyle = '#ead09c';
+            ctx.beginPath();
+            ctx.ellipse(ball.x-7, ball.y+2, 20, 8, 0, 0, Math.PI*2);
+            ctx.fill();
+        }
 
-        if (isDragging && !victory && !ball.isMoving && !promptActive) {
+        // 拖拽指示线 (仅球可见且未胜利时)
+        if (isDragging && ball.visible && !victory && !ball.isMoving && !promptActive) {
             ctx.beginPath();
             ctx.moveTo(ball.x, ball.y);
             ctx.lineTo(dragX, dragY);
@@ -1007,20 +1003,23 @@
             ctx.shadowBlur = 0;
         }
 
-        ctx.shadowBlur = 14;
-        ctx.shadowColor = '#173017';
-        ctx.beginPath();
-        ctx.arc(ball.x, ball.y, BALL_RADIUS, 0, 2 * Math.PI);
-        ctx.fillStyle = '#fcf9e6';
-        ctx.fill();
-        ctx.strokeStyle = '#ababab';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.shadowBlur = 4;
-        ctx.beginPath();
-        ctx.arc(ball.x-2, ball.y-2, 2.5, 0, 2*Math.PI);
-        ctx.fillStyle = '#ffffff';
-        ctx.fill();
+        // 绘制球 (仅当可见)
+        if (ball.visible && !victory) {
+            ctx.shadowBlur = 14;
+            ctx.shadowColor = '#173017';
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, BALL_RADIUS, 0, 2 * Math.PI);
+            ctx.fillStyle = '#fcf9e6';
+            ctx.fill();
+            ctx.strokeStyle = '#ababab';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.shadowBlur = 4;
+            ctx.beginPath();
+            ctx.arc(ball.x-2, ball.y-2, 2.5, 0, 2*Math.PI);
+            ctx.fillStyle = '#ffffff';
+            ctx.fill();
+        }
 
         ctx.shadowBlur = 0;
         ctx.shadowOffsetY = 0;
@@ -1088,21 +1087,22 @@
                 }
                 showSpeedWarning();
             } else {
+                // ** 进洞成功：球消失 **
                 victory = true;
                 ball.isMoving = false;
                 ball.vx = 0; ball.vy = 0;
-                ball.x = HOLE_POS.x;
-                ball.y = HOLE_POS.y;
+                ball.visible = false;              // 关键：球消失
+                // 球坐标不动也行，但因为visible=false不会绘制
                 
                 if (!isMuted) {
                     victoryAudio.play().catch(e => console.log('音效播放失败:', e));
                 }
                 
-                createColorfulFlowers();
+                createColorfulFlowers();            // 绽放花朵
                 
                 setTimeout(() => {
                     if (victory) {
-                        showNextLevelPrompt();
+                        showNextLevelPrompt();      // 弹出下一关提示
                     }
                 }, 800);
             }
@@ -1139,7 +1139,6 @@
         return { x, y };
     }
 
-    // 修复：判断是否为按钮事件的函数
     function isButtonEvent(e) {
         if (!e) return false;
         const target = e.target;
@@ -1148,7 +1147,8 @@
 
     canvas.addEventListener('touchstart', (e) => {
         e.preventDefault();
-        if (victory || ball.isMoving || promptActive) return;
+        // 球不可见或胜利时不能拖拽
+        if (!ball.visible || victory || ball.isMoving || promptActive) return;
         
         const coord = getCanvasCoords(e);
         const distToBall = Math.hypot(coord.x - ball.x, coord.y - ball.y);
@@ -1163,7 +1163,7 @@
 
     canvas.addEventListener('mousedown', (e) => {
         e.preventDefault();
-        if (victory || ball.isMoving || promptActive) return;
+        if (!ball.visible || victory || ball.isMoving || promptActive) return;
         
         const coord = getCanvasCoords(e);
         const distToBall = Math.hypot(coord.x - ball.x, coord.y - ball.y);
@@ -1178,7 +1178,7 @@
 
     canvas.addEventListener('touchmove', (e) => {
         e.preventDefault();
-        if (!isDragging || victory || ball.isMoving || promptActive) return;
+        if (!isDragging || !ball.visible || victory || ball.isMoving || promptActive) return;
         
         const coord = getCanvasCoords(e);
         dragX = coord.x;
@@ -1194,7 +1194,7 @@
     }, { passive: false });
 
     window.addEventListener('mousemove', (e) => {
-        if (!isDragging || victory || ball.isMoving || promptActive) return;
+        if (!isDragging || !ball.visible || victory || ball.isMoving || promptActive) return;
         e.preventDefault();
         
         const coord = getCanvasCoords(e);
@@ -1220,14 +1220,13 @@
     });
 
     function handleDragEnd(e) {
-        // 修复：如果是按钮事件，不处理拖拽结束
         if (isButtonEvent(e)) {
             isDragging = false;
             powerFill.style.width = '0%';
             return;
         }
         
-        if (!isDragging || victory || ball.isMoving || promptActive) {
+        if (!isDragging || !ball.visible || victory || ball.isMoving || promptActive) {
             isDragging = false;
             return;
         }
@@ -1273,9 +1272,8 @@
         }
     }, { passive: false });
 
-    // 修复：重新绑定按钮事件
+    // 按钮事件
     function rebindButtonEvents() {
-        // 下一关按钮
         nextCourseBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -1297,7 +1295,6 @@
             }
         });
 
-        // 重打按钮
         resetBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -1315,7 +1312,6 @@
             resetCurrentHole();
         });
 
-        // 确认下一关按钮
         confirmNextLevel.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -1334,7 +1330,6 @@
         });
     }
 
-    // 执行按钮事件重新绑定
     rebindButtonEvents();
 
     generateRandomSlope();
@@ -1343,7 +1338,6 @@
     canvas.addEventListener('dragstart', (e) => e.preventDefault());
     canvas.addEventListener('gesturestart', (e) => e.preventDefault());
 
-    // 防止iOS上的双击缩放
     document.addEventListener('touchmove', (e) => {
         if (e.target === canvas || e.target.closest('canvas')) {
             e.preventDefault();
