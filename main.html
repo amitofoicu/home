@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>轻松小游戏&工具合集 · 迷你高尔夫已加入</title>
+    <title>轻松小游戏&工具合集 · 投篮小游戏已加入</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -281,7 +281,7 @@
             color: #40e0d0;
         }
         
-        /* 游戏卡片特殊样式 */
+        /* 游戏卡片特殊样式 - 体育类统一使用蓝绿渐变 */
         .game-card[data-type="sports"] .game-thumbnail {
             background: linear-gradient(45deg, #1e7fb0, #3a9bd5, #5bb3e8) !important;
         }
@@ -304,12 +304,15 @@
             color: #1e1e1e;
             font-weight: 800;
         }
+        /* 高尔夫/投篮/体育类 */
         .game-card[data-type="golf"] .game-thumbnail,
-        .game-card[data-type="sports"] .game-thumbnail {
+        .game-card[data-type="sports"] .game-thumbnail,
+        .game-card[data-type="basketball"] .game-thumbnail {
             background: linear-gradient(45deg, #0f4e3a, #1f7a5a, #2ea87d) !important;
         }
         .game-card[data-type="golf"] .game-type,
-        .game-card[data-type="sports"] .game-type {
+        .game-card[data-type="sports"] .game-type,
+        .game-card[data-type="basketball"] .game-type {
             background: #0f4e3a;
             color: white;
         }
@@ -360,7 +363,7 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-gamepad"></i> 轻松小游戏&工具合集</h1>
-            <p class="subtitle">令人身心愉悦且放松小游戏！<br>新增 · 迷你高尔夫 · 坡度挑战  ⛳</p>
+            <p class="subtitle">令人身心愉悦且放松小游戏！<br>新增 · 投篮小游戏 · 花雨庆祝  🏀</p>
             
             <div class="filters">
                 <button class="filter-btn active" data-filter="all">所有游戏</button>
@@ -376,6 +379,7 @@
                 <button class="filter-btn" data-filter="tool">工具</button>
                 <button class="filter-btn" data-filter="sports">体育</button> 
                 <button class="filter-btn" data-filter="golf">高尔夫</button>
+                <button class="filter-btn" data-filter="basketball">篮球</button>
             </div>
         </header>
         
@@ -703,13 +707,31 @@
                     <a href="https://amitofoicu.github.io/home/game13.html" class="game-link" target="_blank">立即游玩 <i class="fas fa-external-link-alt"></i></a>
                 </div>
             </div>
+
+            <!-- 19号：投掷篮球小游戏 (新加入) -->
+            <div class="game-card" data-type="basketball sports">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #c96e28, #e68a3e, #f5a45a);">
+                    <i class="fas fa-basketball-ball"></i>
+                    <div class="game-number">19</div>
+                    <div class="game-type">篮球</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">🏀 投篮小游戏 · 花雨庆祝</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 5.0/5</span>
+                        <span><i class="far fa-clock"></i> 3-10分钟</span>
+                    </div>
+                    <p class="game-description">拖动篮球向后拉出力度，空心入网+3分！进球时绽放花雨、显示得分浮层，篮筐随机瞬移，背景音乐/音效可静音。</p>
+                    <a href="https://amitofoicu.github.io/home/game16.html" class="game-link" target="_blank">开始投篮 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
         </div>
         
         <div class="footer">
             <div class="footer-links">
                 <a href="https://www.fashui.org">更多发现</a>
             </div>
-            <div style="margin-top: 15px;">✨ 静心 · 放松 · 愉悦 · 现在包括迷你高尔夫 ✨</div>
+            <div style="margin-top: 15px;">✨ 静心 · 放松 · 愉悦 · 现在包括投篮小游戏 ✨</div>
         </div>
     </div>
     
