@@ -14,11 +14,11 @@ class GitAutoPush:
         初始化Git自动推送工具
         
         Args:
-            commit_message: 提交信息，None表示使用自动生成的信息
+            commit_message: 提交信息，None表示让用户输入
             max_retries: 最大重试次数，None表示无限重试
             wait_time: 重试等待时间（秒），默认300秒（5分钟）
         """
-        self.commit_message = commit_message or f"自动提交: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        self.commit_message = commit_message
         self.max_retries = max_retries
         self.wait_time = wait_time
         
@@ -50,17 +50,79 @@ class GitAutoPush:
         success, output = self.run_command("git status --porcelain", "检查文件状态")
         return success and output.strip()
     
+    def show_changed_files(self):
+        """显示变更的文件列表"""
+        success, output = self.run_command("git status -s", "查看变更文件")
+        if success and output:
+            print("\n📝 变更的文件:")
+            files = output.strip().split('\n')
+            for file in files:
+                if file.startswith('??'):
+                    print(f"  📄 新文件: {file[3:]}")
+                elif file.startswith(' M'):
+                    print(f"  ✏️ 修改: {file[3:]}")
+                elif file.startswith('D '):
+                    print(f"  🗑️ 删除: {file[3:]}")
+                elif file.startswith('A '):
+                    print(f"  ➕ 新增: {file[3:]}")
+                else:
+                    print(f"  {file}")
+        return success
+    
+    def get_commit_message_from_user(self):
+        """获取用户输入的commit message"""
+        print("\n" + "="*50)
+        print("💬 请输入提交信息")
+        print("="*50)
+        print("提示: 直接回车使用自动生成的信息")
+        print("    支持多行输入，空行结束（连续两次回车）")
+        
+        # 如果已经有预设的commit message
+        if self.commit_message:
+            print(f"\n预设信息: {self.commit_message}")
+            use_preset = input("是否使用预设信息? (y/n, 默认y): ").strip().lower()
+            if use_preset != 'n':
+                return self.commit_message
+        
+        # 多行输入模式
+        lines = []
+        print("\n请输入提交信息（输入空行结束）:")
+        
+        while True:
+            line = input()
+            if line == "" and lines:  # 空行且已有内容，结束输入
+                break
+            elif line == "" and not lines:  # 第一个空行，继续等待
+                continue
+            lines.append(line)
+        
+        if lines:
+            # 将多行信息用换行符连接
+            return '\n'.join(lines)
+        else:
+            # 用户直接回车，使用自动生成的信息
+            auto_message = f"自动提交: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            print(f"使用自动生成的信息: {auto_message}")
+            return auto_message
+    
     def git_add(self):
         """执行git add"""
         return self.run_command("git add .", "添加文件到暂存区")
     
-    def git_commit(self):
-        """执行git commit"""
-        return self.run_command(f'git commit -m "{self.commit_message}"', "提交更改")
-    
-    def git_push(self):
-        """执行git push"""
-        return self.run_command("git push origin main", "推送代码到远程仓库")
+    def git_commit(self, message):
+        """执行git commit，使用提供的提交信息"""
+        # 处理多行提交信息
+        if '\n' in message:
+            # 使用 -m 多次来处理多行信息
+            cmd_parts = ['git commit']
+            for line in message.split('\n'):
+                if line.strip():  # 忽略空行
+                    cmd_parts.append(f'-m "{line}"')
+            cmd = ' '.join(cmd_parts)
+        else:
+            cmd = f'git commit -m "{message}"'
+        
+        return self.run_command(cmd, "提交更改")
     
     def is_network_error(self, error_output):
         """判断是否是网络错误"""
@@ -74,20 +136,21 @@ class GitAutoPush:
             "无法连接到",
             "Timeout",
             "Temporary failure in name resolution",
-            "Connection was reset",  # 添加这个关键词
-            "Recv failure",          # 添加接收失败
-            "unable to access",      # 无法访问
-            "OpenSSL SSL_read",      # SSL读取错误
-            "SSL connection",        # SSL连接问题
-            "Empty reply from server", # 服务器空回复
-            "Connection aborted",    # 连接中止
-            "Connection closed",     # 连接关闭
-            "Network error",         # 网络错误
-            "请求被中止",            # 中文错误
-            "连接被重置",            # 中文"连接被重置"
-            "连接失败"               # 中文连接失败
+            "Connection was reset",
+            "Recv failure",
+            "unable to access",
+            "OpenSSL SSL_read",
+            "SSL connection",
+            "Empty reply from server",
+            "Connection aborted",
+            "Connection closed",
+            "Network error",
+            "请求被中止",
+            "连接被重置",
+            "连接失败"
         ]
-        return any(keyword.lower() in error_output.lower() for keyword in network_error_keywords)
+        error_lower = error_output.lower()
+        return any(keyword.lower() in error_lower for keyword in network_error_keywords)
     
     def push_with_retry(self):
         """带重试的推送"""
@@ -116,31 +179,57 @@ class GitAutoPush:
                 print(f"当前时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                 print(f"错误信息: {output[:100]}..." if len(output) > 100 else f"错误信息: {output}")
                 
-                # 倒计时
+                # 倒计时，并提供立即重试的选项
+                print("\n选项:")
+                print("  ⏳ 等待自动重试")
+                print("  🔄 按 'r' 立即重试")
+                print("  🛑 按 'q' 退出")
+                
                 for i in range(self.wait_time, 0, -1):
                     mins, secs = divmod(i, 60)
-                    sys.stdout.write(f"\r⏳ 等待时间: {mins:02d}:{secs:02d} (按 Ctrl+C 取消)")
+                    sys.stdout.write(f"\r⏳ 等待时间: {mins:02d}:{secs:02d} (输入 r 立即重试 / q 退出)")
                     sys.stdout.flush()
+                    
+                    # 检查用户输入（非阻塞）
+                    if i % 5 == 0:  # 每5秒检查一次输入
+                        import msvcrt  # Windows平台
+                        if msvcrt.kbhit():
+                            key = msvcrt.getch().decode().lower()
+                            if key == 'r':
+                                print("\n\n🔄 用户请求立即重试")
+                                break
+                            elif key == 'q':
+                                print("\n\n👋 用户退出")
+                                return False
+                    
                     time.sleep(1)
-                print("\n")
+                else:
+                    # 正常倒计时结束
+                    print("\n")
+                    continue
+                # 用户按了r键，立即重试
+                continue
             else:
                 print(f"\n❌ 推送失败（非网络错误）")
                 print(f"错误详情: {output}")
                 return False
+    
+    def git_push(self):
+        """执行git push"""
+        return self.run_command("git push origin main", "推送代码到远程仓库")
     
     def run(self):
         """运行完整的流程"""
         print("=" * 50)
         print("🚀 Git 自动提交推送工具")
         print("=" * 50)
-        print(f"提交信息: {self.commit_message}")
         print(f"重试策略: {'无限重试' if self.max_retries is None else f'最多{self.max_retries}次'}")
         print(f"等待时间: {self.wait_time//60}分钟")
         print("=" * 50)
         
         # 检查Git仓库
         repo_success, _ = self.check_repository()
-        if not repo_success[0] if isinstance(repo_success, tuple) else not repo_success:
+        if not repo_success:
             print("❌ 错误：当前目录不是Git仓库！")
             return False
         
@@ -149,15 +238,21 @@ class GitAutoPush:
             print("📝 没有文件需要提交，操作完成")
             return True
         
+        # 显示变更的文件
+        self.show_changed_files()
+        
+        # 获取用户输入的commit message
+        commit_message = self.get_commit_message_from_user()
+        
         # 执行git add
         add_success, _ = self.git_add()
-        if not add_success[0] if isinstance(add_success, tuple) else not add_success:
+        if not add_success:
             print("❌ git add失败，终止操作")
             return False
         
         # 执行git commit
-        commit_success, _ = self.git_commit()
-        if not commit_success[0] if isinstance(commit_success, tuple) else not commit_success:
+        commit_success, _ = self.git_commit(commit_message)
+        if not commit_success:
             print("❌ git commit失败，终止操作")
             return False
         
@@ -166,11 +261,16 @@ class GitAutoPush:
 
 def main():
     parser = argparse.ArgumentParser(description='Git自动提交推送工具')
-    parser.add_argument('-m', '--message', help='提交信息', default=None)
+    parser.add_argument('-m', '--message', help='预设提交信息（可选）', default=None)
     parser.add_argument('-r', '--retries', type=int, help='最大重试次数', default=None)
     parser.add_argument('-w', '--wait', type=int, help='重试等待时间（秒）', default=300)
+    parser.add_argument('-y', '--yes', action='store_true', help='使用自动生成的信息，不提示输入')
     
     args = parser.parse_args()
+    
+    # 如果指定了-y参数，使用自动生成的信息
+    if args.yes and not args.message:
+        args.message = f"自动提交: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     
     tool = GitAutoPush(
         commit_message=args.message,
