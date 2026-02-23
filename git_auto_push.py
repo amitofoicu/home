@@ -30,11 +30,13 @@ class GitAutoPush:
             if result.returncode == 0:
                 if result.stdout and result.stdout.strip():
                     for line in result.stdout.strip().split('\n'):
-                        print(f"  ✓ {line}")
+                        if line.strip():
+                            print(f"  ✓ {line}")
                 return True, result.stdout
             else:
-                print(f"  ✗ 失败: {result.stderr}")
-                return False, result.stderr
+                error_msg = result.stderr.strip() if result.stderr else "未知错误"
+                print(f"  ✗ 失败: {error_msg}")
+                return False, error_msg
         except Exception as e:
             print(f"  ✗ 异常: {str(e)}")
             return False, str(e)
@@ -71,9 +73,21 @@ class GitAutoPush:
             "操作超时",
             "无法连接到",
             "Timeout",
-            "Temporary failure in name resolution"
+            "Temporary failure in name resolution",
+            "Connection was reset",  # 添加这个关键词
+            "Recv failure",          # 添加接收失败
+            "unable to access",      # 无法访问
+            "OpenSSL SSL_read",      # SSL读取错误
+            "SSL connection",        # SSL连接问题
+            "Empty reply from server", # 服务器空回复
+            "Connection aborted",    # 连接中止
+            "Connection closed",     # 连接关闭
+            "Network error",         # 网络错误
+            "请求被中止",            # 中文错误
+            "连接被重置",            # 中文"连接被重置"
+            "连接失败"               # 中文连接失败
         ]
-        return any(keyword in error_output for keyword in network_error_keywords)
+        return any(keyword.lower() in error_output.lower() for keyword in network_error_keywords)
     
     def push_with_retry(self):
         """带重试的推送"""
@@ -100,16 +114,18 @@ class GitAutoPush:
                 
                 print(f"\n⚠ 检测到网络错误，{self.wait_time//60}分钟后重试...")
                 print(f"当前时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                print(f"错误信息: {output[:100]}..." if len(output) > 100 else f"错误信息: {output}")
                 
                 # 倒计时
                 for i in range(self.wait_time, 0, -1):
                     mins, secs = divmod(i, 60)
-                    sys.stdout.write(f"\r⏳ 等待时间: {mins:02d}:{secs:02d}")
+                    sys.stdout.write(f"\r⏳ 等待时间: {mins:02d}:{secs:02d} (按 Ctrl+C 取消)")
                     sys.stdout.flush()
                     time.sleep(1)
                 print("\n")
             else:
-                print("\n❌ 推送失败（非网络错误）")
+                print(f"\n❌ 推送失败（非网络错误）")
+                print(f"错误详情: {output}")
                 return False
     
     def run(self):
@@ -124,7 +140,7 @@ class GitAutoPush:
         
         # 检查Git仓库
         repo_success, _ = self.check_repository()
-        if not repo_success:
+        if not repo_success[0] if isinstance(repo_success, tuple) else not repo_success:
             print("❌ 错误：当前目录不是Git仓库！")
             return False
         
@@ -135,13 +151,13 @@ class GitAutoPush:
         
         # 执行git add
         add_success, _ = self.git_add()
-        if not add_success:
+        if not add_success[0] if isinstance(add_success, tuple) else not add_success:
             print("❌ git add失败，终止操作")
             return False
         
         # 执行git commit
         commit_success, _ = self.git_commit()
-        if not commit_success:
+        if not commit_success[0] if isinstance(commit_success, tuple) else not commit_success:
             print("❌ git commit失败，终止操作")
             return False
         
