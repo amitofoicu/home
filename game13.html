@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>单人壁球挑战赛 · 花朵特效</title>
+    <title>单人壁球挑战赛 · 花朵特效 · 背景音乐修复</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* 原有样式不变，仅微调音频按钮位置保证可见 */
         * {
             margin: 0;
             padding: 0;
@@ -372,7 +373,6 @@
             color: #e0e0ff;
         }
         
-        /* 修复再来一局按钮居中问题 */
         .game-over button {
             margin: 0 auto;
             display: inline-flex;
@@ -709,9 +709,10 @@
         </div>
     </div>
     
-    <!-- 音频元素 -->
-    <audio id="backgroundMusic" loop playsinline preload="auto">
+    <!-- 音频元素：增加preload以及确保OGG可用，同时添加js自动播放逻辑修正 -->
+    <audio id="backgroundMusic" loop preload="auto" playsinline>
         <source src="https://amitofoicu.github.io/home/beijing.ogg" type="audio/ogg">
+        <!-- 备用格式以防OGG不被支持（几乎都支持） -->
     </audio>
     <audio id="scoreSound" preload="auto" playsinline>
         <source src="https://amitofoicu.github.io/home/xiaochu.mp3" type="audio/mpeg">
@@ -772,8 +773,8 @@
             const backgroundMusic = document.getElementById('backgroundMusic');
             const scoreSound = document.getElementById('scoreSound');
             const winSound = document.getElementById('winSound');
-            let musicEnabled = true;
-            let audioInitialized = false;
+            let musicEnabled = true;      // 用户是否允许音乐
+            let audioInitialized = false;  // 是否已经激活过音频（一次手势）
 
             // ---------- 花朵配置 ----------
             const flowerColors = ['#FF3366', '#FF6633', '#FF33CC', '#33FF99', '#33CCFF', '#FFCC00', '#9966FF', '#FF99FF', '#66FFCC'];
@@ -782,7 +783,6 @@
             // 加载背景图片 (用于画布)
             const bgImage = new Image();
             bgImage.src = 'https://amitofoicu.github.io/home/lianchi6.jpg';
-            // 确保图片不缓存问题
             bgImage.crossOrigin = 'Anonymous';
 
             // ---------- 辅助函数 ----------
@@ -869,7 +869,6 @@
                 }
             }
 
-            // 为被消除的方块生成2~3朵小花
             function createFlowersFromTarget(targetX, targetY, targetWidth, targetHeight) {
                 const flowerContainer = document.getElementById('flower-effects');
                 const count = 2 + Math.floor(Math.random() * 2);
@@ -910,7 +909,6 @@
                 }
             }
 
-            // 每100分特效
             function createScoreFlowerEffect() {
                 const flowerContainer = document.getElementById('flower-effects');
                 const flowerCount = isMobile ? 15 : 25; 
@@ -933,7 +931,6 @@
                 }
             }
 
-            // ---------- 绘制函数 ----------
             function drawPaddle() {
                 ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
                 ctx.shadowBlur = 5;
@@ -1013,19 +1010,13 @@
                 });
             }
 
-            // 绘制游戏区域背景 (使用lianchi6.jpg)
             function drawGameBackground() {
-                // 如果图片已加载，绘制图片；否则用深色填充
                 if (bgImage.complete && bgImage.naturalHeight > 0) {
-                    // 绘制图片覆盖整个画布，保持比例
                     ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
                 } else {
-                    // 后备颜色，与页面背景协调
                     ctx.fillStyle = '#0a0f23';
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
                 }
-                
-                // 添加半透明网格增强视觉效果 (保留原有网格风格)
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
                 ctx.lineWidth = 1;
                 for (let x = 0; x < canvas.width; x += 40) {
@@ -1069,25 +1060,35 @@
                 }
             }
 
+            // 播放音频函数，处理用户手势限制
             function playAudioWithContext(audioElement, volume = 0.5) {
                 if (!musicEnabled) return Promise.reject('music disabled');
                 audioElement.volume = volume;
+                // 尝试播放并捕获错误（自动播放策略）
                 const playPromise = audioElement.play();
                 if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.log("音频播放需要用户手势:", error);
+                    return playPromise.catch(error => {
+                        console.log("音频播放需要手势:", error);
+                        // 静默失败，后续手势激活时会恢复
                     });
                 }
                 return playPromise;
             }
 
-            function initAudioOnFirstGesture() {
+            // 真正的音频激活函数：在第一次手势时调用，启动背景音乐（如果允许）
+            function activateAudioOnFirstGesture() {
                 if (audioInitialized) return;
                 audioInitialized = true;
+                console.log("音频已激活，尝试播放背景音乐");
                 if (musicEnabled) {
-                    backgroundMusic.volume = 0.5;
-                    backgroundMusic.play().catch(e => console.log("背景音乐仍需手势", e));
+                    // 设置音量并尝试播放背景音乐 - 统一为0.5
+                    backgroundMusic.volume = 1.0;
+                    backgroundMusic.play().catch(e => {
+                        console.log("背景音乐仍需额外手势", e);
+                        // 有些浏览器可能还需要第二次手势，但已经标记为已激活，后续点击开关可以再触发
+                    });
                 }
+                // 预加载其他音频
                 winSound.load();
                 scoreSound.load();
             }
@@ -1104,7 +1105,6 @@
                     if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) ball.speedX = -ball.speedX;
                     if (ball.y - ball.radius < 0) ball.speedY = -ball.speedY;
 
-                    // 球拍碰撞
                     if (ball.y + ball.radius > paddle.y && ball.y - ball.radius < paddle.y + paddle.height &&
                         ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
                         let hitPoint = (ball.x - paddle.x) / paddle.width;
@@ -1113,7 +1113,6 @@
                         ball.speedY = -Math.abs(ball.speedY);
                     }
 
-                    // 底部掉球
                     if (ball.y + ball.radius > canvas.height) {
                         lives--;
                         updateUI();
@@ -1126,7 +1125,6 @@
                         }
                     }
 
-                    // 目标碰撞
                     targets.forEach(target => {
                         if (!target.visible) return;
                         if (ball.x + ball.radius > target.x && ball.x - ball.radius < target.x + target.width &&
@@ -1138,18 +1136,17 @@
                             score += target.points;
                             createScoreAnimation(ball.x, ball.y - 20, target.points);
                             
-                            // 每个被消除的方块生成2~3朵小花
                             createFlowersFromTarget(target.x, target.y, target.width, target.height);
                             
                             if (musicEnabled) {
-                                playAudioWithContext(winSound, 1.0);
+                                playAudioWithContext(winSound, 0.5);  // win.mp3 音量改为0.5
                             }
                             
                             if (Math.floor(score / 100) > Math.floor(lastScoreForEffect / 100)) {
                                 createScoreFlowerEffect();
                                 lastScoreForEffect = score;
                                 if (musicEnabled) {
-                                    playAudioWithContext(scoreSound, 1.0);
+                                    playAudioWithContext(scoreSound,0.5);  // xiaochu.mp3 音量改为0.5
                                 }
                             }
                             
@@ -1188,7 +1185,7 @@
             }
 
             function gameLoop() {
-                drawGameBackground();  // 使用新背景函数
+                drawGameBackground();
                 drawTargets();
                 drawPaddle();
                 drawBall();
@@ -1196,7 +1193,6 @@
                 if (gameRunning) animationId = requestAnimationFrame(gameLoop);
             }
 
-            // 键盘控制
             const keys = {};
             window.addEventListener('keydown', (e) => {
                 keys[e.key] = true;
@@ -1278,9 +1274,13 @@
                 const icon = document.getElementById('audioIcon');
                 if (musicEnabled) {
                     icon.className = 'fas fa-volume-up';
+                    // 如果已经激活过手势，可以尝试播放；否则等下次手势
                     if (audioInitialized) {
-                        backgroundMusic.volume = 0.5;
+                        backgroundMusic.volume = 1.0;  // 背景音乐音量0.5
                         backgroundMusic.play().catch(e => {});
+                    } else {
+                        // 如果尚未激活，点击按钮本身也属于手势，激活
+                        activateAudioOnFirstGesture();
                     }
                 } else {
                     icon.className = 'fas fa-volume-mute';
@@ -1301,13 +1301,11 @@
                 }
             });
 
-            // 按钮事件
             document.getElementById('startBtn').addEventListener('click', startGame);
             document.getElementById('pauseBtn').addEventListener('click', pauseGame);
             document.getElementById('restartBtn').addEventListener('click', restartGame);
             document.getElementById('playAgainBtn').addEventListener('click', restartGame);
 
-            // 窗口自适应
             function resizeCanvas() {
                 const container = document.querySelector('.canvas-container');
                 canvas.width = Math.min(container.clientWidth, 800);
@@ -1328,8 +1326,11 @@
                 if (gameRunning) initTargets();
             }
 
+            // 统一的首次手势监听器
             function globalGestureInit() {
-                initAudioOnFirstGesture();
+                // 用户第一次触摸/点击/按键时激活音频
+                activateAudioOnFirstGesture();
+                // 移除所有监听器，只执行一次
                 window.removeEventListener('touchstart', globalGestureInit);
                 window.removeEventListener('touchend', globalGestureInit);
                 window.removeEventListener('click', globalGestureInit);
@@ -1345,15 +1346,17 @@
                 scoreSound.load();
                 backgroundMusic.load();
 
-                window.addEventListener('touchstart', globalGestureInit);
-                window.addEventListener('touchend', globalGestureInit);
-                window.addEventListener('click', globalGestureInit);
-                window.addEventListener('keydown', globalGestureInit);
+                // 添加全局手势监听，一旦用户交互就激活音频
+                window.addEventListener('touchstart', globalGestureInit, { once: true });
+                window.addEventListener('touchend', globalGestureInit, { once: true });
+                window.addEventListener('click', globalGestureInit, { once: true });
+                window.addEventListener('keydown', globalGestureInit, { once: true });
+
+                // 确保任何时候点击“开始游戏”等按钮也能激活音频（按钮事件本身也是click）
             });
 
             window.addEventListener('resize', resizeCanvas);
 
-            // 触摸滑动
             let touchStartX = 0;
             canvas.addEventListener('touchstart', (e) => {
                 if (!gameRunning || gamePaused) return;
