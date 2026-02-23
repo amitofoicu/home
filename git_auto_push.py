@@ -9,24 +9,34 @@ import argparse
 from datetime import datetime
 
 class GitAutoPush:
-    def __init__(self, commit_message=None, max_retries=None, wait_time=300):
+    def __init__(self, repo_path=None, commit_message=None, max_retries=None, wait_time=300):
         """
         初始化Git自动推送工具
         
         Args:
+            repo_path: Git仓库路径，None表示使用当前目录
             commit_message: 提交信息，None表示让用户输入
             max_retries: 最大重试次数，None表示无限重试
             wait_time: 重试等待时间（秒），默认300秒（5分钟）
         """
+        self.repo_path = repo_path or os.getcwd()
         self.commit_message = commit_message
         self.max_retries = max_retries
         self.wait_time = wait_time
         
-    def run_command(self, command, description):
+    def run_command(self, command, description, cwd=None):
         """执行命令并返回结果"""
+        working_dir = cwd or self.repo_path
         print(f"[{datetime.now().strftime('%H:%M:%S')}] {description}...")
         try:
-            result = subprocess.run(command, shell=True, capture_output=True, text=True, encoding='utf-8')
+            result = subprocess.run(
+                command, 
+                shell=True, 
+                capture_output=True, 
+                text=True, 
+                encoding='utf-8',
+                cwd=working_dir
+            )
             if result.returncode == 0:
                 if result.stdout and result.stdout.strip():
                     for line in result.stdout.strip().split('\n'):
@@ -42,7 +52,8 @@ class GitAutoPush:
             return False, str(e)
     
     def check_repository(self):
-        """检查Git仓库"""
+        """检查指定路径是否是Git仓库"""
+        print(f"\n📂 仓库路径: {self.repo_path}")
         return self.run_command("git rev-parse --git-dir", "检查Git仓库")
     
     def has_changes(self):
@@ -65,6 +76,8 @@ class GitAutoPush:
                     print(f"  🗑️ 删除: {file[3:]}")
                 elif file.startswith('A '):
                     print(f"  ➕ 新增: {file[3:]}")
+                elif file.startswith('R '):
+                    print(f"  🔄 重命名: {file[3:]}")
                 else:
                     print(f"  {file}")
         return success
@@ -74,6 +87,7 @@ class GitAutoPush:
         print("\n" + "="*50)
         print("💬 请输入提交信息")
         print("="*50)
+        print("提示: 直接回车使用自动生成的信息")
         print("    支持多行输入，空行结束（连续两次回车）")
         
         # 如果已经有预设的commit message
@@ -151,6 +165,10 @@ class GitAutoPush:
         error_lower = error_output.lower()
         return any(keyword.lower() in error_lower for keyword in network_error_keywords)
     
+    def git_push(self):
+        """执行git push"""
+        return self.run_command("git push origin main", "推送代码到远程仓库")
+    
     def push_with_retry(self):
         """带重试的推送"""
         retry_count = 0
@@ -178,58 +196,37 @@ class GitAutoPush:
                 print(f"当前时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                 print(f"错误信息: {output[:100]}..." if len(output) > 100 else f"错误信息: {output}")
                 
-                # 倒计时，并提供立即重试的选项
-                print("\n选项:")
-                print("  ⏳ 等待自动重试")
-                print("  🔄 按 'r' 立即重试")
-                print("  🛑 按 'q' 退出")
-                
+                # 倒计时
                 for i in range(self.wait_time, 0, -1):
                     mins, secs = divmod(i, 60)
-                    sys.stdout.write(f"\r⏳ 等待时间: {mins:02d}:{secs:02d} (输入 r 立即重试 / q 退出)")
+                    sys.stdout.write(f"\r⏳ 等待时间: {mins:02d}:{secs:02d} (按 Ctrl+C 取消)")
                     sys.stdout.flush()
-                    
-                    # 检查用户输入（非阻塞）
-                    if i % 5 == 0:  # 每5秒检查一次输入
-                        import msvcrt  # Windows平台
-                        if msvcrt.kbhit():
-                            key = msvcrt.getch().decode().lower()
-                            if key == 'r':
-                                print("\n\n🔄 用户请求立即重试")
-                                break
-                            elif key == 'q':
-                                print("\n\n👋 用户退出")
-                                return False
-                    
                     time.sleep(1)
-                else:
-                    # 正常倒计时结束
-                    print("\n")
-                    continue
-                # 用户按了r键，立即重试
-                continue
+                print("\n")
             else:
                 print(f"\n❌ 推送失败（非网络错误）")
                 print(f"错误详情: {output}")
                 return False
-    
-    def git_push(self):
-        """执行git push"""
-        return self.run_command("git push origin main", "推送代码到远程仓库")
     
     def run(self):
         """运行完整的流程"""
         print("=" * 50)
         print("🚀 Git 自动提交推送工具")
         print("=" * 50)
+        print(f"仓库路径: {self.repo_path}")
         print(f"重试策略: {'无限重试' if self.max_retries is None else f'最多{self.max_retries}次'}")
         print(f"等待时间: {self.wait_time//60}分钟")
         print("=" * 50)
         
+        # 检查路径是否存在
+        if not os.path.exists(self.repo_path):
+            print(f"❌ 错误：路径不存在 - {self.repo_path}")
+            return False
+        
         # 检查Git仓库
         repo_success, _ = self.check_repository()
         if not repo_success:
-            print("❌ 错误：当前目录不是Git仓库！")
+            print("❌ 错误：指定路径不是Git仓库！")
             return False
         
         # 检查是否有变更
@@ -260,6 +257,7 @@ class GitAutoPush:
 
 def main():
     parser = argparse.ArgumentParser(description='Git自动提交推送工具')
+    parser.add_argument('-p', '--path', help='Git仓库路径', default=None)
     parser.add_argument('-m', '--message', help='预设提交信息（可选）', default=None)
     parser.add_argument('-r', '--retries', type=int, help='最大重试次数', default=None)
     parser.add_argument('-w', '--wait', type=int, help='重试等待时间（秒）', default=300)
@@ -267,11 +265,16 @@ def main():
     
     args = parser.parse_args()
     
+    # 如果没有指定路径，使用当前目录
+    if not args.path:
+        args.path = os.getcwd()
+    
     # 如果指定了-y参数，使用自动生成的信息
     if args.yes and not args.message:
         args.message = f"自动提交: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     
     tool = GitAutoPush(
+        repo_path=args.path,
         commit_message=args.message,
         max_retries=args.retries,
         wait_time=args.wait
