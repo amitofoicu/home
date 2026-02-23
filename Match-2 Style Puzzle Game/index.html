@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Match-2 Style Puzzle Game</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: none;
+}
+
+body {
+  background: #1f2233;
+  color: #fff;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  min-height: 100vh;
+  min-height: -webkit-fill-available; /* iOS Safari */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('lianchi.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  overflow-y: auto;
+}
+
+html {
+  height: -webkit-fill-available; /* iOS Safari */
+}
+
+/* 主内容容器 */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100vh;
+  height: -webkit-fill-available; /* iOS Safari */
+  padding: 10px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  gap: 8px;
+  position: relative;
+  min-height: 0; /* 允许弹性收缩 */
+}
+
+/* 角标 */
+.amitofo-badge {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffd166;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.amitofo-badge:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.amitofo-badge a {
+  text-decoration: none;
+  color: #ffd166;
+  text-align: center;
+  line-height: 1.3;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.amitofo-text {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.meet-text {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+/* 加载遮罩 */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(31, 34, 51, 0.95);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease;
+}
+
+.loading-text {
+  color: #ffd166;
+  font-size: 1.5rem;
+  margin-top: 20px;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 209, 102, 0.3);
+  border-top-color: #ffd166;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 背景音乐控制 */
+.music-control {
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 6px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border: 2px solid #ffd166;
+  transition: all 0.3s;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.music-control:hover {
+  background: rgba(0, 0, 0, 0.8);
+  transform: scale(1.1);
+}
+
+.music-control i {
+  font-size: 20px;
+  color: #ffd166;
+}
+
+/* 主游戏容器 */
+.game-container {
+  width: 100%;
+  max-width: 500px;
+  max-height: calc(100vh - 160px);
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 2px solid rgba(255, 209, 102, 0.3);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  margin: 5px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  flex-shrink: 0;
+  flex-grow: 1;
+  min-height: 0;
+}
+
+/* 游戏标题 */
+.game-title {
+  text-align: center;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.game-title h1 {
+  font-family: -apple-system-headline, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  color: #ffd166;
+  text-shadow: 0 0 10px rgba(255, 209, 102, 0.7),
+               0 0 20px rgba(255, 209, 102, 0.5),
+               0 0 30px rgba(255, 209, 102, 0.3);
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+  background: linear-gradient(45deg, #ff6b6b, #8A2BE2, #06D6A0, #ffd166);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* 分数显示 */
+.merit-container {
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  text-align: center;
+  border: 2px solid #8A2BE2;
+  box-shadow: 0 4px 12px rgba(138, 43, 226, 0.3);
+  width: 100%;
+}
+
+.merit-display {
+  font-size: clamp(1rem, 3vw, 1.2rem);
+  color: #ffd166;
+  margin-bottom: 5px;
+}
+
+.merit-count {
+  font-size: clamp(1.5rem, 5vw, 1.8rem);
+  font-weight: bold;
+  color: #06D6A0;
+  text-shadow: 0 0 5px rgba(6, 214, 160, 0.7);
+}
+
+/* 按钮容器 */
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: nowrap;
+  width: 100%;
+  align-items: center;
+}
+
+.game-button {
+  padding: 8px 16px;
+  font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: bold;
+  color: white;
+  flex: 1;
+  min-width: 100px;
+  max-width: 200px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+#changeBoardBtn {
+  background: linear-gradient(to right, #8A2BE2, #9b59b6);
+}
+
+.game-button:hover, .game-button:active {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 游戏棋盘 */
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: clamp(3px, 1vw, 5px);
+  background: rgba(0, 0, 0, 0.35);
+  padding: clamp(6px, 1.5vw, 8px);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  width: 100%;
+  max-width: 380px;
+  max-height: 380px;
+  touch-action: manipulation;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+/* 莲花方块 */
+.tile {
+  aspect-ratio: 1;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* 莲花图案 */
+.tile::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 30% 30%, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    rgba(255, 255, 255, 0.2) 20%, 
+    transparent 60%);
+  z-index: 1;
+}
+
+.tile::after {
+  content: '🌸';
+  font-size: clamp(10px, 2.5vw, 14px);
+  position: relative;
+  z-index: 2;
+  opacity: 0.9;
+}
+
+/* 不同颜色的方块 */
+.tile.color-1 { background: linear-gradient(135deg, #FF6B6B, #ff5252); }
+.tile.color-1::after { content: '🌸'; color: #fff; }
+
+.tile.color-2 { background: linear-gradient(135deg, #8A2BE2, #7b1fa2); }
+.tile.color-2::after { content: '🌸'; color: #fff; }
+
+.tile.color-3 { background: linear-gradient(135deg, #FFD166, #ffb300); }
+.tile.color-3::after { content: '🌸'; color: #fff; }
+
+.tile.color-4 { background: linear-gradient(135deg, #06D6A0, #00a97f); }
+.tile.color-4::after { content: '🌸'; color: #fff; }
+
+.tile.color-5 { background: linear-gradient(135deg, #4cc9f0, #00b0ff); }
+.tile.color-5::after { content: '🌸'; color: #fff; }
+
+.tile.preview {
+  box-shadow: 0 0 0 2px #fff inset;
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+.tile.wave {
+  box-shadow: 0 0 0 3px #ffd166 inset, 0 0 12px rgba(255, 209, 102, 0.7);
+  animation: pulse 0.5s infinite alternate;
+}
+
+@keyframes pulse {
+  from { box-shadow: 0 0 0 3px #ffd166 inset, 0 0 12px rgba(255, 209, 102, 0.7); }
+  to { box-shadow: 0 0 0 4px #ffd166 inset, 0 0 20px rgba(255, 209, 102, 1); }
+}
+
+.tile.removing {
+  transform: scale(0) rotate(180deg);
+  opacity: 0;
+}
+
+/* 随喜赞叹动画 */
+.blessing-animation {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(2rem, 6vw, 2.5rem);
+  font-weight: bold;
+  color: #ffd166;
+  text-shadow: 0 0 10px rgba(255, 209, 102, 0.8),
+               0 0 20px rgba(255, 209, 102, 0.6),
+               0 0 30px rgba(255, 209, 102, 0.4);
+  opacity: 0;
+  z-index: 1000;
+  pointer-events: none;
+  animation: blessing 2.5s ease-out forwards;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.blessing-text {
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
+  display: block;
+  margin-top: 5px;
+  color: #06D6A0;
+}
+
+@keyframes blessing {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -180%) scale(0.8);
+  }
+}
+
+/* 天花动画 */
+.petal {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(circle at 30% 30%, 
+    rgba(255, 255, 255, 0.9) 0%, 
+    rgba(255, 255, 255, 0.7) 20%, 
+    rgba(255, 255, 255, 0.4) 40%, 
+    transparent 60%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 500;
+  opacity: 0.9;
+  animation: fall linear forwards;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  top: -50px;
+}
+
+.petal::before {
+  content: '🌸';
+  position: absolute;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(calc(100vh + 100px)) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* 移动端适配 - 特别是iPhone */
+@media (max-height: 700px) {
+  .main-content {
+    padding: 8px;
+    gap: 5px;
+  }
+  
+  .game-container {
+    padding: 8px;
+    margin: 3px 0;
+    max-height: calc(100vh - 140px);
+  }
+  
+  .board {
+    gap: 2px;
+    padding: 4px;
+    max-height: 320px;
+  }
+  
+  .tile::after {
+    font-size: 9px;
+  }
+  
+  .merit-container {
+    padding: 6px;
+    margin-bottom: 8px;
+  }
+  
+  .button-container {
+    margin-bottom: 8px;
+    gap: 6px;
+  }
+  
+  .game-button {
+    padding: 6px 12px;
+    min-width: 90px;
+    font-size: 0.75rem;
+  }
+  
+  /* 移动端角标调整 */
+  .amitofo-badge {
+    padding: 5px 8px;
+    top: 10px;
+    left: 10px;
+  }
+  
+  .amitofo-text {
+    font-size: 11px;
+  }
+  
+  .meet-text {
+    font-size: 9px;
+  }
+}
+
+/* 小屏幕手机 */
+@media (max-width: 380px) {
+  .board {
+    grid-template-columns: repeat(8, 1fr);
+    gap: 1px;
+    max-height: 300px;
+  }
+  
+  .tile::after {
+    font-size: 8px;
+  }
+  
+  .button-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .game-button {
+    width: 90%;
+    max-width: none;
+  }
+  
+  /* 小屏幕角标调整 */
+  .amitofo-badge {
+    padding: 4px 6px;
+    top: 8px;
+    left: 8px;
+  }
+  
+  .amitofo-text {
+    font-size: 10px;
+  }
+  
+  .meet-text {
+    font-size: 8px;
+  }
+}
+
+/* iPhone安全区域适配 */
+@supports (padding: max(0px)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  .amitofo-badge {
+    top: calc(15px + env(safe-area-inset-top));
+    left: calc(15px + env(safe-area-inset-left));
+  }
+  
+  .main-content {
+    padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  }
+}
+
+/* 专门针对iPhone的适配 */
+@media only screen and (max-device-width: 480px) {
+  .main-content {
+    justify-content: flex-start;
+    padding-top: 5px;
+  }
+  
+  .game-container {
+    flex-grow: 1;
+    min-height: 0;
+    padding: 6px;
+    max-height: calc(100vh - 140px);
+  }
+  
+  .game-title h1 {
+    font-size: 1.3rem;
+    margin-bottom: 2px;
+  }
+  
+  .merit-display {
+    font-size: 0.9rem;
+  }
+  
+  .merit-count {
+    font-size: 1.2rem;
+  }
+  
+  .board {
+    max-width: 350px;
+    max-height: 320px;
+    padding: 3px;
+  }
+  
+  .tile {
+    border-radius: 4px;
+  }
+}
+
+/* 针对iPhone全面屏设备的特殊适配 */
+@media only screen 
+  and (max-device-width: 896px) 
+  and (max-device-height: 414px) {
+  .game-container {
+    padding: 4px;
+    max-height: calc(100vh - 100px);
+  }
+  
+  .game-title h1 {
+    font-size: 1.1rem;
+  }
+  
+  .merit-display {
+    font-size: 0.8rem;
+  }
+  
+  .merit-count {
+    font-size: 1rem;
+  }
+  
+  .board {
+    max-width: 320px;
+    max-height: 280px;
+    padding: 2px;
+    gap: 1px;
+  }
+  
+  .tile::after {
+    font-size: 7px;
+  }
+  
+  .button-container {
+    margin-bottom: 4px;
+  }
+  
+  .game-button {
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    min-width: 70px;
+  }
+}
+
+/* 防止滚动条 */
+body, .game-container, .main-content {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+body::-webkit-scrollbar, 
+.game-container::-webkit-scrollbar,
+.main-content::-webkit-scrollbar {
+  display: none;
+}
+
+/* 音频提示 */
+.audio-hint {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(255, 209, 102, 0.9);
+  color: #1f2233;
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  z-index: 1001;
+  display: none;
+}
+
+/* 添加CSS动画 */
+@keyframes meritTip {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  20% { opacity: 1; transform: translate(-50%, -80%) scale(1.2); }
+  100% { opacity: 0; transform: translate(-50%, -120%) scale(0.8); }
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* 紧凑模式类 */
+.compact-mode .board {
+  max-width: 320px;
+  max-height: 320px;
+  gap: 1px;
+}
+
+.compact-mode .tile::after {
+  font-size: 8px;
+}
+
+.compact-mode .game-container {
+  padding: 6px;
+}
+</style>
+</head>
+
+<body>
+<!-- 音频提示 -->
+<div class="audio-hint" id="audioHint">
+  点击任意位置开始播放背景音乐
+</div>
+
+<!-- 角标 -->
+<div class="amitofo-badge">
+  <a href="https://amitofoicu.github.io/home/main.html" rel="noopener noreferrer">
+    <div class="amitofo-text">More...</div>
+  </a>
+</div>
+
+<!-- 加载遮罩 -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">加载游戏中...</div>
+</div>
+
+<!-- 主内容容器 -->
+<div class="main-content">
+  <!-- 主游戏容器 -->
+  <div class="game-container">
+    <!-- 游戏标题 -->
+    <div class="game-title">
+      <h1>Match-2 Style Puzzle Game</h1>
+    </div>
+    
+    <!-- 分数显示 -->
+    <div class="merit-container">
+      <div class="merit-display">Score</div>
+      <div class="merit-count" id="meritCount">0</div>
+    </div>
+    
+    <!-- 按钮容器 -->
+    <div class="button-container">
+      <button class="game-button" id="changeBoardBtn">Change Board</button>
+      <div class="music-control" id="musicControl">
+        <i>♫</i>
+      </div>
+    </div>
+    
+    <!-- 游戏棋盘 -->
+    <div id="board" class="board"></div>
+  </div>
+</div>
+
+<!-- 随喜赞叹动画容器 -->
+<div id="blessingContainer"></div>
+
+<!-- 预加载音频（隐藏） -->
+<audio id="bgMusic" preload="auto" loop>
+  <source src="beijing.ogg" type="audio/ogg">
+  <source src="beijing.mp3" type="audio/mpeg">
+</audio>
+<audio id="winSound" preload="auto">
+  <source src="win.mp3" type="audio/mpeg">
+  <source src="win.ogg" type="audio/ogg">
+</audio>
+<audio id="xiaochuSound" preload="auto">
+  <source src="xiaochu.mp3" type="audio/mpeg">
+  <source src="xiaochu.ogg" type="audio/ogg">
+</audio>
+
+<script>
+const SIZE = 8;
+const COLORS = [
+  {id: 1, name: '红色莲花', colorClass: 'color-1'},
+  {id: 2, name: '紫色莲花', colorClass: 'color-2'},
+  {id: 3, name: '金色莲花', colorClass: 'color-3'},
+  {id: 4, name: '绿色莲花', colorClass: 'color-4'},
+  {id: 5, name: '蓝色莲花', colorClass: 'color-5'}
+];
+
+// 游戏元素
+const boardEl = document.getElementById('board');
+const meritCountEl = document.getElementById('meritCount');
+const changeBoardBtn = document.getElementById('changeBoardBtn');
+const musicControl = document.getElementById('musicControl');
+const blessingContainer = document.getElementById('blessingContainer');
+const loadingOverlay = document.getElementById('loadingOverlay');
+const amitofoBadge = document.querySelector('.amitofo-badge');
+const audioHint = document.getElementById('audioHint');
+
+// 音频元素
+const bgMusic = document.getElementById('bgMusic');
+const winSound = document.getElementById('winSound');
+const xiaochuSound = document.getElementById('xiaochuSound');
+
+// 游戏状态
+let board = [];
+let busy = false;
+let totalMerit = 0;
+let backgroundMusicPlaying = false;
+let currentPreview = null;
+let userInteracted = false;
+let audioElementsLoaded = 0;
+let totalAudioElements = 3;
+
+// 初始化游戏
+async function initGame() {
+  try {
+    // 预加载音频资源
+    await preloadAudioResources();
+    
+    // 调整界面大小
+    adjustForSmallScreen();
+    
+    // 隐藏加载界面
+    loadingOverlay.style.opacity = '0';
+    setTimeout(() => {
+      loadingOverlay.style.display = 'none';
+      
+      // 显示音频提示（如果需要）
+      if (!userInteracted) {
+        showAudioHint();
+      }
+    }, 500);
+    
+    // 初始化游戏逻辑
+    init();
+    
+  } catch (error) {
+    console.error('游戏初始化失败:', error);
+    loadingOverlay.innerHTML = '<div style="color:#ffd166;text-align:center;">加载失败，请刷新页面重试</div>';
+  }
+}
+
+/* =====================
+   音频资源预加载
+===================== */
+function preloadAudioResources() {
+  return new Promise((resolve) => {
+    function onAudioLoaded() {
+      audioElementsLoaded++;
+      if (audioElementsLoaded >= totalAudioElements) {
+        console.log('所有音频资源已预加载完成');
+        resolve();
+      }
+    }
+    
+    [bgMusic, winSound, xiaochuSound].forEach(audio => {
+      if (audio.readyState >= 3) {
+        onAudioLoaded();
+      } else {
+        audio.addEventListener('canplaythrough', onAudioLoaded, { once: true });
+        audio.addEventListener('error', onAudioLoaded, { once: true });
+      }
+      
+      audio.load();
+    });
+    
+    setTimeout(resolve, 2000);
+  });
+}
+
+/* =====================
+   音频系统初始化
+===================== */
+function initAudioSystem() {
+  musicControl.addEventListener('click', toggleBackgroundMusic);
+  musicControl.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    toggleBackgroundMusic();
+  });
+  
+  document.addEventListener('click', handleFirstInteraction);
+  document.addEventListener('touchstart', handleFirstInteraction);
+  document.addEventListener('keydown', handleFirstInteraction);
+}
+
+function handleFirstInteraction() {
+  if (!userInteracted) {
+    userInteracted = true;
+    audioHint.style.display = 'none';
+    
+    setTimeout(() => {
+      if (!backgroundMusicPlaying) {
+        playBackgroundMusic();
+      }
+    }, 100);
+  }
+}
+
+function showAudioHint() {
+  if (!userInteracted) {
+    setTimeout(() => {
+      audioHint.style.display = 'block';
+      setTimeout(() => {
+        audioHint.style.display = 'none';
+      }, 3000);
+    }, 1000);
+  }
+}
+
+/* =====================
+   音频播放函数
+===================== */
+function playBackgroundMusic() {
+  try {
+    bgMusic.currentTime = 0;
+    bgMusic.volume = 0.5;
+    
+    const playPromise = bgMusic.play();
+    
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          backgroundMusicPlaying = true;
+          musicControl.innerHTML = '<i>♫</i>';
+        })
+        .catch(e => {
+          console.log("背景音乐播放失败:", e);
+          if (!userInteracted) {
+            showAudioHint();
+          }
+        });
+    }
+  } catch (e) {
+    console.log("播放背景音乐时出错:", e);
+  }
+}
+
+function stopBackgroundMusic() {
+  try {
+    bgMusic.pause();
+    bgMusic.currentTime = 0;
+    backgroundMusicPlaying = false;
+    musicControl.innerHTML = '<i>♪</i>';
+  } catch (e) {
+    console.log("停止背景音乐时出错:", e);
+  }
+}
+
+function playAudio(audioName) {
+  if (!userInteracted) return;
+  
+  try {
+    let audioElement;
+    
+    switch(audioName) {
+      case 'win':
+        audioElement = winSound;
+        break;
+      case 'xiaochu':
+        audioElement = xiaochuSound;
+        break;
+      default:
+        return;
+    }
+    
+    audioElement.currentTime = 0;
+    audioElement.volume = 0.7;
+    
+    const playPromise = audioElement.play();
+    
+    if (playPromise !== undefined) {
+      playPromise.catch(e => {
+        console.log("音效播放失败:", audioName, e);
+      });
+    }
+  } catch (e) {
+    console.log("播放音效时出错:", audioName, e);
+  }
+}
+
+function toggleBackgroundMusic() {
+  if (!userInteracted) {
+    handleFirstInteraction();
+    return;
+  }
+  
+  if (backgroundMusicPlaying) {
+    stopBackgroundMusic();
+  } else {
+    playBackgroundMusic();
+  }
+}
+
+/* =====================
+   动态调整界面大小
+===================== */
+function adjustForSmallScreen() {
+  const viewportHeight = window.innerHeight;
+  const viewportWidth = window.innerWidth;
+  
+  // 检测是否是iPhone小屏幕
+  const isSmallIPhone = viewportHeight <= 700 || viewportWidth <= 380;
+  const isIPhoneLandscape = viewportWidth > viewportHeight && viewportHeight <= 414;
+  
+  const body = document.body;
+  const mainContent = document.querySelector('.main-content');
+  const gameContainer = document.querySelector('.game-container');
+  const board = document.querySelector('.board');
+  const tiles = document.querySelectorAll('.tile');
+  
+  if (isSmallIPhone || isIPhoneLandscape) {
+    body.classList.add('compact-mode');
+    
+    // 动态调整布局
+    if (viewportHeight < 600) {
+      gameContainer.style.maxHeight = `calc(${viewportHeight}px - 120px)`;
+      board.style.maxHeight = '280px';
+    }
+    
+    // 确保内容不超出屏幕
+    const totalContentHeight = mainContent.scrollHeight;
+    if (totalContentHeight > viewportHeight) {
+      const reductionRatio = viewportHeight / totalContentHeight;
+      
+      if (reductionRatio < 0.9) {
+        // 进一步缩小棋盘
+        board.style.maxHeight = `${Math.min(280, viewportHeight * 0.4)}px`;
+        board.style.gap = '1px';
+        board.style.padding = '2px';
+        
+        tiles.forEach(tile => {
+          tile.style.fontSize = '8px';
+        });
+      }
+    }
+  } else {
+    body.classList.remove('compact-mode');
+  }
+}
+
+/* =====================
+   自适应调整
+===================== */
+function adjustBoardSize() {
+  const viewportHeight = window.innerHeight;
+  const viewportWidth = window.innerWidth;
+  
+  const gameContainer = document.querySelector('.game-container');
+  const boardContainer = document.querySelector('.board');
+  
+  if (viewportHeight < 700) {
+    gameContainer.style.padding = '6px';
+    boardContainer.style.gap = '2px';
+    boardContainer.style.padding = '3px';
+  }
+  
+  if (viewportWidth < 400) {
+    amitofoBadge.style.top = '8px';
+    amitofoBadge.style.left = '8px';
+    amitofoBadge.style.padding = '4px 6px';
+  }
+}
+
+/* =====================
+   初始化游戏逻辑
+===================== */
+function init() {
+  board = [];
+  boardEl.innerHTML = '';
+  
+  // 新游戏开始时累计分数清零
+  totalMerit = 0;
+  
+  adjustBoardSize();
+  
+  for (let r = 0; r < SIZE; r++) {
+    board[r] = [];
+    for (let c = 0; c < SIZE; c++) {
+      createTile(r, c);
+    }
+  }
+  
+  updateMeritDisplay();
+  initAudioSystem();
+}
+
+function createTile(r, c, color = randomColor()) {
+  const el = document.createElement('div');
+  el.className = `tile ${color.colorClass}`;
+  
+  const tile = { r, c, color, el };
+  
+  el.addEventListener('mouseenter', () => preview(tile));
+  el.addEventListener('mouseleave', clearPreview);
+  el.addEventListener('click', () => clickTile(tile));
+  
+  el.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      e.preventDefault();
+      handleFirstInteraction();
+      preview(tile);
+    }
+  }, { passive: false });
+  
+  el.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    clickTile(tile);
+    setTimeout(clearPreview, 100);
+  });
+  
+  board[r][c] = tile;
+  boardEl.appendChild(el);
+}
+
+function randomColor() {
+  return COLORS[Math.floor(Math.random() * COLORS.length)];
+}
+
+window.addEventListener('resize', () => {
+  adjustBoardSize();
+  adjustForSmallScreen();
+});
+
+window.addEventListener('orientationchange', () => {
+  setTimeout(() => {
+    adjustBoardSize();
+    adjustForSmallScreen();
+  }, 300);
+});
+
+// 页面加载完成后立即调整
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(adjustForSmallScreen, 100);
+});
+
+/* =====================
+   分数系统
+===================== */
+function addMerit(amount) {
+  totalMerit += amount;
+  updateMeritDisplay();
+  showMeritGainTip(amount);
+}
+
+function updateMeritDisplay() {
+  meritCountEl.textContent = totalMerit;
+  meritCountEl.style.transform = 'scale(1.1)';
+  setTimeout(() => {
+    meritCountEl.style.transform = 'scale(1)';
+  }, 200);
+}
+
+/* =====================
+   游戏逻辑
+===================== */
+function preview(tile) {
+  if (busy) return;
+  
+  if (currentPreview) {
+    currentPreview.forEach(n => n.tile.el.classList.remove('preview'));
+  }
+  
+  const res = bfs(tile);
+  currentPreview = res;
+  
+  res.forEach(n => n.tile.el.classList.add('preview'));
+}
+
+function clearPreview() {
+  if (currentPreview) {
+    currentPreview.forEach(n => n.tile.el.classList.remove('preview'));
+    currentPreview = null;
+  }
+}
+
+async function clickTile(tile) {
+  if (busy) return;
+  
+  const res = bfs(tile);
+  if (res.length < 2) {
+    showMessage('请连接至少2个相同颜色的莲花');
+    return;
+  }
+  
+  busy = true;
+  clearPreview();
+  
+  const layers = {};
+  res.forEach(n => {
+    layers[n.dist] ??= [];
+    layers[n.dist].push(n.tile);
+  });
+  
+  for (const d of Object.keys(layers).sort((a, b) => a - b)) {
+    layers[d].forEach(t => t.el.classList.add('wave'));
+    await delay(100);
+  }
+  
+  playAudio('win');
+  addMerit(res.length * 100);
+  
+  if (res.length > 4) {
+    createPetalRain(res.length * 2);
+    playAudio('xiaochu');
+  }
+  
+  res.forEach(n => {
+    const t = n.tile;
+    t.el.classList.add('removing');
+    board[t.r][t.c] = null;
+  });
+  
+  await delay(200);
+  collapse();
+  busy = false;
+}
+
+function bfs(start) {
+  const q = [{ tile: start, dist: 0 }];
+  const visited = new Set();
+  const res = [];
+  const colorId = start.color.id;
+  
+  while (q.length) {
+    const { tile, dist } = q.shift();
+    const key = `${tile.r},${tile.c}`;
+    if (visited.has(key)) continue;
+    visited.add(key);
+    
+    if (board[tile.r]?.[tile.c] !== tile) continue;
+    if (tile.color.id !== colorId) continue;
+    
+    res.push({ tile, dist });
+    
+    [[-1, 0], [1, 0], [0, -1], [0, 1]].forEach(d => {
+      const nr = tile.r + d[0], nc = tile.c + d[1];
+      if (board[nr]?.[nc]) q.push({ tile: board[nr][nc], dist: dist + 1 });
+    });
+  }
+  return res;
+}
+
+function collapse() {
+  boardEl.innerHTML = '';
+  
+  for (let c = 0; c < SIZE; c++) {
+    const col = [];
+    for (let r = SIZE - 1; r >= 0; r--) {
+      if (board[r][c]) col.push(board[r][c]);
+    }
+    for (let r = SIZE - 1, i = 0; r >= 0; r--) {
+      if (i < col.length) {
+        const t = col[i++];
+        t.r = r;
+        t.c = c;
+        t.el.className = `tile ${t.color.colorClass}`;
+        
+        t.el.addEventListener('mouseenter', () => preview(t));
+        t.el.addEventListener('mouseleave', clearPreview);
+        t.el.addEventListener('click', () => clickTile(t));
+        t.el.addEventListener('touchstart', (e) => {
+          if (e.touches.length === 1) {
+            e.preventDefault();
+            preview(t);
+          }
+        }, { passive: false });
+        t.el.addEventListener('touchend', (e) => {
+          e.preventDefault();
+          clickTile(t);
+          setTimeout(clearPreview, 100);
+        });
+        
+        board[r][c] = t;
+      } else {
+        createTile(r, c);
+      }
+    }
+  }
+  
+  for (let r = 0; r < SIZE; r++) {
+    for (let c = 0; c < SIZE; c++) {
+      boardEl.appendChild(board[r][c].el);
+    }
+  }
+}
+
+/* =====================
+   按钮功能
+===================== */
+changeBoardBtn.addEventListener('click', () => {
+  if (busy) return;
+  handleFirstInteraction();
+  init();
+  playAudio('win');
+  showMessage('棋盘已刷新！');
+});
+
+changeBoardBtn.addEventListener('touchstart', (e) => {
+  e.preventDefault();
+  handleFirstInteraction();
+  changeBoardBtn.click();
+});
+
+/* =====================
+   动画效果
+===================== */
+function createPetalRain(count) {
+  const petalCount = Math.min(40, count * 2);
+  
+  for (let i = 0; i < petalCount; i++) {
+    setTimeout(() => {
+      createPetal(false);
+    }, i * 40);
+  }
+}
+
+function createPetal(isDedication) {
+  const petal = document.createElement('div');
+  petal.className = 'petal';
+  
+  const startX = Math.random() * window.innerWidth;
+  const size = isDedication ? (15 + Math.random() * 20) : (12 + Math.random() * 15);
+  const duration = isDedication ? (2.5 + Math.random() * 2.5) : (2 + Math.random() * 2);
+  
+  const petalColors = ['#FF6B6B', '#8A2BE2', '#FFD166', '#06D6A0', '#4cc9f0'];
+  petal.style.backgroundColor = petalColors[Math.floor(Math.random() * petalColors.length)];
+  
+  petal.style.left = `${startX}px`;
+  petal.style.width = `${size}px`;
+  petal.style.height = `${size}px`;
+  petal.style.animationDuration = `${duration}s`;
+  petal.style.opacity = isDedication ? '0.8' : '0.7';
+  
+  document.body.appendChild(petal);
+  
+  setTimeout(() => {
+    petal.remove();
+  }, duration * 1000);
+}
+
+/* =====================
+   工具函数
+===================== */
+function delay(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+function showMessage(text) {
+  const message = document.createElement('div');
+  message.textContent = text;
+  message.style.cssText = `
+    position: fixed;
+    bottom: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: #06D6A0;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    z-index: 100;
+    pointer-events: none;
+    animation: fadeInOut 2.5s ease-in-out forwards;
+    border: 1px solid #06D6A0;
+    text-align: center;
+    max-width: 80%;
+  `;
+  
+  document.body.appendChild(message);
+  
+  setTimeout(() => {
+    message.remove();
+  }, 2500);
+}
+
+function showMeritGainTip(amount) {
+  const tip = document.createElement('div');
+  tip.textContent = `+${amount}分数`;
+  tip.style.cssText = `
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ffd166;
+    font-size: 1rem;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(255, 209, 102, 0.8);
+    z-index: 100;
+    pointer-events: none;
+    animation: meritTip 1s ease-out forwards;
+  `;
+  
+  document.body.appendChild(tip);
+  
+  setTimeout(() => {
+    tip.remove();
+  }, 1000);
+}
+
+// 防止移动端双击缩放
+let lastTouchEnd = 0;
+document.addEventListener('touchend', function(event) {
+  const now = Date.now();
+  if (now - lastTouchEnd <= 300) {
+    event.preventDefault();
+  }
+  lastTouchEnd = now;
+}, false);
+
+// 禁用长按菜单
+document.addEventListener('contextmenu', function(e) {
+  e.preventDefault();
+});
+
+// 修复iOS橡皮筋效果
+document.body.addEventListener('touchmove', function(e) {
+  if (e.target === document.body || e.target === document.documentElement) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+// 启动游戏
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initGame);
+} else {
+  initGame();
+}
+</script>
+</body>
+</html>
