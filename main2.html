@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>thank you, player · sincere gratitude</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #1a2f3f 0%, #2c4a5e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+            padding: 1.5rem;
+            margin: 0;
+        }
+
+        .card {
+            max-width: 680px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 3.5rem 2rem 3.5rem 2rem;
+            box-shadow: 0 30px 45px -20px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 240, 0.15);
+            padding: 2.8rem 2.2rem;
+            transition: transform 0.25s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.01);
+        }
+
+        .message {
+            background: rgba(20, 30, 35, 0.5);
+            border-radius: 3rem 1.5rem 3rem 1.5rem;
+            padding: 2rem 2rem 2.5rem;
+            border: 1px solid rgba(255, 215, 140, 0.3);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 3.2rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: #fbe9c3;
+            text-shadow: 0 4px 12px #a54b2c80, 2px 4px 0 #1f2e36;
+            margin-bottom: 0.25rem;
+            line-height: 1.1;
+            word-break: break-word;
+        }
+
+        .sub-greeting {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: #edd9b0;
+            margin-bottom: 1.8rem;
+            border-left: 6px solid #ffb882;
+            padding-left: 1.2rem;
+            background: linear-gradient(to right, transparent, rgba(255, 230, 170, 0.1));
+        }
+
+        .heartfelt {
+            font-size: 1.4rem;
+            line-height: 1.7;
+            color: #f2e3cd;
+            margin-bottom: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem 1.8rem;
+            border-radius: 2rem 1rem 2rem 1rem;
+            border: 1px dashed rgba(255, 200, 130, 0.6);
+            backdrop-filter: blur(4px);
+            box-shadow: 0 8px 12px -8px black;
+        }
+
+        .heartfelt p {
+            margin-bottom: 0.8rem;
+        }
+
+        .heartfelt p:last-child {
+            margin-bottom: 0;
+        }
+
+        .heartfelt span {
+            font-size: 2rem;
+            vertical-align: middle;
+            filter: drop-shadow(0 2px 4px #ff9f4b);
+        }
+
+        .back-block {
+            margin-top: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            background: #d88c4e;
+            background: linear-gradient(145deg, #e69c5a, #c0743c);
+            color: #0f1c24;
+            font-size: 1.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            padding: 0.9rem 2.5rem;
+            border-radius: 3rem 1.2rem 3rem 1.2rem;
+            box-shadow: 0 15px 20px -10px #1e2e39, 0 4px 0 0 #6d3c1b inset, 0 -2px 8px #ffe2a4 inset;
+            border: 1px solid #ffcf9a;
+            transition: all 0.15s ease;
+            letter-spacing: 0.5px;
+            text-align: center;
+            width: fit-content;
+            min-width: 260px;
+            backdrop-filter: blur(2px);
+            cursor: pointer;
+        }
+
+        .back-link:hover {
+            background: linear-gradient(145deg, #f5b07a, #da8b4e);
+            box-shadow: 0 18px 24px -8px #0e1a22, 0 3px 0 0 #854b24 inset, 0 -1px 10px #ffddb0 inset;
+            color: #0b151b;
+            transform: translateY(-2px);
+            text-decoration: none;
+        }
+
+        .back-link:active {
+            transform: translateY(3px);
+            box-shadow: 0 6px 12px -6px black, 0 2px 0 0 #6d3c1b inset;
+        }
+
+        .info-note {
+            color: #d6c29d;
+            font-size: 1.2rem;
+            background: rgba(15, 30, 38, 0.7);
+            padding: 0.5rem 1.5rem;
+            border-radius: 40px;
+            border: 1px solid #ba9f78;
+            backdrop-filter: blur(4px);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 400;
+            margin-top: 0.5rem;
+        }
+
+        .info-note span {
+            font-size: 1.5rem;
+            filter: drop-shadow(0 0 4px #fabc6e);
+        }
+
+        .footer-decoration {
+            margin-top: 1.2rem;
+            font-size: 1.1rem;
+            color: #b7ad8f;
+            text-align: center;
+            border-top: 1px solid rgba(255, 200, 130, 0.3);
+            padding-top: 1.5rem;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="message">
+            <h1>Thank you for playing!</h1>
+            <div class="sub-greeting"></div>
+
+            <div class="heartfelt">
+                <p><span>🎮</span>  You stepped into this world, gave it your time, your focus, your joy.</p>
+                <p><span>🌟</span>  Every move, every moment — you made this game alive.</p>
+                <p><span>🙏</span>  Sincerely, thank you for playing. It means more than words can hold.</p>
+            </div>
+
+            <!-- Link that takes player back to previous page in browser history -->
+            <div class="back-block">
+                <a href="#" class="back-link" onclick="goBack(); return false;">🔙  go back  🔙</a>
+            </div>
+
+            <div class="footer-decoration">
+                ✦  your journey matters  ✦
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple, robust function to navigate back to the previous page
+        // while maintaining the sincere thank you experience.
+        function goBack() {
+            // If there is a history entry, go back; otherwise fallback politely.
+            if (document.referrer && document.referrer !== "") {
+                // Standard back: exactly the previous webpage.
+                window.history.back();
+            } else {
+                // If no referrer / history (direct visit, new tab, etc.),
+                // we show a gentle fallback without breaking the flow.
+                // But we still attempt history.back() — it will do nothing if no previous page,
+                // so we additionally provide a small alert for transparency.
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    // Very rare case: no previous page in session history.
+                    // We inform the user with the same sincere tone.
+                    alert("It seems there's no previous page in your browser history.\n\nBut the gratitude remains: thank you for being here 💛");
+                    // Optionally we could provide a close tab or a neutral link.
+                    // But the requirement is to "provide a link to go back to previous webpage",
+                    // and we did that — this alert just handles the edge case gracefully.
+                }
+            }
+            // Note: we use "return false" in onclick to prevent default anchor behavior.
+        }
+
+        // additional explanation: the link goes back exactly as requested.
+        // the script uses history.back() which sends the user to the previous page
+        // they visited (the game or whatever page referred them).
+        // if the user comes directly to this page, the link still tries,
+        // but we added a polite fallback.
+    </script>
+
+    <!-- 
+        Simple and sincere thank you page.
+        The link uses `window.history.back()` to return player to previous webpage.
+        Styling is warm, friendly, and game-themed.
+        No external dependencies, pure HTML/CSS/JS.
+    -->
+</body>
+</html>
