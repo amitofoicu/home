@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>黑8台球 · 一击入袋</title>
     <style>
         * {
@@ -257,68 +259,179 @@
         const muteBtn = document.getElementById('muteBtn');
         const foulMessage = document.getElementById('foulMessage');
 
-        // ----- 音频管理 -----
+        // ----- 音频管理 (iOS优化版) -----
         let isMuted = false;
-        
-        // 背景音乐
+        let userInteracted = false;
+        let audioElementsLoaded = 0;
+        const totalAudioElements = 3; // bgm, win, xiaochu
+
+        // 音频元素
         let bgmAudio = null;
-        
-        function createBGM() {
-            if (bgmAudio) {
-                bgmAudio.pause();
-                bgmAudio = null;
-            }
+        let winAudio = null;
+        let xiaochuAudio = null;
+
+        // 创建音频元素
+        function createAudioElements() {
+            // 背景音乐
+            bgmAudio = new Audio();
+            bgmAudio.loop = true;
+            bgmAudio.volume = 0.5;
+            bgmAudio.preload = 'auto';
+            bgmAudio.setAttribute('playsinline', '');
+            bgmAudio.setAttribute('webkit-playsinline', '');
             
-            const audio = new Audio('https://amitofoicu.github.io/home/beijing.ogg');
-            audio.loop = true;
-            audio.volume = 1.0;
+            // 优先使用MP3 (iOS兼容性更好)
+            const bgmSource = document.createElement('source');
+            bgmSource.src = 'https://amitofoicu.github.io/home/beijing.mp3';
+            bgmSource.type = 'audio/mpeg';
+            bgmAudio.appendChild(bgmSource);
             
-            audio.addEventListener('error', () => {
-                const mp3Audio = new Audio('https://amitofoicu.github.io/home/beijing.mp3');
-                mp3Audio.loop = true;
-                mp3Audio.volume = 1.0;
-                mp3Audio.muted = isMuted;
-                bgmAudio = mp3Audio;
+            // 备用OGG
+            const bgmOgg = document.createElement('source');
+            bgmOgg.src = 'https://amitofoicu.github.io/home/beijing.ogg';
+            bgmOgg.type = 'audio/ogg';
+            bgmAudio.appendChild(bgmOgg);
+            
+            // 胜利音效
+            winAudio = new Audio('https://amitofoicu.github.io/home/win.mp3');
+            winAudio.volume = 0.7;
+            winAudio.preload = 'auto';
+            winAudio.setAttribute('playsinline', '');
+            winAudio.setAttribute('webkit-playsinline', '');
+            
+            // 消除音效
+            xiaochuAudio = new Audio('https://amitofoicu.github.io/home/xiaochu.mp3');
+            xiaochuAudio.volume = 0.7;
+            xiaochuAudio.preload = 'auto';
+            xiaochuAudio.setAttribute('playsinline', '');
+            xiaochuAudio.setAttribute('webkit-playsinline', '');
+        }
+
+        // 预加载音频
+        function preloadAudio() {
+            return new Promise((resolve) => {
+                function onAudioLoaded() {
+                    audioElementsLoaded++;
+                    if (audioElementsLoaded >= totalAudioElements) {
+                        console.log('所有音频加载完成');
+                        resolve();
+                    }
+                }
+                
+                [bgmAudio, winAudio, xiaochuAudio].forEach(audio => {
+                    if (!audio) return;
+                    
+                    if (audio.readyState >= 3) {
+                        onAudioLoaded();
+                    } else {
+                        audio.addEventListener('canplaythrough', onAudioLoaded, { once: true });
+                        audio.addEventListener('error', onAudioLoaded, { once: true });
+                    }
+                    audio.load();
+                });
+                
+                // 超时保护
+                setTimeout(resolve, 2000);
             });
+        }
+
+        // 播放背景音乐
+        function playBGM() {
+            if (!userInteracted || isMuted || !bgmAudio) return;
             
-            audio.muted = isMuted;
-            return audio;
+            try {
+                bgmAudio.currentTime = 0;
+                const playPromise = bgmAudio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => {
+                        console.log('背景音乐播放失败:', e);
+                    });
+                }
+            } catch (e) {
+                console.log('播放背景音乐时出错:', e);
+            }
         }
-        
+
+        // 停止背景音乐
+        function stopBGM() {
+            if (!bgmAudio) return;
+            try {
+                bgmAudio.pause();
+                bgmAudio.currentTime = 0;
+            } catch (e) {
+                console.log('停止背景音乐时出错:', e);
+            }
+        }
+
+        // 播放音效
+        function playSound(soundType) {
+            if (!userInteracted || isMuted) return;
+            
+            let audio = soundType === 'win' ? winAudio : 
+                        (soundType === 'xiaochu' ? xiaochuAudio : null);
+            
+            if (!audio) return;
+            
+            try {
+                audio.currentTime = 0;
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => {
+                        console.log(`${soundType}音效播放失败:`, e);
+                    });
+                }
+            } catch (e) {
+                console.log(`播放${soundType}音效时出错:`, e);
+            }
+        }
+
+        // 播放胜利音效的包装函数
         function playWinSound() {
-            if (isMuted) return;
-            const win = new Audio('https://amitofoicu.github.io/home/win.mp3');
-            win.volume = 1.0;
-            win.play().catch(() => {});
+            playSound('win');
         }
-        
+
+        // 播放消除音效的包装函数
         function playXiaochuSound() {
-            if (isMuted) return;
-            const xiaochu = new Audio('https://amitofoicu.github.io/home/xiaochu.mp3');
-            xiaochu.volume = 1.0;
-            xiaochu.play().catch(() => {});
+            playSound('xiaochu');
         }
 
-        bgmAudio = createBGM();
-
-        muteBtn.addEventListener('click', () => {
+        // 切换静音
+        function toggleMute() {
             isMuted = !isMuted;
             muteBtn.textContent = isMuted ? '🔇' : '🔊';
-            if (bgmAudio) bgmAudio.muted = isMuted;
-            if (!isMuted && bgmAudio && bgmAudio.paused) playBGM();
-        });
-
-        function playBGM() {
-            if (isMuted) return;
-            if (!bgmAudio || bgmAudio.ended || bgmAudio.paused) {
-                if (!bgmAudio || bgmAudio.ended) bgmAudio = createBGM();
-                bgmAudio.muted = isMuted;
-                bgmAudio.play().catch(() => {});
+            
+            if (isMuted) {
+                stopBGM();
+            } else {
+                if (userInteracted) {
+                    playBGM();
+                }
             }
         }
 
+        // 用户交互处理
         function handleUserInteraction() {
-            if (!bgmAudio || bgmAudio.paused) playBGM();
+            if (!userInteracted) {
+                userInteracted = true;
+                
+                // 延迟一点播放，给浏览器时间
+                setTimeout(() => {
+                    if (!isMuted) {
+                        playBGM();
+                    }
+                }, 100);
+            }
+        }
+
+        // 初始化音频
+        async function initAudio() {
+            createAudioElements();
+            await preloadAudio();
+            
+            // 设置静音按钮初始状态
+            muteBtn.textContent = isMuted ? '🔇' : '🔊';
+            
+            console.log('音频系统初始化完成');
         }
 
         // ----- 常量 -----
@@ -366,7 +479,7 @@
         // 新增: 记录拖拽起始点 (用于反向拉长)
         let startDragX = 0, startDragY = 0;
 
-        // ----- 粒子系统 -----
+        // ----- 粒子系统（两种类型：迸发和雨降）-----
         let particles = [];
         const PARTICLE_COLORS = [
             '#FF69B4', '#FFD700', '#FF4500', '#9370DB', '#00FF7F', 
@@ -661,7 +774,10 @@
                         checkWhiteAfterStop = true;
                         blackPocketPosition = pocket;
                         
+                        // 播放音效
                         playWinSound();
+                        
+                        // 从袋口迸发彩色香花（黑8落袋的同时）
                         explodeFlowersFromPocket(pocket.x, pocket.y, 15);
                     }
                 }
@@ -955,7 +1071,7 @@
             const coords = getCanvasCoords(e);
             dragX = coords.x;
             dragY = coords.y;
-            startDragX = dragX;   // 记录起始点
+            startDragX = dragX;
             startDragY = dragY;
             isDragging = true;
         }
@@ -1026,6 +1142,7 @@
         canvas.addEventListener('touchend', onTouchEnd);
         canvas.addEventListener('touchcancel', onTouchEnd);
 
+        // 修改按钮事件
         restartBtn.addEventListener('click', (e) => {
             e.preventDefault();
             handleUserInteraction();
@@ -1038,7 +1155,29 @@
             nextLevel();
         });
 
-        (function init() {
+        muteBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleUserInteraction();
+            toggleMute();
+        });
+
+        // 防止双击缩放
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => { 
+            const now = Date.now(); 
+            if (now - lastTouchEnd <= 300) e.preventDefault(); 
+            lastTouchEnd = now; 
+        }, false);
+        
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.body.addEventListener('touchmove', (e) => { 
+            if (e.target === document.body) e.preventDefault(); 
+        }, { passive: false });
+
+        // 初始化
+        (async function init() {
+            await initAudio(); // 等待音频初始化
+            
             const pos = randomTargetPosition();
             target.x = pos.x;
             target.y = pos.y;
