@@ -221,7 +221,7 @@
     <canvas id="poolCanvas" width="800" height="450"></canvas>
     
     <div class="hint">
-        👆 按下瞄准 · 拉远加力 · 松开击球
+        👆 向白球方向拖拽 · 拉远加力 · 松开击球
     </div>
 
     <div class="status-bar">
@@ -330,10 +330,7 @@
         const BOTTOM_WALL = 410;
         const BALL_RADIUS = 14;
         
-        // 增加摩擦系数 (从0.99改为0.98，让球更快停止)
         const FRICTION = 0.98;
-        
-        // 增加最大力度 (从18改为25)
         const MAX_POWER_SPEED = 25;
         
         const pockets = [
@@ -366,7 +363,10 @@
         let angle = 0;
         let power = 0.2;
 
-        // ----- 粒子系统（两种类型：迸发和雨降）-----
+        // 新增: 记录拖拽起始点 (用于反向拉长)
+        let startDragX = 0, startDragY = 0;
+
+        // ----- 粒子系统 -----
         let particles = [];
         const PARTICLE_COLORS = [
             '#FF69B4', '#FFD700', '#FF4500', '#9370DB', '#00FF7F', 
@@ -381,7 +381,6 @@
                 this.type = type;
                 
                 if (type === 'explosion') {
-                    // 迸发型（黑8落袋时使用）
                     const angle = Math.random() * Math.PI * 2;
                     const speed = Math.random() * 8 + 5;
                     this.vx = Math.cos(angle) * speed;
@@ -389,17 +388,16 @@
                     this.size = Math.random() * 10 + 5;
                     this.fadeSpeed = 0.01 + Math.random() * 0.01;
                 } else {
-                    // 雨降型（胜利时使用）- 从上方飘落
-                    this.vx = (Math.random() - 0.5) * 1.5; // 轻微左右飘动
-                    this.vy = Math.random() * 2 + 1.5; // 下落速度
+                    this.vx = (Math.random() - 0.5) * 1.5;
+                    this.vy = Math.random() * 2 + 1.5;
                     this.size = Math.random() * 8 + 4;
-                    this.fadeSpeed = 0.001; // 几乎不淡出
+                    this.fadeSpeed = 0.001;
                 }
                 
                 this.color = PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)];
                 this.rotation = Math.random() * Math.PI * 2;
                 this.rotationSpeed = (Math.random() - 0.5) * 0.05;
-                this.gravity = 0.05; // 轻微重力
+                this.gravity = 0.05;
                 this.life = 1.0;
             }
 
@@ -408,36 +406,29 @@
                 this.y += this.vy;
                 
                 if (this.type === 'rain') {
-                    // 雨降型：受轻微重力影响
                     this.vy += this.gravity * 0.5;
                 } else {
-                    // 迸发型：正常重力
                     this.vy += this.gravity;
                 }
                 
                 this.rotation += this.rotationSpeed;
                 
                 if (this.type === 'explosion') {
-                    // 迸发型逐渐淡出
                     this.life -= this.fadeSpeed;
                 }
                 
-                // 边界处理
                 if (this.type === 'rain') {
-                    // 雨降型：飘出底部后重置到顶部
                     if (this.y > CH + 30) {
                         this.y = -20;
                         this.x = Math.random() * CW;
                         this.vx = (Math.random() - 0.5) * 1.5;
                         this.vy = Math.random() * 2 + 1.5;
                     }
-                    // 左右边界反弹
                     if (this.x < 0 || this.x > CW) {
                         this.vx *= -0.8;
                     }
-                    return true; // 永不消失
+                    return true;
                 } else {
-                    // 迸发型：超出底部或生命结束则消失
                     if (this.y > CH + 50) this.life = 0;
                     return this.life > 0;
                 }
@@ -477,19 +468,14 @@
             }
         }
 
-        // 从袋口迸发彩色香花（黑8落袋时使用）
         function explodeFlowersFromPocket(pocketX, pocketY, count = 15) {
             for (let i = 0; i < count; i++) {
                 particles.push(new Particle(pocketX, pocketY, 'explosion'));
             }
         }
 
-        // 开始雨降香花（胜利时使用）
         function startRainFlowers(count = 40) {
-            // 清除非雨降型粒子
             particles = particles.filter(p => p.type === 'rain');
-            
-            // 添加新的雨降香花
             for (let i = 0; i < count; i++) {
                 particles.push(new Particle(
                     Math.random() * CW,
@@ -499,7 +485,6 @@
             }
         }
 
-        // 停止雨降香花（游戏重置时使用）
         function stopRainFlowers() {
             particles = particles.filter(p => p.type !== 'rain');
         }
@@ -515,7 +500,6 @@
             ctx.globalAlpha = 1.0;
         }
 
-        // 清空所有粒子（用于重置）
         function clearParticles() {
             particles = [];
         }
@@ -563,7 +547,6 @@
             nextBtn.style.display = 'none';
             restartBtn.style.display = 'inline-block';
             
-            // 停止雨降香花
             stopRainFlowers();
         }
 
@@ -605,14 +588,12 @@
 
         // ----- 物理更新 -----
         function updatePhysics() {
-            // 移动球（只要游戏未结束或正在等待检查）
             if (!gameOver || checkWhiteAfterStop) {
                 white.x += white.vx;
                 white.y += white.vy;
                 target.x += target.vx;
                 target.y += target.vy;
 
-                // 边界碰撞
                 [white, target].forEach(ball => {
                     if (ball.x - BALL_RADIUS < LEFT_WALL) {
                         ball.x = LEFT_WALL + BALL_RADIUS;
@@ -632,7 +613,6 @@
                     }
                 });
 
-                // 两球碰撞
                 const dx = target.x - white.x;
                 const dy = target.y - white.y;
                 const dist = Math.sqrt(dx*dx + dy*dy);
@@ -662,7 +642,6 @@
                     }
                 }
 
-                // 使用增加的摩擦系数
                 white.vx *= FRICTION;
                 white.vy *= FRICTION;
                 target.vx *= FRICTION;
@@ -673,7 +652,6 @@
                 if (Math.abs(target.vx) < 0.1) target.vx = 0;
                 if (Math.abs(target.vy) < 0.1) target.vy = 0;
 
-                // 检查黑球落袋
                 if (targetExists && !blackPocketed) {
                     const pocket = checkPocket(target);
                     if (pocket) {
@@ -683,15 +661,11 @@
                         checkWhiteAfterStop = true;
                         blackPocketPosition = pocket;
                         
-                        // 播放音效
                         playWinSound();
-                        
-                        // 从袋口迸发彩色香花（黑8落袋的同时）
                         explodeFlowersFromPocket(pocket.x, pocket.y, 15);
                     }
                 }
 
-                // 检查白球落袋（黑球未落袋时）
                 if (!blackPocketed && checkWhitePocket()) {
                     console.log('白球落袋犯规');
                     showFoulMessage();
@@ -700,7 +674,6 @@
                 }
             }
             
-            // 黑球落袋后的静止检查
             if (checkWhiteAfterStop) {
                 if (ballsAreStationary()) {
                     if (checkWhitePocket()) {
@@ -713,7 +686,6 @@
                         gameOver = true;
                         winFlag = true;
                         
-                        // 胜利时开始雨降香花
                         startRainFlowers(50);
                         
                         if (victoryTimer) clearTimeout(victoryTimer);
@@ -729,7 +701,6 @@
                 }
             }
             
-            // 更新粒子
             updateParticles();
         }
 
@@ -753,7 +724,6 @@
             }
 
             console.log('击球！力度:', power, '角度:', angle);
-            // 使用增加的最大力度
             const speed = power * MAX_POWER_SPEED;
             white.vx = Math.cos(angle) * speed;
             white.vy = Math.sin(angle) * speed;
@@ -761,15 +731,18 @@
             strokeSpan.innerText = strokes;
         }
 
-        // ----- 瞄准更新 -----
+        // ----- 瞄准更新 (反转拉杆方向) -----
         function updateAim() {
-            const dx = dragX - white.x;
-            const dy = dragY - white.y;
+            // 关键修改: 方向从白球指向拖拽点改为从白球指向拖拽点的相反方向
+            // 即使用 startDrag 到 white 的向量来决定方向
+            const dx = white.x - dragX;      // 反转：白球指向手指的相反方向
+            const dy = white.y - dragY;      // 反转：白球指向手指的相反方向
             const dist = Math.sqrt(dx*dx + dy*dy);
             if (dist < 5) return;
 
-            angle = Math.atan2(dy, dx);
+            angle = Math.atan2(dy, dx);      // 现在 angle 是击球方向 (白球远离手指)
 
+            // 力度计算保持不变，距离越大力度越大
             const MAX_DIST = 200;
             let norm = Math.min(dist / MAX_DIST, 1);
             power = Math.pow(norm, 1.3);
@@ -778,7 +751,7 @@
             powerFill.style.width = (power * 100) + '%';
         }
 
-        // ----- 辅助线预测 -----
+        // ----- 辅助线预测 (方向现在使用反转后的angle) -----
         function predictCollision() {
             const dirX = Math.cos(angle);
             const dirY = Math.sin(angle);
@@ -817,16 +790,13 @@
         function draw() {
             ctx.clearRect(0, 0, CW, CH);
 
-            // 台呢
             ctx.fillStyle = '#1e5a3a';
             ctx.fillRect(0, 0, CW, CH);
 
-            // 边界线
             ctx.strokeStyle = '#dbb06b';
             ctx.lineWidth = 3;
             ctx.strokeRect(LEFT_WALL - 2, TOP_WALL - 2, RIGHT_WALL - LEFT_WALL + 4, BOTTOM_WALL - TOP_WALL + 4);
 
-            // 袋口
             ctx.fillStyle = '#2a1f12';
             ctx.shadowColor = '#00000080';
             ctx.shadowBlur = 10;
@@ -842,7 +812,6 @@
             });
             ctx.shadowBlur = 0;
 
-            // 黑8彩球
             if (targetExists) {
                 ctx.shadowColor = '#333333';
                 ctx.shadowBlur = 15;
@@ -869,7 +838,6 @@
                 ctx.globalAlpha = 1;
             }
 
-            // 白球
             ctx.shadowColor = '#cccccc';
             ctx.shadowBlur = 18;
             ctx.beginPath();
@@ -886,16 +854,15 @@
             ctx.fillStyle = '#22222260';
             ctx.fill();
 
-            // 瞄准指示器
             if (isDragging && white.vx === 0 && white.vy === 0 && targetExists && !gameOver) {
-                // 力度环
+                // 力度环 (显示在击球反方向，即手指位置，给用户视觉反馈)
                 ctx.beginPath();
-                ctx.arc(white.x, white.y, 30 + power * 80, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(255, 200, 0, 0.35)';
-                ctx.lineWidth = 4;
+                ctx.arc(dragX, dragY, 15 + power * 20, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255, 200, 0, 0.5)';
+                ctx.lineWidth = 3;
                 ctx.stroke();
 
-                // 瞄准线
+                // 瞄准线 (从白球向击球方向延伸)
                 ctx.setLineDash([8, 6]);
                 ctx.beginPath();
                 ctx.moveTo(white.x, white.y);
@@ -904,7 +871,14 @@
                 ctx.stroke();
                 ctx.setLineDash([]);
 
-                // 预测碰撞点
+                // 从手指到白球的连线 (表示拉杆方向)
+                ctx.beginPath();
+                ctx.moveTo(dragX, dragY);
+                ctx.lineTo(white.x, white.y);
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.4)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
                 const hit = predictCollision();
                 if (hit) {
                     ctx.beginPath();
@@ -914,10 +888,8 @@
                 }
             }
 
-            // 绘制所有粒子
             drawParticles();
 
-            // 胜利画面（雨降香花已经在上面绘制，这里只加文字和遮罩）
             if (winFlag) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
                 ctx.fillRect(0, 0, CW, CH);
@@ -967,7 +939,6 @@
             
             handleUserInteraction();
 
-            // 检查是否可以开始瞄准
             if (gameOver) {
                 console.log('游戏结束，不能瞄准');
                 return;
@@ -984,6 +955,8 @@
             const coords = getCanvasCoords(e);
             dragX = coords.x;
             dragY = coords.y;
+            startDragX = dragX;   // 记录起始点
+            startDragY = dragY;
             isDragging = true;
         }
 
@@ -1018,6 +991,8 @@
             const coords = getCanvasCoords(e);
             dragX = coords.x;
             dragY = coords.y;
+            startDragX = dragX;
+            startDragY = dragY;
             isDragging = true;
         }
 
@@ -1039,7 +1014,6 @@
             shoot();
         }
 
-        // 绑定事件
         canvas.addEventListener('mousedown', onMouseDown);
         canvas.addEventListener('mousemove', onMouseMove);
         canvas.addEventListener('mouseup', onMouseUp);
@@ -1064,13 +1038,10 @@
             nextLevel();
         });
 
-        // 初始化
         (function init() {
             const pos = randomTargetPosition();
             target.x = pos.x;
             target.y = pos.y;
-            
-            // 不初始化任何粒子，确保游戏进行中没有香花
             
             setTimeout(() => {
                 handleUserInteraction();
