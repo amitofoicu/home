@@ -1,4 +1,0 @@
-git status
-git add .
-git commit -m "remove bottom refresh in main.html"
-git push origin main
