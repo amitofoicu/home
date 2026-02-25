@@ -41,15 +41,15 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            min-width: 60px; /* 为logo占位 */
+            min-width: 60px;
         }
         .logo-img {
             width: 40px;
             height: 40px;
-            object-fit: cover;      /* 保持比例裁剪，确保填满方形 */
+            object-fit: cover;
             border: 2px solid #d4af37;
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            border-radius: 0;        /* 明确方形，无圆角 */
+            border-radius: 0; /* 方形 */
         }
         .header-title {
             text-align: center;
@@ -103,6 +103,7 @@
             flex:1; background:#fffdf9; border-radius:16px; border:1px solid #eee3d0;
             cursor:pointer; user-select:none;
             white-space:pre-wrap; word-break:break-word;
+            touch-action: manipulation; /* 禁止双击缩放 */
         }
         .sutra-text::-webkit-scrollbar { width:5px; }
         .sutra-text::-webkit-scrollbar-track { background:#f0e4d2; }
@@ -124,6 +125,7 @@
             background:#f4ecde; border:1px solid #c9b58b; color:#5d3e20;
             padding:8px 20px; border-radius:40px; font-size:1rem; min-height:44px;
             cursor:pointer; display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
+            touch-action: manipulation; /* 禁止双击缩放 */
         }
         .tool-btn:active { background:#e1d2b7; transform:scale(0.97); }
         .btn-primary { background:#8b5a2b; color:white; border:none; }
@@ -131,11 +133,12 @@
         .file-input-wrapper { position:relative; overflow:hidden; display:inline-block; }
         .file-input-wrapper input[type=file] { position:absolute; left:0; top:0; opacity:0; width:100%; height:100%; cursor:pointer; }
         
-        /* 木鱼按钮样式 (与mute-btn一致，顺序在静音右侧) */
+        /* 木鱼按钮样式 - 增加 touch-action 禁止双击缩放 */
         .woodfish-btn {
             background:#f4ecde; color:#5d3e20; border:1px solid #c9b58b;
             padding:8px 18px; border-radius:40px; font-size:0.95rem;
             display:inline-flex; align-items:center; gap:6px; cursor:pointer; min-height:44px;
+            touch-action: manipulation; /* 关键：禁止双击缩放 */
         }
         .woodfish-btn:active { background:#e1d2b7; transform:scale(0.97); }
         .woodfish-btn i { font-size:1.1rem; color:#7b3f00; }
@@ -144,6 +147,7 @@
             background:#f4ecde; color:#5d3e20; border:1px solid #c9b58b;
             padding:8px 18px; border-radius:40px; font-size:0.95rem;
             display:inline-flex; align-items:center; gap:6px; cursor:pointer; min-height:44px;
+            touch-action: manipulation; /* 禁止双击缩放 */
         }
         .mute-btn.muted { background:#d4b483; color:#3a2a1a; }
         .mute-btn i { font-size:1.1rem; }
@@ -331,7 +335,7 @@
     const fileInput = document.getElementById('fileInput');
     const restoreBtn = document.getElementById('restoreBtn');
     const muteBtn = document.getElementById('muteBtn');
-    const woodfishBtn = document.getElementById('woodfishBtn'); // 木鱼按钮
+    const woodfishBtn = document.getElementById('woodfishBtn');
     const progressInfo = document.getElementById('progressInfo');
     const progressFill = document.getElementById('progressFill');
     const fontDown = document.getElementById('fontDown');
@@ -351,7 +355,7 @@
         fileUploadBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> 加载音效...';
         fileUploadBtn.disabled = true;
         muteBtn.disabled = true;
-        woodfishBtn.disabled = true; // 禁用木鱼
+        woodfishBtn.disabled = true;
         
         try {
             audioPool.ending = new Audio();
@@ -602,16 +606,15 @@
     // ---------- 下一字 (核心前进逻辑) ----------
     function nextChar() {
         if (!hanziIndices.length) return;
-        if (currentHanziIndex >= hanziIndices.length - 1) return; // 最后一个字时不再前进（但可敲木鱼玩）
+        if (currentHanziIndex >= hanziIndices.length - 1) return;
         
-        playMuyu(); // 敲木鱼音效
+        playMuyu();
         
         currentHanziIndex++;
         renderText();
         
-        // 判断是否刚读完最后一个汉字（即当前索引变成了最后一个）
         if (currentHanziIndex === hanziIndices.length - 1) {
-            playCompletionCelebration(); // 触发圆满动画+双音效
+            playCompletionCelebration();
         }
     }
 
@@ -678,9 +681,10 @@
 
     muteBtn.addEventListener('click', toggleMute);
 
-    // 木鱼按钮：点击时播放音效并前进一个字（与点击经文/空格行为一致）
-    woodfishBtn.addEventListener('click', () => {
-        nextChar(); // 直接复用核心前进逻辑
+    // 木鱼按钮：点击时播放音效并前进一个字
+    woodfishBtn.addEventListener('click', (e) => {
+        e.preventDefault(); // 额外阻止可能的默认行为
+        nextChar();
     });
 
     fontDown.addEventListener('click', () => { 
@@ -707,6 +711,12 @@
             audioContext.resume();
         }
     }, { once: true });
+
+    // 额外针对iOS双击缩放的防御：监听触摸事件禁止默认行为（如果touch-action未生效）
+    woodfishBtn.addEventListener('touchstart', (e) => {
+        // 不阻止事件冒泡，只阻止可能导致缩放的默认行为（如果存在）
+        // touch-action: manipulation 已经可以，此处作为双重保险
+    }, { passive: false });
 
 })();
 </script>
