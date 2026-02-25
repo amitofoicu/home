@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Black 8 · One Shot Pocket</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #1a1e2b;
+        }
+        
+        body {
+            background: url('https://amitofoicu.github.io/home/lianchi6.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            position: relative;
+            min-height: -webkit-fill-available;
+        }
+        
+        /* loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(31, 34, 51, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        .spinner {
+            width: clamp(40px, 8vmin, 80px);
+            height: clamp(40px, 8vmin, 80px);
+            border: clamp(4px, 1vmin, 8px) solid rgba(255,209,102,0.3);
+            border-top-color: #ffd166;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: clamp(8px, 2vmin, 16px);
+        }
+        
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .loading-text {
+            font-size: clamp(18px, 4vmin, 32px);
+            color: #ffd966;
+        }
+        
+        /* 主容器 - 使用min()确保不会太大，同时保持比例 */
+        .game-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: clamp(8px, 2vmin, 20px);
+        }
+        
+        .game-container {
+            background: rgba(61, 43, 26, 0.85);
+            backdrop-filter: blur(5px);
+            padding: clamp(6px, 1.2vmin, 16px) clamp(8px, 1.5vmin, 20px);
+            border-radius: clamp(16px, 3vmin, 32px);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.6), inset 2px 2px 8px #b87c4b;
+            border: 2px solid #aa6e3a;
+            width: min(95%, 1200px);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* 确保画布容器保持16:9比例 */
+        .canvas-wrapper {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            background: #1e3b2a;
+            border-radius: clamp(8px, 2vmin, 20px);
+            overflow: hidden;
+            box-shadow: inset 0 0 0 2px #7b5a3c, 0 10px 15px rgba(0,0,0,0.5);
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #1e3b2a;
+            touch-action: none;
+            cursor: crosshair;
+        }
+        
+        /* 游戏头部 - 使用flex和固定最小高度确保可读性 */
+        .game-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: clamp(4px, 1vmin, 12px);
+            min-height: clamp(32px, 6vmin, 48px);
+        }
+        
+        .header-logo {
+            height: clamp(28px, 5vmin, 44px);
+            width: auto;
+            border-radius: 6px;
+            border: 1px solid rgba(255,209,102,0.4);
+            background: rgba(0,0,0,0.2);
+        }
+        
+        .game-title {
+            text-align: center;
+            color: #ffd966;
+            font-size: clamp(20px, 4.5vmin, 36px);
+            font-weight: bold;
+            text-shadow: 2px 2px 0 #4f3a1e;
+            letter-spacing: 1px;
+            flex: 1;
+            margin: 0 clamp(8px, 2vmin, 16px);
+            white-space: nowrap;
+        }
+        
+        .more-link {
+            color: #ffd966;
+            font-size: clamp(16px, 3.5vmin, 24px);
+            font-weight: bold;
+            text-decoration: none;
+            padding: clamp(4px, 1vmin, 8px) clamp(8px, 2vmin, 16px);
+            background: rgba(0,0,0,0.3);
+            border-radius: clamp(12px, 2vmin, 24px);
+            border: 1px solid #ffd966;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        
+        .more-link:active {
+            transform: scale(0.95);
+            background: rgba(255,209,102,0.2);
+        }
+        
+        /* 提示文字 - 固定最小尺寸确保可读性 */
+        .hint {
+            color: #ffd966;
+            font-size: clamp(14px, 2.5vmin, 18px);
+            padding: clamp(6px, 1vmin, 10px);
+            background: #2d4a2d;
+            border-radius: clamp(20px, 4vmin, 30px);
+            margin: clamp(4px, 1vmin, 8px) 0;
+            text-align: center;
+            border: 1px solid #b88c4a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* 状态栏 */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: clamp(6px, 1.2vmin, 12px) clamp(4px, 1vmin, 8px);
+            color: #f7e9c3;
+            text-shadow: 2px 2px 0 #4f3a1e;
+            font-weight: bold;
+            font-size: clamp(20px, 4vmin, 32px);
+            min-height: clamp(40px, 7vmin, 56px);
+        }
+        
+        .stroke-box {
+            background: #2f4d2e;
+            padding: clamp(6px, 1.2vmin, 12px) clamp(20px, 4vmin, 40px);
+            border-radius: 999px;
+            border: 2px solid #dbb062;
+            box-shadow: inset 0 2px 5px #0f2b0e;
+            letter-spacing: 2px;
+            font-size: clamp(20px, 4vmin, 32px);
+            min-width: clamp(60px, 12vmin, 100px);
+            text-align: center;
+        }
+        
+        /* 底部面板 */
+        .bottom-panel {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: clamp(4px, 1vmin, 10px) 0 0 0;
+            gap: clamp(8px, 2vmin, 20px);
+            flex-wrap: wrap;
+            min-height: clamp(44px, 7vmin, 60px);
+        }
+        
+        .power-meter {
+            background: #5b4330;
+            padding: clamp(6px, 1.2vmin, 12px) clamp(12px, 2.5vmin, 20px);
+            border-radius: 999px;
+            border: 2px solid #edc27a;
+            display: flex;
+            align-items: center;
+            gap: clamp(6px, 1.5vmin, 12px);
+            color: #ffdd99;
+            font-size: clamp(16px, 3.5vmin, 24px);
+            font-weight: bold;
+            flex: 2;
+            min-width: min(200px, 40%);
+        }
+        
+        .power-meter span {
+            font-size: clamp(18px, 4vmin, 28px);
+            white-space: nowrap;
+        }
+        
+        .bar-bg {
+            width: 100%;
+            height: clamp(12px, 2.5vmin, 20px);
+            background: #2a1e12;
+            border-radius: 999px;
+            border: 1px solid #ac8b5b;
+            overflow: hidden;
+        }
+        
+        .bar-fill {
+            width: 20%;
+            height: 100%;
+            background: linear-gradient(90deg, #f9b81b, #f55d3e);
+            transition: width 0.03s;
+        }
+        
+        .button-group {
+            display: flex;
+            align-items: center;
+            gap: clamp(6px, 1.5vmin, 12px);
+            flex-shrink: 0;
+        }
+        
+        .action-btn {
+            background: #3d5c3a;
+            border: 2px solid #e3b87c;
+            color: #ffefc0;
+            font-size: clamp(16px, 3.5vmin, 24px);
+            padding: clamp(6px, 1.2vmin, 12px) clamp(12px, 2.5vmin, 24px);
+            border-radius: 999px;
+            font-weight: bold;
+            box-shadow: 0 3px 0 #1d2e1b;
+            cursor: pointer;
+            white-space: nowrap;
+            min-width: clamp(44px, 8vmin, 70px);
+            text-align: center;
+            transition: all 0.1s ease;
+            line-height: 1.2;
+        }
+        
+        .action-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #1d2e1b;
+        }
+        
+        .action-btn.mute {
+            background: #5b4330;
+            border-color: #edc27a;
+            min-width: clamp(50px, 9vmin, 80px);
+            padding: clamp(6px, 1.2vmin, 12px) clamp(8px, 1.8vmin, 16px);
+        }
+        
+        .action-btn.next {
+            background: #4a7a4a;
+            border-color: #ffd966;
+        }
+        
+        /* 犯规消息 */
+        .white-foul {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #ff4444;
+            font-size: clamp(24px, 5vmin, 48px);
+            font-weight: bold;
+            padding: clamp(12px, 2.5vmin, 24px) clamp(20px, 4vmin, 40px);
+            border-radius: 999px;
+            border: 2px solid #ffaa00;
+            z-index: 10;
+            text-shadow: 2px 2px 0 #000;
+            box-shadow: 0 0 30px rgba(255,0,0,0.5);
+            animation: fadeOut 1.5s forwards;
+            pointer-events: none;
+            white-space: nowrap;
+            text-align: center;
+        }
+        
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        
+        /* 针对超小屏幕的特殊处理 */
+        @media (max-width: 480px) {
+            .game-title {
+                font-size: 18px;
+                white-space: normal;
+                line-height: 1.2;
+            }
+            
+            .hint {
+                font-size: 12px;
+                white-space: normal;
+                line-height: 1.4;
+                padding: 8px 12px;
+            }
+            
+            .status-bar {
+                font-size: 18px;
+            }
+            
+            .stroke-box {
+                font-size: 18px;
+                padding: 6px 16px;
+            }
+            
+            .action-btn {
+                font-size: 14px;
+                padding: 6px 10px;
+                min-width: 40px;
+            }
+            
+            .power-meter {
+                font-size: 14px;
+                padding: 6px 12px;
+            }
+            
+            .power-meter span {
+                font-size: 16px;
+            }
+        }
+        
+        /* 针对平板和桌面优化 */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .game-title {
+                font-size: 28px;
+            }
+            
+            .hint {
+                font-size: 16px;
+            }
+            
+            .action-btn {
+                font-size: 20px;
+                padding: 8px 20px;
+            }
+        }
+        
+        /* 桌面大屏优化 */
+        @media (min-width: 1025px) {
+            .game-title {
+                font-size: 32px;
+            }
+            
+            .hint {
+                font-size: 18px;
+            }
+            
+            .action-btn {
+                font-size: 22px;
+                padding: 10px 24px;
+            }
+            
+            .power-meter {
+                font-size: 22px;
+            }
+        }
+        
+        /* 确保在CrazyGames要求的特定分辨率下可读 */
+        @media (min-width: 800px) and (max-width: 907px) and (min-height: 450px) and (max-height: 510px) {
+            .game-title {
+                font-size: 24px;
+            }
+            
+            .hint {
+                font-size: 15px;
+                padding: 6px 12px;
+            }
+            
+            .action-btn {
+                font-size: 16px;
+                padding: 6px 14px;
+            }
+        }
+        
+        /* 针对821x462分辨率的优化 */
+        @media (min-width: 800px) and (max-width: 821px) and (min-height: 450px) and (max-height: 462px) {
+            .game-header {
+                margin-bottom: 4px;
+            }
+            
+            .game-title {
+                font-size: 22px;
+            }
+            
+            .hint {
+                font-size: 14px;
+                margin: 4px 0;
+            }
+            
+            .status-bar {
+                padding: 4px 0;
+            }
+            
+            .power-meter {
+                padding: 4px 10px;
+            }
+        }
+        
+        /* 移动端横屏优化 */
+        @media (max-width: 800px) and (orientation: landscape) {
+            .game-wrapper {
+                padding: 4px;
+            }
+            
+            .game-header {
+                margin-bottom: 4px;
+            }
+            
+            .hint {
+                margin: 4px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading Game...</div>
+</div>
+
+<div class="game-wrapper">
+    <div class="game-container">
+        <div class="game-header">
+            <img src="https://amitofoicu.github.io/home/logo.jpg" alt="Logo" class="header-logo" onerror="this.style.display='none'">
+            <div class="game-title">🎱 Black 8 Billiard</div>
+            <a href="https://amitofoicu.github.io/home/main2.html" class="more-link" target="_blank" rel="noopener noreferrer">More</a>
+        </div>
+        
+        <div class="canvas-wrapper">
+            <canvas id="poolCanvas" width="800" height="450"></canvas>
+        </div>
+        
+        <div class="hint">
+            👆 Drag cue ball · Pull back for power · Release to shoot
+        </div>
+
+        <div class="status-bar">
+            <span>🎱 Strokes</span>
+            <span class="stroke-box" id="strokeDisplay">0</span>
+        </div>
+
+        <div class="bottom-panel">
+            <div class="power-meter">
+                <span>💪</span>
+                <div class="bar-bg"><div class="bar-fill" id="powerFill" style="width: 20%;"></div></div>
+            </div>
+            <div class="button-group">
+                <button class="action-btn mute" id="muteBtn">🔊</button>
+                <button class="action-btn" id="restartBtn">🔄 New</button>
+                <button class="action-btn next" id="nextBtn" style="display: none;">✨ Next</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- white ball foul message -->
+<div id="foulMessage" style="display: none;" class="white-foul">⚪ CUE BALL FOUL ⚪</div>
+
+<script>
+    (function() {
+        // ----- canvas and context -----
+        const canvas = document.getElementById('poolCanvas');
+        const ctx = canvas.getContext('2d');
+        const strokeSpan = document.getElementById('strokeDisplay');
+        const powerFill = document.getElementById('powerFill');
+        const nextBtn = document.getElementById('nextBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const muteBtn = document.getElementById('muteBtn');
+        const foulMessage = document.getElementById('foulMessage');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        // ----- audio management (iPhone optimised) -----
+        let isMuted = false;
+        let userInteracted = false;
+        let hasShot = false; // first shot flag to trigger BGM
+
+        // audio elements
+        let bgmAudio = null;
+        let winAudio = null;          // win.mp3 (black potted)
+        let xiaochuAudio = null;      // xiaochu.mp3 (victory fanfare)
+
+        // initialise audio (call after user tap)
+        function initAudio() {
+            console.log('Initializing audio...');
+            
+            // background music - OGG
+            bgmAudio = new Audio('https://amitofoicu.github.io/home/beijing.ogg');
+            bgmAudio.loop = true;
+            bgmAudio.volume = 1.0;
+            bgmAudio.setAttribute('playsinline', '');
+            bgmAudio.setAttribute('webkit-playsinline', '');
+            bgmAudio.load();
+            
+            // win sound (black ball pocketed -> xiaochu in victory screen)
+            winAudio = new Audio('https://amitofoicu.github.io/home/win.mp3');
+            winAudio.volume = 0.7;
+            winAudio.setAttribute('playsinline', '');
+            winAudio.setAttribute('webkit-playsinline', '');
+            winAudio.load();
+            
+            // victory fanfare (xiaochu) — now used during victory screen
+            xiaochuAudio = new Audio('https://amitofoicu.github.io/home/xiaochu.mp3');
+            xiaochuAudio.volume = 1.0;
+            xiaochuAudio.setAttribute('playsinline', '');
+            xiaochuAudio.setAttribute('webkit-playsinline', '');
+            xiaochuAudio.load();
+            
+            muteBtn.textContent = isMuted ? '🔇' : '🔊';
+            
+            // hide loading overlay after a moment
+            setTimeout(() => {
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 500);
+            }, 1000);
+            
+            console.log('Audio initialized');
+        }
+
+        // Play BGM only after first shot (only if not muted)
+        function playBGM() {
+            if (!hasShot || isMuted || !bgmAudio) return; 
+            try {
+                if (!bgmAudio.paused) return; // already playing
+                bgmAudio.currentTime = 0;
+                const playPromise = bgmAudio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => console.log('BGM play failed:', e));
+                }
+            } catch (e) {
+                console.log('BGM error:', e);
+            }
+        }
+
+        function stopBGM() {
+            if (!bgmAudio) return;
+            try {
+                bgmAudio.pause();
+                bgmAudio.currentTime = 0;
+            } catch (e) {}
+        }
+
+        // clone and play to allow overlapping on iOS
+        function playSound(audio) {
+            if (!userInteracted || isMuted || !audio) return;
+            try {
+                const clone = audio.cloneNode();
+                clone.volume = audio.volume;
+                const playPromise = clone.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => console.log('sound play failed:', e));
+                }
+                // clean up clone
+                setTimeout(() => {
+                    clone.pause();
+                    clone.src = '';
+                }, 3000);
+            } catch (e) {
+                console.log('Sound error:', e);
+            }
+        }
+
+        // specific: win.mp3 (when black ball drops)
+        function playWinSound() {
+            playSound(winAudio);
+        }
+
+        // specific: xiaochu.mp3 (victory screen fanfare)
+        function playXiaochuSound() {
+            playSound(xiaochuAudio);
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            muteBtn.textContent = isMuted ? '🔇' : '🔊';
+            if (isMuted) {
+                stopBGM();
+            } else {
+                if (hasShot) {   // resume only if already shot
+                    playBGM();
+                }
+            }
+        }
+
+        function handleUserInteraction() {
+            if (!userInteracted) {
+                userInteracted = true;
+                // small preload hint for iOS
+            }
+        }
+
+        // ----- constants -----
+        const CW = 800;
+        const CH = 450;
+        const LEFT_WALL = 40;
+        const RIGHT_WALL = 760;
+        const TOP_WALL = 40;
+        const BOTTOM_WALL = 410;
+        const BALL_RADIUS = 14;
+        
+        const FRICTION = 0.98;
+        const MAX_POWER_SPEED = 25;
+        
+        const pockets = [
+            { x: LEFT_WALL, y: TOP_WALL },
+            { x: RIGHT_WALL, y: TOP_WALL },
+            { x: LEFT_WALL, y: BOTTOM_WALL },
+            { x: RIGHT_WALL, y: BOTTOM_WALL },
+            { x: (LEFT_WALL + RIGHT_WALL) / 2, y: TOP_WALL },
+            { x: (LEFT_WALL + RIGHT_WALL) / 2, y: BOTTOM_WALL }
+        ];
+        const POCKET_RADIUS = 28;
+
+        // ----- game state -----
+        let white = { x: 200, y: 220, vx: 0, vy: 0 };
+        let target = { x: 600, y: 220, vx: 0, vy: 0 };
+        let targetExists = true;
+        let strokes = 0;
+        let gameOver = false;
+        let winFlag = false;
+        
+        let blackPocketed = false;
+        let checkWhiteAfterStop = false;
+        
+        let victoryTimer = null;
+        let blackPocketPosition = null;
+
+        // ----- aiming state -----
+        let isDragging = false;
+        let dragX = 0, dragY = 0;
+        let angle = 0;
+        let power = 0.2;
+
+        let isMouseOutside = false;
+
+        // ----- particle system (unchanged, flower explosion) -----
+        let particles = [];
+        const PARTICLE_COLORS = [
+            '#FF69B4', '#FFD700', '#FF4500', '#9370DB', '#00FF7F', 
+            '#FF1493', '#FFA500', '#32CD32', '#FFB6C1', '#87CEEB',
+            '#FF6346', '#FFFF00', '#FF00FF', '#00FFFF', '#FFDAB9'
+        ];
+
+        class Particle {
+            constructor(x, y, type = 'explosion') {
+                this.x = x;
+                this.y = y;
+                this.type = type;
+                
+                if (type === 'explosion') {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 8 + 5;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed;
+                    this.size = Math.random() * 10 + 5;
+                    this.fadeSpeed = 0.01 + Math.random() * 0.01;
+                } else {
+                    this.vx = (Math.random() - 0.5) * 1.5;
+                    this.vy = Math.random() * 2 + 1.5;
+                    this.size = Math.random() * 8 + 4;
+                    this.fadeSpeed = 0.001;
+                }
+                
+                this.color = PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)];
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.05;
+                this.gravity = 0.05;
+                this.life = 1.0;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.type === 'rain') {
+                    this.vy += this.gravity * 0.5;
+                } else {
+                    this.vy += this.gravity;
+                }
+                
+                this.rotation += this.rotationSpeed;
+                
+                if (this.type === 'explosion') {
+                    this.life -= this.fadeSpeed;
+                }
+                
+                if (this.type === 'rain') {
+                    if (this.y > CH + 30) {
+                        this.y = -20;
+                        this.x = Math.random() * CW;
+                        this.vx = (Math.random() - 0.5) * 1.5;
+                        this.vy = Math.random() * 2 + 1.5;
+                    }
+                    if (this.x < 0 || this.x > CW) {
+                        this.vx *= -0.8;
+                    }
+                    return true;
+                } else {
+                    if (this.y > CH + 50) this.life = 0;
+                    return this.life > 0;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.globalAlpha = this.life;
+                
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    let angle = (i / 5) * Math.PI * 2;
+                    let petalLength = this.size;
+                    let petalWidth = this.size * 0.6;
+                    
+                    let x = Math.cos(angle) * petalLength;
+                    let y = Math.sin(angle) * petalLength;
+                    
+                    let cx1 = Math.cos(angle + 0.5) * petalWidth;
+                    let cy1 = Math.sin(angle + 0.5) * petalWidth;
+                    let cx2 = Math.cos(angle - 0.5) * petalWidth;
+                    let cy2 = Math.sin(angle - 0.5) * petalWidth;
+                    
+                    ctx.moveTo(0, 0);
+                    ctx.quadraticCurveTo(cx1, cy1, x, y);
+                    ctx.quadraticCurveTo(cx2, cy2, 0, 0);
+                }
+                
+                ctx.fillStyle = this.color;
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+
+        function explodeFlowersFromPocket(pocketX, pocketY, count = 15) {
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle(pocketX, pocketY, 'explosion'));
+            }
+        }
+
+        function startRainFlowers(count = 40) {
+            particles = particles.filter(p => p.type === 'rain');
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle(
+                    Math.random() * CW,
+                    Math.random() * CH - CH,
+                    'rain'
+                ));
+            }
+        }
+
+        function stopRainFlowers() {
+            particles = particles.filter(p => p.type !== 'rain');
+        }
+
+        function updateParticles() {
+            particles = particles.filter(p => p.update());
+        }
+
+        function drawParticles() {
+            for (let p of particles) {
+                p.draw();
+            }
+            ctx.globalAlpha = 1.0;
+        }
+
+        // ----- helper functions -----
+        function randomTargetPosition() {
+            let overlap = true;
+            let attempts = 0;
+            let newX, newY;
+            const minDist = BALL_RADIUS * 2 + 20;
+
+            while (overlap && attempts < 1000) {
+                newX = LEFT_WALL + Math.random() * (RIGHT_WALL - LEFT_WALL);
+                newY = TOP_WALL + Math.random() * (BOTTOM_WALL - TOP_WALL);
+                const dx = newX - white.x;
+                const dy = newY - white.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist >= minDist) overlap = false;
+                attempts++;
+            }
+            return { x: newX, y: newY };
+        }
+
+        function nextLevel() {
+            if (victoryTimer) {
+                clearTimeout(victoryTimer);
+                victoryTimer = null;
+            }
+            
+            white = { x: 200, y: 220, vx: 0, vy: 0 };
+            const pos = randomTargetPosition();
+            target = { x: pos.x, y: pos.y, vx: 0, vy: 0 };
+            targetExists = true;
+            gameOver = false;
+            winFlag = false;
+            blackPocketed = false;
+            checkWhiteAfterStop = false;
+            blackPocketPosition = null;
+            strokes = 0;
+            strokeSpan.innerText = strokes;
+            isDragging = false;
+            angle = 0;
+            power = 0.2;
+            powerFill.style.width = '20%';
+            nextBtn.style.display = 'none';
+            restartBtn.style.display = 'inline-block';
+            
+            stopRainFlowers();
+        }
+
+        function resetLevel() {
+            nextLevel();
+        }
+
+        function checkPocket(ball) {
+            for (let p of pockets) {
+                const dx = ball.x - p.x;
+                const dy = ball.y - p.y;
+                if (Math.sqrt(dx*dx + dy*dy) < POCKET_RADIUS) {
+                    return p;
+                }
+            }
+            return null;
+        }
+
+        function checkWhitePocket() {
+            for (let p of pockets) {
+                const dx = white.x - p.x;
+                const dy = white.y - p.y;
+                if (Math.sqrt(dx*dx + dy*dy) < POCKET_RADIUS) return true;
+            }
+            return false;
+        }
+
+        function showFoulMessage() {
+            foulMessage.style.display = 'block';
+            setTimeout(() => {
+                foulMessage.style.display = 'none';
+            }, 1500);
+        }
+
+        function ballsAreStationary() {
+            return (Math.abs(white.vx) < 0.1 && Math.abs(white.vy) < 0.1 &&
+                    Math.abs(target.vx) < 0.1 && Math.abs(target.vy) < 0.1);
+        }
+
+        // ----- physics update -----
+        function updatePhysics() {
+            if (!gameOver || checkWhiteAfterStop) {
+                white.x += white.vx;
+                white.y += white.vy;
+                target.x += target.vx;
+                target.y += target.vy;
+
+                [white, target].forEach(ball => {
+                    if (ball.x - BALL_RADIUS < LEFT_WALL) {
+                        ball.x = LEFT_WALL + BALL_RADIUS;
+                        ball.vx = -ball.vx * 0.92;
+                    }
+                    if (ball.x + BALL_RADIUS > RIGHT_WALL) {
+                        ball.x = RIGHT_WALL - BALL_RADIUS;
+                        ball.vx = -ball.vx * 0.92;
+                    }
+                    if (ball.y - BALL_RADIUS < TOP_WALL) {
+                        ball.y = TOP_WALL + BALL_RADIUS;
+                        ball.vy = -ball.vy * 0.92;
+                    }
+                    if (ball.y + BALL_RADIUS > BOTTOM_WALL) {
+                        ball.y = BOTTOM_WALL - BALL_RADIUS;
+                        ball.vy = -ball.vy * 0.92;
+                    }
+                });
+
+                const dx = target.x - white.x;
+                const dy = target.y - white.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < BALL_RADIUS * 2 && dist > 0.001) {
+                    const nx = dx / dist;
+                    const ny = dy / dist;
+                    const vrelx = white.vx - target.vx;
+                    const vrely = white.vy - target.vy;
+                    const vn = vrelx * nx + vrely * ny;
+
+                    if (vn > 0) {
+                        const imp = (2 * vn) / 2 * 0.96;
+                        white.vx -= imp * nx;
+                        white.vy -= imp * ny;
+                        target.vx += imp * nx;
+                        target.vy += imp * ny;
+                    }
+
+                    const overlap = BALL_RADIUS * 2 - dist;
+                    if (overlap > 0) {
+                        const sepX = nx * overlap * 0.5;
+                        const sepY = ny * overlap * 0.5;
+                        white.x -= sepX;
+                        white.y -= sepY;
+                        target.x += sepX;
+                        target.y += sepY;
+                    }
+                }
+
+                white.vx *= FRICTION;
+                white.vy *= FRICTION;
+                target.vx *= FRICTION;
+                target.vy *= FRICTION;
+
+                if (Math.abs(white.vx) < 0.1) white.vx = 0;
+                if (Math.abs(white.vy) < 0.1) white.vy = 0;
+                if (Math.abs(target.vx) < 0.1) target.vx = 0;
+                if (Math.abs(target.vy) < 0.1) target.vy = 0;
+
+                if (targetExists && !blackPocketed) {
+                    const pocket = checkPocket(target);
+                    if (pocket) {
+                        console.log('Black ball pocketed');
+                        targetExists = false;
+                        blackPocketed = true;
+                        checkWhiteAfterStop = true;
+                        blackPocketPosition = pocket;
+                        
+                        // win.mp3 on black pocket (original spec)
+                        playWinSound();
+                        explodeFlowersFromPocket(pocket.x, pocket.y, 15);
+                    }
+                }
+
+                if (!blackPocketed && checkWhitePocket()) {
+                    console.log('Cue ball foul');
+                    showFoulMessage();
+                    resetLevel();
+                    return;
+                }
+            }
+            
+            if (checkWhiteAfterStop) {
+                if (ballsAreStationary()) {
+                    if (checkWhitePocket()) {
+                        showFoulMessage();
+                        resetLevel();
+                    } else {
+                        console.log('Cue ball stopped - victory');
+                        // VICTORY: play xiaochu.mp3 during victory screen
+                        playXiaochuSound();      // <-- now playing xiaochu at victory screen
+                        
+                        gameOver = true;
+                        winFlag = true;
+                        
+                        startRainFlowers(50);
+                        
+                        if (victoryTimer) clearTimeout(victoryTimer);
+                        victoryTimer = setTimeout(() => {
+                            console.log('3s auto next round');
+                            nextLevel();
+                        }, 3000);
+                        
+                        nextBtn.style.display = 'inline-block';
+                        restartBtn.style.display = 'none';
+                    }
+                    checkWhiteAfterStop = false;
+                }
+            }
+            
+            updateParticles();
+        }
+
+        // ----- shoot -----
+        function shoot() {
+            if (gameOver) {
+                return;
+            }
+            if (white.vx !== 0 || white.vy !== 0) {
+                return;
+            }
+            if (!targetExists && blackPocketed) {
+                return;
+            }
+            if (!targetExists && !blackPocketed) {
+                return;
+            }
+
+            const speed = power * MAX_POWER_SPEED;
+            white.vx = Math.cos(angle) * speed;
+            white.vy = Math.sin(angle) * speed;
+            strokes++;
+            strokeSpan.innerText = strokes;
+            
+            // First shot triggers BGM (if unmuted)
+            if (!hasShot) {
+                hasShot = true;
+                console.log('First shot! BGM will start');
+                // slight delay to avoid conflict with shot feeling
+                setTimeout(() => {
+                    if (!isMuted) {
+                        playBGM();  // now starts beijing.ogg
+                    }
+                }, 200);
+            }
+        }
+
+        // ----- aim update -----
+        function updateAim() {
+            if (!isDragging) return;
+            
+            const dx = white.x - dragX;
+            const dy = white.y - dragY;
+            
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            
+            if (dist < 1) {
+                return;
+            }
+
+            angle = Math.atan2(dy, dx);
+
+            const MIN_POWER = 0.2;
+            const MAX_POWER = 1.2;
+            const OPTIMAL_DIST = 180;
+            
+            let rawPower = dist / OPTIMAL_DIST;
+            
+            if (rawPower < 0.5) {
+                power = MIN_POWER + (rawPower / 0.5) * 0.3;
+            } else if (rawPower < 1.2) {
+                power = MIN_POWER + 0.3 + ((rawPower - 0.5) / 0.7) * 0.5;
+            } else {
+                power = MIN_POWER + 0.8 + Math.min(rawPower - 1.2, 0.5) * 0.4;
+            }
+            
+            power = Math.max(MIN_POWER, Math.min(MAX_POWER, power));
+            
+            let visualPower = Math.min(power, 1.0);
+            powerFill.style.width = (visualPower * 100) + '%';
+        }
+
+        function predictCollision() {
+            const dirX = Math.cos(angle);
+            const dirY = Math.sin(angle);
+
+            const startX = white.x + dirX * BALL_RADIUS;
+            const startY = white.y + dirY * BALL_RADIUS;
+            
+            const tx = target.x;
+            const ty = target.y;
+            
+            const toTargetX = tx - startX;
+            const toTargetY = ty - startY;
+            
+            const proj = toTargetX * dirX + toTargetY * dirY;
+            
+            if (proj < 0) return null;
+            
+            const closestX = startX + dirX * proj;
+            const closestY = startY + dirY * proj;
+            
+            const perpDist = Math.hypot(tx - closestX, ty - closestY);
+            
+            if (perpDist > BALL_RADIUS * 2) return null;
+            
+            const hitDist = proj - Math.sqrt(Math.max(0, Math.pow(BALL_RADIUS * 2, 2) - perpDist * perpDist));
+            
+            if (hitDist < 0) return null;
+            
+            const hitX = startX + dirX * hitDist;
+            const hitY = startY + dirY * hitDist;
+            
+            return { hitX, hitY };
+        }
+
+        // ----- draw -----
+        function draw() {
+            ctx.clearRect(0, 0, CW, CH);
+
+            ctx.fillStyle = '#1e5a3a';
+            ctx.fillRect(0, 0, CW, CH);
+
+            ctx.strokeStyle = '#dbb06b';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(LEFT_WALL - 2, TOP_WALL - 2, RIGHT_WALL - LEFT_WALL + 4, BOTTOM_WALL - TOP_WALL + 4);
+
+            ctx.fillStyle = '#2a1f12';
+            ctx.shadowColor = '#00000080';
+            ctx.shadowBlur = 10;
+            pockets.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, POCKET_RADIUS - 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#1f140e';
+                ctx.fill();
+                ctx.shadowBlur = 5;
+                ctx.fillStyle = '#4a3c2b';
+                ctx.arc(p.x, p.y, POCKET_RADIUS - 8, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.shadowBlur = 0;
+
+            if (targetExists) {
+                ctx.shadowColor = '#333333';
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                ctx.arc(target.x, target.y, BALL_RADIUS, 0, Math.PI * 2);
+                const grad = ctx.createRadialGradient(target.x - 3, target.y - 3, 3, target.x, target.y, BALL_RADIUS + 2);
+                grad.addColorStop(0, '#222222');
+                grad.addColorStop(0.7, '#000000');
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                ctx.shadowBlur = 5;
+                ctx.font = 'bold 16px "Segoe UI", Arial';
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('8', target.x, target.y);
+                
+                ctx.beginPath();
+                ctx.arc(target.x - 3, target.y - 3, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff9e6';
+                ctx.globalAlpha = 0.3;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            ctx.shadowColor = '#cccccc';
+            ctx.shadowBlur = 18;
+            ctx.beginPath();
+            ctx.arc(white.x, white.y, BALL_RADIUS, 0, Math.PI * 2);
+            const wgrad = ctx.createRadialGradient(white.x - 4, white.y - 4, 4, white.x, white.y, BALL_RADIUS + 2);
+            wgrad.addColorStop(0, '#fafaf5');
+            wgrad.addColorStop(0.8, '#c0c0c0');
+            ctx.fillStyle = wgrad;
+            ctx.fill();
+
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(white.x - 1, white.y - 1, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#22222260';
+            ctx.fill();
+
+            if (isDragging && white.vx === 0 && white.vy === 0 && targetExists && !gameOver) {
+                let visualPower = Math.min(power, 1.0);
+                
+                ctx.beginPath();
+                ctx.arc(dragX, dragY, 15 + visualPower * 20, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255, 200, 0, 0.5)';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.setLineDash([8, 6]);
+                ctx.beginPath();
+                ctx.moveTo(white.x, white.y);
+                ctx.lineTo(white.x + Math.cos(angle) * 500, white.y + Math.sin(angle) * 500);
+                ctx.strokeStyle = 'white';
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.beginPath();
+                ctx.moveTo(dragX, dragY);
+                ctx.lineTo(white.x, white.y);
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.4)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.font = 'bold 14px Arial';
+                ctx.fillStyle = 'white';
+                ctx.shadowBlur = 4;
+                ctx.shadowColor = 'black';
+                ctx.fillText(Math.round(visualPower * 100) + '%', dragX - 15, dragY - 25);
+                ctx.shadowBlur = 0;
+
+                const hit = predictCollision();
+                if (hit) {
+                    ctx.beginPath();
+                    ctx.arc(hit.hitX, hit.hitY, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = 'yellow';
+                    ctx.fill();
+                }
+            }
+
+            drawParticles();
+
+            if (winFlag) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.fillRect(0, 0, CW, CH);
+                
+                ctx.shadowBlur = 30;
+                ctx.font = 'bold 52px "Segoe UI", Verdana';
+                ctx.fillStyle = '#FFD966';
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 6;
+                ctx.textAlign = 'center';
+                ctx.strokeText('🎉 VICTORY!', CW / 2, 150);
+                ctx.fillText('🎉 VICTORY!', CW / 2, 150);
+                
+                ctx.font = 'bold 24px "Segoe UI", Verdana';
+                ctx.fillStyle = '#FFFFFF';
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.strokeText('Next round in 3s', CW / 2, 280);
+                ctx.fillText('Next round in 3s', CW / 2, 280);
+            }
+        }
+
+        // ----- event handlers (robust touch) -----
+        function getCanvasCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
+            // 确保坐标在canvas范围内
+            let canvasX = Math.max(0, Math.min(canvas.width, (clientX - rect.left) * scaleX));
+            let canvasY = Math.max(0, Math.min(canvas.height, (clientY - rect.top) * scaleY));
+
+            return { x: canvasX, y: canvasY };
+        }
+
+        function onMouseDown(e) {
+            e.preventDefault();
+            if (e.button !== 0) return;
+            handleUserInteraction();
+            if (gameOver) return;
+            if (white.vx !== 0 || white.vy !== 0) return;
+            if (!targetExists) return;
+
+            const coords = getCanvasCoords(e);
+            dragX = coords.x;
+            dragY = coords.y;
+            isDragging = true;
+            isMouseOutside = false;
+        }
+
+        function onMouseMove(e) {
+            e.preventDefault();
+            if (!isDragging) return;
+            const coords = getCanvasCoords(e);
+            dragX = coords.x;
+            dragY = coords.y;
+            updateAim();
+        }
+
+        function onMouseUp(e) {
+            e.preventDefault();
+            if (e.button !== 0) return;
+            if (!isDragging) return;
+            isDragging = false;
+            isMouseOutside = false;
+            shoot();
+        }
+
+        function onTouchStart(e) {
+            e.preventDefault();
+            handleUserInteraction();
+            if (gameOver) return;
+            if (white.vx !== 0 || white.vy !== 0) return;
+            if (!targetExists) return;
+            const coords = getCanvasCoords(e);
+            dragX = coords.x;
+            dragY = coords.y;
+            isDragging = true;
+        }
+
+        function onTouchMove(e) {
+            e.preventDefault();
+            if (!isDragging) return;
+            const coords = getCanvasCoords(e);
+            dragX = coords.x;
+            dragY = coords.y;
+            updateAim();
+        }
+
+        function onTouchEnd(e) {
+            e.preventDefault();
+            if (!isDragging) return;
+            isDragging = false;
+            shoot();
+        }
+
+        canvas.addEventListener('mousedown', onMouseDown);
+        canvas.addEventListener('mousemove', onMouseMove);
+        canvas.addEventListener('mouseup', onMouseUp);
+        canvas.addEventListener('mouseleave', () => { isMouseOutside = true; });
+        canvas.addEventListener('mouseenter', () => { isMouseOutside = false; });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const coords = getCanvasCoords(e);
+                dragX = coords.x;
+                dragY = coords.y;
+                updateAim();
+            }
+        });
+
+        window.addEventListener('mouseup', (e) => {
+            if (isDragging) {
+                isDragging = false;
+                isMouseOutside = false;
+                shoot();
+            }
+        });
+
+        canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+        canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+        canvas.addEventListener('touchend', onTouchEnd);
+        canvas.addEventListener('touchcancel', onTouchEnd);
+
+        restartBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleUserInteraction();
+            resetLevel();
+        });
+
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleUserInteraction();
+            nextLevel();
+        });
+
+        muteBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleUserInteraction();
+            toggleMute();
+        });
+
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => { 
+            const now = Date.now(); 
+            if (now - lastTouchEnd <= 300) e.preventDefault(); 
+            lastTouchEnd = now; 
+        }, false);
+        
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.body.addEventListener('touchmove', (e) => { 
+            if (e.target === document.body) e.preventDefault(); 
+        }, { passive: false });
+
+        // 初始化窗口大小检测
+        function checkOrientation() {
+            // 可以在这里添加横竖屏切换时的处理
+            console.log('Window resized:', window.innerWidth, 'x', window.innerHeight);
+        }
+        
+        window.addEventListener('resize', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
+
+        // initialisation
+        (function init() {
+            initAudio();
+            const pos = randomTargetPosition();
+            target.x = pos.x;
+            target.y = pos.y;
+            
+            setTimeout(() => {
+                handleUserInteraction();
+            }, 500);
+        })();
+
+        function animate() {
+            updatePhysics();
+            draw();
+            requestAnimationFrame(animate);
+        }
+        animate();
+    })();
+</script>
+</body>
+</html>
