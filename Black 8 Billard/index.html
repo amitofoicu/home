@@ -11,17 +11,14 @@
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+        }
+        html, body {
             margin: 0;
             padding: 0;
-        }
-        
-        html, body {
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: #1a1e2b;
         }
-        
         body {
             background: url('https://amitofoicu.github.io/home/lianchi6.jpg') no-repeat center center fixed;
             background-size: cover;
@@ -30,9 +27,7 @@
             justify-content: center;
             font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
             position: relative;
-            min-height: -webkit-fill-available;
         }
-        
         /* loading overlay */
         .loading-overlay {
             position: fixed;
@@ -44,256 +39,198 @@
             align-items: center;
             z-index: 9999;
             transition: opacity 0.5s ease;
+            font-size: 4vmin;
+            color: #ffd966;
             backdrop-filter: blur(5px);
         }
-        
         .spinner {
-            width: clamp(40px, 8vmin, 80px);
-            height: clamp(40px, 8vmin, 80px);
-            border: clamp(4px, 1vmin, 8px) solid rgba(255,209,102,0.3);
+            width: 10vmin;
+            height: 10vmin;
+            border: 1vmin solid rgba(255,209,102,0.3);
             border-top-color: #ffd166;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: clamp(8px, 2vmin, 16px);
+            margin-bottom: 2vmin;
         }
-        
         @keyframes spin { to { transform: rotate(360deg); } }
-        
         .loading-text {
-            font-size: clamp(18px, 4vmin, 32px);
-            color: #ffd966;
-        }
-        
-        /* 主容器 - 使用min()确保不会太大，同时保持比例 */
-        .game-wrapper {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: clamp(8px, 2vmin, 20px);
+            font-size: 4vmin;
+            margin-top: 2vmin;
         }
         
         .game-container {
             background: rgba(61, 43, 26, 0.85);
             backdrop-filter: blur(5px);
-            padding: clamp(6px, 1.2vmin, 16px) clamp(8px, 1.5vmin, 20px);
-            border-radius: clamp(16px, 3vmin, 32px);
+            padding: 1.5vmin 2vmin 2vmin 2vmin;
+            border-radius: 4vmin;
             box-shadow: 0 20px 30px rgba(0,0,0,0.6), inset 2px 2px 8px #b87c4b;
             border: 2px solid #aa6e3a;
-            width: min(95%, 1200px);
-            max-width: 1200px;
+            position: relative;
+            width: 95%;
+            max-width: 820px;
             margin: 0 auto;
         }
-        
-        /* 确保画布容器保持16:9比例 */
-        .canvas-wrapper {
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            position: relative;
-            background: #1e3b2a;
-            border-radius: clamp(8px, 2vmin, 20px);
-            overflow: hidden;
-            box-shadow: inset 0 0 0 2px #7b5a3c, 0 10px 15px rgba(0,0,0,0.5);
-        }
-        
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            background: #1e3b2a;
-            touch-action: none;
-            cursor: crosshair;
-        }
-        
-        /* 游戏头部 - 使用flex和固定最小高度确保可读性 */
         .game-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: clamp(4px, 1vmin, 12px);
-            min-height: clamp(32px, 6vmin, 48px);
+            margin-bottom: 1vmin;
         }
-        
         .header-logo {
-            height: clamp(28px, 5vmin, 44px);
+            height: 7vmin;
             width: auto;
-            border-radius: 6px;
-            border: 1px solid rgba(255,209,102,0.4);
+            border-radius: 1vmin;
+            border: 0.2vmin solid rgba(255,209,102,0.4);
             background: rgba(0,0,0,0.2);
         }
-        
         .game-title {
             text-align: center;
             color: #ffd966;
-            font-size: clamp(20px, 4.5vmin, 36px);
+            font-size: 5vmin;
             font-weight: bold;
-            text-shadow: 2px 2px 0 #4f3a1e;
-            letter-spacing: 1px;
+            text-shadow: 3px 3px 0 #4f3a1e;
+            letter-spacing: 2px;
             flex: 1;
-            margin: 0 clamp(8px, 2vmin, 16px);
-            white-space: nowrap;
         }
-        
         .more-link {
             color: #ffd966;
-            font-size: clamp(16px, 3.5vmin, 24px);
+            font-size: 4vmin;
             font-weight: bold;
             text-decoration: none;
-            padding: clamp(4px, 1vmin, 8px) clamp(8px, 2vmin, 16px);
+            padding: 1vmin 2vmin;
             background: rgba(0,0,0,0.3);
-            border-radius: clamp(12px, 2vmin, 24px);
-            border: 1px solid #ffd966;
+            border-radius: 2vmin;
+            border: 0.2vmin solid #ffd966;
             white-space: nowrap;
             transition: all 0.2s ease;
         }
-        
+        .more-link:hover {
+            background: rgba(255,209,102,0.2);
+            transform: scale(1.05);
+        }
         .more-link:active {
             transform: scale(0.95);
-            background: rgba(255,209,102,0.2);
         }
-        
-        /* 提示文字 - 固定最小尺寸确保可读性 */
-        .hint {
-            color: #ffd966;
-            font-size: clamp(14px, 2.5vmin, 18px);
-            padding: clamp(6px, 1vmin, 10px);
-            background: #2d4a2d;
-            border-radius: clamp(20px, 4vmin, 30px);
-            margin: clamp(4px, 1vmin, 8px) 0;
-            text-align: center;
-            border: 1px solid #b88c4a;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 2.5vmin;
+            background: #1e3b2a;
+            box-shadow: inset 0 0 0 2px #7b5a3c, 0 10px 15px rgba(0,0,0,0.5);
+            touch-action: none;
+            cursor: crosshair;
         }
-        
-        /* 状态栏 */
         .status-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: clamp(6px, 1.2vmin, 12px) clamp(4px, 1vmin, 8px);
+            padding: 2vmin 1vmin 1vmin 1vmin;
             color: #f7e9c3;
             text-shadow: 2px 2px 0 #4f3a1e;
             font-weight: bold;
-            font-size: clamp(20px, 4vmin, 32px);
-            min-height: clamp(40px, 7vmin, 56px);
+            font-size: 5vmin;
         }
-        
         .stroke-box {
             background: #2f4d2e;
-            padding: clamp(6px, 1.2vmin, 12px) clamp(20px, 4vmin, 40px);
-            border-radius: 999px;
+            padding: 1vmin 5vmin;
+            border-radius: 10vmin;
             border: 2px solid #dbb062;
             box-shadow: inset 0 2px 5px #0f2b0e;
             letter-spacing: 2px;
-            font-size: clamp(20px, 4vmin, 32px);
-            min-width: clamp(60px, 12vmin, 100px);
-            text-align: center;
         }
-        
-        /* 底部面板 */
         .bottom-panel {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: clamp(4px, 1vmin, 10px) 0 0 0;
-            gap: clamp(8px, 2vmin, 20px);
+            padding: 1vmin 1vmin 0 1vmin;
+            gap: 2vmin;
             flex-wrap: wrap;
-            min-height: clamp(44px, 7vmin, 60px);
         }
-        
         .power-meter {
             background: #5b4330;
-            padding: clamp(6px, 1.2vmin, 12px) clamp(12px, 2.5vmin, 20px);
-            border-radius: 999px;
+            padding: 1vmin 3vmin;
+            border-radius: 8vmin;
             border: 2px solid #edc27a;
             display: flex;
             align-items: center;
-            gap: clamp(6px, 1.5vmin, 12px);
+            gap: 2vmin;
             color: #ffdd99;
-            font-size: clamp(16px, 3.5vmin, 24px);
+            font-size: 4vmin;
             font-weight: bold;
-            flex: 2;
-            min-width: min(200px, 40%);
+            flex: 1;
+            min-width: 200px;
         }
-        
-        .power-meter span {
-            font-size: clamp(18px, 4vmin, 28px);
-            white-space: nowrap;
-        }
-        
         .bar-bg {
             width: 100%;
-            height: clamp(12px, 2.5vmin, 20px);
+            height: 4vmin;
             background: #2a1e12;
-            border-radius: 999px;
+            border-radius: 2vmin;
             border: 1px solid #ac8b5b;
             overflow: hidden;
         }
-        
         .bar-fill {
             width: 20%;
             height: 100%;
             background: linear-gradient(90deg, #f9b81b, #f55d3e);
             transition: width 0.03s;
         }
-        
         .button-group {
             display: flex;
             align-items: center;
-            gap: clamp(6px, 1.5vmin, 12px);
+            gap: 1.5vmin;
             flex-shrink: 0;
         }
-        
         .action-btn {
             background: #3d5c3a;
             border: 2px solid #e3b87c;
             color: #ffefc0;
-            font-size: clamp(16px, 3.5vmin, 24px);
-            padding: clamp(6px, 1.2vmin, 12px) clamp(12px, 2.5vmin, 24px);
-            border-radius: 999px;
+            font-size: 3.5vmin;
+            padding: 0.8vmin 2.5vmin;
+            border-radius: 5vmin;
             font-weight: bold;
             box-shadow: 0 3px 0 #1d2e1b;
             cursor: pointer;
             white-space: nowrap;
-            min-width: clamp(44px, 8vmin, 70px);
+            min-width: 10vmin;
             text-align: center;
             transition: all 0.1s ease;
-            line-height: 1.2;
         }
-        
         .action-btn:active {
             transform: translateY(3px);
             box-shadow: 0 1px 0 #1d2e1b;
         }
-        
         .action-btn.mute {
             background: #5b4330;
             border-color: #edc27a;
-            min-width: clamp(50px, 9vmin, 80px);
-            padding: clamp(6px, 1.2vmin, 12px) clamp(8px, 1.8vmin, 16px);
+            min-width: 8vmin;
+            padding: 0.8vmin 1.5vmin;
         }
-        
         .action-btn.next {
             background: #4a7a4a;
             border-color: #ffd966;
         }
-        
-        /* 犯规消息 */
+        .hint {
+            color: #ffd966;
+            font-size: 3.2vmin;
+            padding: 1vmin;
+            background: #2d4a2d;
+            border-radius: 4vmin;
+            margin: 1vmin 0;
+            text-align: center;
+            border: 1px solid #b88c4a;
+        }
         .white-foul {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.8);
             color: #ff4444;
-            font-size: clamp(24px, 5vmin, 48px);
+            font-size: 6vmin;
             font-weight: bold;
-            padding: clamp(12px, 2.5vmin, 24px) clamp(20px, 4vmin, 40px);
-            border-radius: 999px;
+            padding: 2vmin 4vmin;
+            border-radius: 4vmin;
             border: 2px solid #ffaa00;
             z-index: 10;
             text-shadow: 2px 2px 0 #000;
@@ -301,145 +238,18 @@
             animation: fadeOut 1.5s forwards;
             pointer-events: none;
             white-space: nowrap;
-            text-align: center;
         }
-        
         @keyframes fadeOut {
             0% { opacity: 1; }
             70% { opacity: 1; }
             100% { opacity: 0; }
         }
-        
-        /* 针对超小屏幕的特殊处理 */
-        @media (max-width: 480px) {
-            .game-title {
-                font-size: 18px;
-                white-space: normal;
-                line-height: 1.2;
-            }
-            
-            .hint {
-                font-size: 12px;
-                white-space: normal;
-                line-height: 1.4;
-                padding: 8px 12px;
-            }
-            
-            .status-bar {
-                font-size: 18px;
-            }
-            
-            .stroke-box {
-                font-size: 18px;
-                padding: 6px 16px;
-            }
-            
-            .action-btn {
-                font-size: 14px;
-                padding: 6px 10px;
-                min-width: 40px;
-            }
-            
-            .power-meter {
-                font-size: 14px;
-                padding: 6px 12px;
-            }
-            
-            .power-meter span {
-                font-size: 16px;
-            }
-        }
-        
-        /* 针对平板和桌面优化 */
-        @media (min-width: 768px) and (max-width: 1024px) {
-            .game-title {
-                font-size: 28px;
-            }
-            
-            .hint {
-                font-size: 16px;
-            }
-            
-            .action-btn {
-                font-size: 20px;
-                padding: 8px 20px;
-            }
-        }
-        
-        /* 桌面大屏优化 */
-        @media (min-width: 1025px) {
-            .game-title {
-                font-size: 32px;
-            }
-            
-            .hint {
-                font-size: 18px;
-            }
-            
-            .action-btn {
-                font-size: 22px;
-                padding: 10px 24px;
-            }
-            
-            .power-meter {
-                font-size: 22px;
-            }
-        }
-        
-        /* 确保在CrazyGames要求的特定分辨率下可读 */
-        @media (min-width: 800px) and (max-width: 907px) and (min-height: 450px) and (max-height: 510px) {
-            .game-title {
-                font-size: 24px;
-            }
-            
-            .hint {
-                font-size: 15px;
-                padding: 6px 12px;
-            }
-            
-            .action-btn {
-                font-size: 16px;
-                padding: 6px 14px;
-            }
-        }
-        
-        /* 针对821x462分辨率的优化 */
-        @media (min-width: 800px) and (max-width: 821px) and (min-height: 450px) and (max-height: 462px) {
-            .game-header {
-                margin-bottom: 4px;
-            }
-            
-            .game-title {
-                font-size: 22px;
-            }
-            
-            .hint {
-                font-size: 14px;
-                margin: 4px 0;
-            }
-            
-            .status-bar {
-                padding: 4px 0;
-            }
-            
-            .power-meter {
-                padding: 4px 10px;
-            }
-        }
-        
-        /* 移动端横屏优化 */
-        @media (max-width: 800px) and (orientation: landscape) {
-            .game-wrapper {
-                padding: 4px;
-            }
-            
-            .game-header {
-                margin-bottom: 4px;
-            }
-            
-            .hint {
-                margin: 4px 0;
-            }
+        @media (max-width: 600px) {
+            .status-bar { font-size: 6vmin; }
+            .stroke-box { padding: 0.8vmin 4vmin; }
+            .action-btn { font-size: 4vmin; padding: 0.6vmin 2vmin; }
+            .bottom-panel { gap: 1vmin; }
+            .power-meter { font-size: 3.5vmin; padding: 0.8vmin 2vmin; }
         }
     </style>
 </head>
@@ -451,37 +261,32 @@
     <div class="loading-text">Loading Game...</div>
 </div>
 
-<div class="game-wrapper">
-    <div class="game-container">
-        <div class="game-header">
-            <img src="https://amitofoicu.github.io/home/logo.jpg" alt="Logo" class="header-logo" onerror="this.style.display='none'">
-            <div class="game-title">🎱 Black 8 Billiard</div>
-            <a href="https://amitofoicu.github.io/home/main2.html" class="more-link" target="_blank" rel="noopener noreferrer">More</a>
-        </div>
-        
-        <div class="canvas-wrapper">
-            <canvas id="poolCanvas" width="800" height="450"></canvas>
-        </div>
-        
-        <div class="hint">
-            👆 Drag cue ball · Pull back for power · Release to shoot
-        </div>
+<div class="game-container">
+    <div class="game-header">
+        <img src="https://amitofoicu.github.io/home/logo.jpg" alt="Logo" class="header-logo">
+        <div class="game-title">🎱 Black 8 Billiard</div>
+        <a href="https://amitofoicu.github.io/home/main.html" class="more-link" target="_blank" rel="noopener noreferrer">More..</a>
+    </div>
+    <canvas id="poolCanvas" width="800" height="450"></canvas>
+    
+    <div class="hint">
+        👆 Drag cue ball · Pull back for power · Release to shoot
+    </div>
 
-        <div class="status-bar">
-            <span>🎱 Strokes</span>
-            <span class="stroke-box" id="strokeDisplay">0</span>
-        </div>
+    <div class="status-bar">
+        <span>🎱 Strokes</span>
+        <span class="stroke-box" id="strokeDisplay">0</span>
+    </div>
 
-        <div class="bottom-panel">
-            <div class="power-meter">
-                <span>💪</span>
-                <div class="bar-bg"><div class="bar-fill" id="powerFill" style="width: 20%;"></div></div>
-            </div>
-            <div class="button-group">
-                <button class="action-btn mute" id="muteBtn">🔊</button>
-                <button class="action-btn" id="restartBtn">🔄 New</button>
-                <button class="action-btn next" id="nextBtn" style="display: none;">✨ Next</button>
-            </div>
+    <div class="bottom-panel">
+        <div class="power-meter">
+            <span>💪</span>
+            <div class="bar-bg"><div class="bar-fill" id="powerFill" style="width: 20%;"></div></div>
+        </div>
+        <div class="button-group">
+            <button class="action-btn mute" id="muteBtn">🔊</button>
+            <button class="action-btn" id="restartBtn">🔄 New</button>
+            <button class="action-btn next" id="nextBtn" style="display: none;">✨ Next</button>
         </div>
     </div>
 </div>
@@ -502,45 +307,50 @@
         const foulMessage = document.getElementById('foulMessage');
         const loadingOverlay = document.getElementById('loadingOverlay');
 
-        // ----- audio management (iPhone optimised) -----
+        // ----- audio management (fixed - plays after first shot) -----
         let isMuted = false;
         let userInteracted = false;
-        let hasShot = false; // first shot flag to trigger BGM
-
+        let hasShot = false; // flag for first shot
+        
         // audio elements
         let bgmAudio = null;
-        let winAudio = null;          // win.mp3 (black potted)
-        let xiaochuAudio = null;      // xiaochu.mp3 (victory fanfare)
+        let winAudio = null;
+        let xiaochuAudio = null;
 
-        // initialise audio (call after user tap)
+        // initialize audio
         function initAudio() {
             console.log('Initializing audio...');
             
-            // background music - OGG
+            // background music - OGG format
             bgmAudio = new Audio('https://amitofoicu.github.io/home/beijing.ogg');
             bgmAudio.loop = true;
             bgmAudio.volume = 1.0;
+            
+            // iOS required attributes
             bgmAudio.setAttribute('playsinline', '');
             bgmAudio.setAttribute('webkit-playsinline', '');
+            
+            // preload but don't autoplay
             bgmAudio.load();
             
-            // win sound (black ball pocketed -> xiaochu in victory screen)
+            // win sound effect
             winAudio = new Audio('https://amitofoicu.github.io/home/win.mp3');
             winAudio.volume = 0.7;
             winAudio.setAttribute('playsinline', '');
             winAudio.setAttribute('webkit-playsinline', '');
             winAudio.load();
             
-            // victory fanfare (xiaochu) — now used during victory screen
+            // clear sound effect
             xiaochuAudio = new Audio('https://amitofoicu.github.io/home/xiaochu.mp3');
             xiaochuAudio.volume = 1.0;
             xiaochuAudio.setAttribute('playsinline', '');
             xiaochuAudio.setAttribute('webkit-playsinline', '');
             xiaochuAudio.load();
             
+            // set mute button initial state
             muteBtn.textContent = isMuted ? '🔇' : '🔊';
             
-            // hide loading overlay after a moment
+            // hide loading overlay
             setTimeout(() => {
                 loadingOverlay.style.opacity = '0';
                 setTimeout(() => {
@@ -551,75 +361,91 @@
             console.log('Audio initialized');
         }
 
-        // Play BGM only after first shot (only if not muted)
+        // play background music (only after first shot)
         function playBGM() {
-            if (!hasShot || isMuted || !bgmAudio) return; 
+            if (!hasShot || isMuted || !bgmAudio) return; // only play after first shot
+            
             try {
-                if (!bgmAudio.paused) return; // already playing
+                // don't restart if already playing
+                if (!bgmAudio.paused) return;
+                
                 bgmAudio.currentTime = 0;
                 const playPromise = bgmAudio.play();
                 if (playPromise !== undefined) {
-                    playPromise.catch(e => console.log('BGM play failed:', e));
+                    playPromise.catch(e => {
+                        console.log('BGM play failed:', e);
+                    });
                 }
             } catch (e) {
                 console.log('BGM error:', e);
             }
         }
 
+        // stop background music
         function stopBGM() {
             if (!bgmAudio) return;
             try {
                 bgmAudio.pause();
                 bgmAudio.currentTime = 0;
-            } catch (e) {}
+            } catch (e) {
+                console.log('Stop BGM error:', e);
+            }
         }
 
-        // clone and play to allow overlapping on iOS
+        // play sound effect (clone to bypass iOS restrictions)
         function playSound(audio) {
             if (!userInteracted || isMuted || !audio) return;
+            
             try {
+                // clone node to allow multiple simultaneous sounds on iOS
                 const clone = audio.cloneNode();
                 clone.volume = audio.volume;
+                
                 const playPromise = clone.play();
                 if (playPromise !== undefined) {
-                    playPromise.catch(e => console.log('sound play failed:', e));
+                    playPromise.catch(e => {
+                        console.log('Sound play failed:', e);
+                    });
                 }
+                
                 // clean up clone
                 setTimeout(() => {
                     clone.pause();
                     clone.src = '';
-                }, 3000);
+                }, 2000);
             } catch (e) {
                 console.log('Sound error:', e);
             }
         }
 
-        // specific: win.mp3 (when black ball drops)
+        // play win sound
         function playWinSound() {
             playSound(winAudio);
         }
 
-        // specific: xiaochu.mp3 (victory screen fanfare)
+        // play elimination sound
         function playXiaochuSound() {
             playSound(xiaochuAudio);
         }
 
+        // toggle mute
         function toggleMute() {
             isMuted = !isMuted;
             muteBtn.textContent = isMuted ? '🔇' : '🔊';
+            
             if (isMuted) {
                 stopBGM();
             } else {
-                if (hasShot) {   // resume only if already shot
+                if (hasShot) { // only resume if already shot
                     playBGM();
                 }
             }
         }
 
+        // handle user interaction
         function handleUserInteraction() {
             if (!userInteracted) {
                 userInteracted = true;
-                // small preload hint for iOS
             }
         }
 
@@ -665,9 +491,10 @@
         let angle = 0;
         let power = 0.2;
 
+        // flag to track if mouse is outside canvas
         let isMouseOutside = false;
 
-        // ----- particle system (unchanged, flower explosion) -----
+        // ----- particle system -----
         let particles = [];
         const PARTICLE_COLORS = [
             '#FF69B4', '#FFD700', '#FF4500', '#9370DB', '#00FF7F', 
@@ -958,7 +785,6 @@
                         checkWhiteAfterStop = true;
                         blackPocketPosition = pocket;
                         
-                        // win.mp3 on black pocket (original spec)
                         playWinSound();
                         explodeFlowersFromPocket(pocket.x, pocket.y, 15);
                     }
@@ -979,8 +805,7 @@
                         resetLevel();
                     } else {
                         console.log('Cue ball stopped - victory');
-                        // VICTORY: play xiaochu.mp3 during victory screen
-                        playXiaochuSound();      // <-- now playing xiaochu at victory screen
+                        playXiaochuSound();
                         
                         gameOver = true;
                         winFlag = true;
@@ -1018,60 +843,76 @@
                 return;
             }
 
+            // actual shot speed uses full power value (may exceed 1.0)
             const speed = power * MAX_POWER_SPEED;
             white.vx = Math.cos(angle) * speed;
             white.vy = Math.sin(angle) * speed;
             strokes++;
             strokeSpan.innerText = strokes;
             
-            // First shot triggers BGM (if unmuted)
+            // mark first shot and attempt to play background music
             if (!hasShot) {
                 hasShot = true;
-                console.log('First shot! BGM will start');
-                // slight delay to avoid conflict with shot feeling
+                console.log('First shot! Starting BGM...');
+                // delay slightly to let shot sound play first
                 setTimeout(() => {
                     if (!isMuted) {
-                        playBGM();  // now starts beijing.ogg
+                        playBGM();
                     }
-                }, 200);
+                }, 300);
             }
         }
 
-        // ----- aim update -----
+        // ----- aim update (fixed power and angle calculation) -----
         function updateAim() {
             if (!isDragging) return;
             
+            // vector from cue ball to drag point
             const dx = white.x - dragX;
             const dy = white.y - dragY;
             
+            // calculate distance
             let dist = Math.sqrt(dx*dx + dy*dy);
             
+            // if too close, keep current angle
             if (dist < 1) {
                 return;
             }
 
+            // calculate angle (shot direction is away from finger)
             angle = Math.atan2(dy, dx);
 
+            // power calculation with smooth curve
             const MIN_POWER = 0.2;
-            const MAX_POWER = 1.2;
-            const OPTIMAL_DIST = 180;
+            const MAX_POWER = 1.2;  // allow 20% overcharge
+            const OPTIMAL_DIST = 180; // optimal distance for max visual power
             
+            // base power (0-1.5 range)
             let rawPower = dist / OPTIMAL_DIST;
             
+            // S-curve for natural power progression
             if (rawPower < 0.5) {
+                // short distance: slow growth
                 power = MIN_POWER + (rawPower / 0.5) * 0.3;
             } else if (rawPower < 1.2) {
+                // medium distance: linear growth
                 power = MIN_POWER + 0.3 + ((rawPower - 0.5) / 0.7) * 0.5;
             } else {
+                // long distance: saturation with slight overcharge
                 power = MIN_POWER + 0.8 + Math.min(rawPower - 1.2, 0.5) * 0.4;
             }
             
+            // clamp power range
             power = Math.max(MIN_POWER, Math.min(MAX_POWER, power));
             
+            // visual feedback power (clamped to 0-1)
             let visualPower = Math.min(power, 1.0);
+
+            // update power bar (using visual power)
             powerFill.style.width = (visualPower * 100) + '%';
         }
 
+        // ----- collision prediction -----
         function predictCollision() {
             const dirX = Math.cos(angle);
             const dirY = Math.sin(angle);
@@ -1110,13 +951,16 @@
         function draw() {
             ctx.clearRect(0, 0, CW, CH);
 
+            // table felt
             ctx.fillStyle = '#1e5a3a';
             ctx.fillRect(0, 0, CW, CH);
 
+            // cushions
             ctx.strokeStyle = '#dbb06b';
             ctx.lineWidth = 3;
             ctx.strokeRect(LEFT_WALL - 2, TOP_WALL - 2, RIGHT_WALL - LEFT_WALL + 4, BOTTOM_WALL - TOP_WALL + 4);
 
+            // pockets
             ctx.fillStyle = '#2a1f12';
             ctx.shadowColor = '#00000080';
             ctx.shadowBlur = 10;
@@ -1132,6 +976,7 @@
             });
             ctx.shadowBlur = 0;
 
+            // black 8 ball
             if (targetExists) {
                 ctx.shadowColor = '#333333';
                 ctx.shadowBlur = 15;
@@ -1158,6 +1003,7 @@
                 ctx.globalAlpha = 1;
             }
 
+            // cue ball
             ctx.shadowColor = '#cccccc';
             ctx.shadowBlur = 18;
             ctx.beginPath();
@@ -1174,15 +1020,19 @@
             ctx.fillStyle = '#22222260';
             ctx.fill();
 
+            // aiming guide
             if (isDragging && white.vx === 0 && white.vy === 0 && targetExists && !gameOver) {
+                // visual power (clamped to 0-1)
                 let visualPower = Math.min(power, 1.0);
                 
+                // power ring (at finger position)
                 ctx.beginPath();
                 ctx.arc(dragX, dragY, 15 + visualPower * 20, 0, Math.PI * 2);
                 ctx.strokeStyle = 'rgba(255, 200, 0, 0.5)';
                 ctx.lineWidth = 3;
                 ctx.stroke();
 
+                // aim line (from cue ball in shot direction)
                 ctx.setLineDash([8, 6]);
                 ctx.beginPath();
                 ctx.moveTo(white.x, white.y);
@@ -1191,6 +1041,7 @@
                 ctx.stroke();
                 ctx.setLineDash([]);
 
+                // line from finger to cue ball
                 ctx.beginPath();
                 ctx.moveTo(dragX, dragY);
                 ctx.lineTo(white.x, white.y);
@@ -1198,6 +1049,7 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
 
+                // show power percentage
                 ctx.font = 'bold 14px Arial';
                 ctx.fillStyle = 'white';
                 ctx.shadowBlur = 4;
@@ -1214,8 +1066,10 @@
                 }
             }
 
+            // draw all particles
             drawParticles();
 
+            // victory screen
             if (winFlag) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
                 ctx.fillRect(0, 0, CW, CH);
@@ -1238,7 +1092,7 @@
             }
         }
 
-        // ----- event handlers (robust touch) -----
+        // ----- event handlers -----
         function getCanvasCoords(e) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -1253,17 +1107,22 @@
                 clientY = e.clientY;
             }
 
-            // 确保坐标在canvas范围内
-            let canvasX = Math.max(0, Math.min(canvas.width, (clientX - rect.left) * scaleX));
-            let canvasY = Math.max(0, Math.min(canvas.height, (clientY - rect.top) * scaleY));
+            // convert screen to canvas coordinates - allow outside canvas
+            let canvasX = (clientX - rect.left) * scaleX;
+            let canvasY = (clientY - rect.top) * scaleY;
 
-            return { x: canvasX, y: canvasY };
+            return {
+                x: canvasX,
+                y: canvasY
+            };
         }
 
         function onMouseDown(e) {
             e.preventDefault();
             if (e.button !== 0) return;
+            
             handleUserInteraction();
+
             if (gameOver) return;
             if (white.vx !== 0 || white.vy !== 0) return;
             if (!targetExists) return;
@@ -1278,6 +1137,7 @@
         function onMouseMove(e) {
             e.preventDefault();
             if (!isDragging) return;
+
             const coords = getCanvasCoords(e);
             dragX = coords.x;
             dragY = coords.y;
@@ -1288,6 +1148,7 @@
             e.preventDefault();
             if (e.button !== 0) return;
             if (!isDragging) return;
+
             isDragging = false;
             isMouseOutside = false;
             shoot();
@@ -1295,10 +1156,13 @@
 
         function onTouchStart(e) {
             e.preventDefault();
+            
             handleUserInteraction();
+            
             if (gameOver) return;
             if (white.vx !== 0 || white.vy !== 0) return;
             if (!targetExists) return;
+
             const coords = getCanvasCoords(e);
             dragX = coords.x;
             dragY = coords.y;
@@ -1308,6 +1172,7 @@
         function onTouchMove(e) {
             e.preventDefault();
             if (!isDragging) return;
+
             const coords = getCanvasCoords(e);
             dragX = coords.x;
             dragY = coords.y;
@@ -1317,6 +1182,7 @@
         function onTouchEnd(e) {
             e.preventDefault();
             if (!isDragging) return;
+
             isDragging = false;
             shoot();
         }
@@ -1324,9 +1190,20 @@
         canvas.addEventListener('mousedown', onMouseDown);
         canvas.addEventListener('mousemove', onMouseMove);
         canvas.addEventListener('mouseup', onMouseUp);
-        canvas.addEventListener('mouseleave', () => { isMouseOutside = true; });
-        canvas.addEventListener('mouseenter', () => { isMouseOutside = false; });
+        
+        // keep dragging when mouse leaves canvas
+        canvas.addEventListener('mouseleave', () => {
+            if (isDragging) {
+                isMouseOutside = true;
+                // don't cancel drag, continue updating with last coordinates
+            }
+        });
 
+        canvas.addEventListener('mouseenter', () => {
+            isMouseOutside = false;
+        });
+
+        // window level mousemove to continue updating outside canvas
         window.addEventListener('mousemove', (e) => {
             if (isDragging) {
                 const coords = getCanvasCoords(e);
@@ -1336,6 +1213,7 @@
             }
         });
 
+        // window level mouseup to shoot even if released outside canvas
         window.addEventListener('mouseup', (e) => {
             if (isDragging) {
                 isDragging = false;
@@ -1367,6 +1245,7 @@
             toggleMute();
         });
 
+        // prevent double tap zoom
         let lastTouchEnd = 0;
         document.addEventListener('touchend', (e) => { 
             const now = Date.now(); 
@@ -1379,22 +1258,17 @@
             if (e.target === document.body) e.preventDefault(); 
         }, { passive: false });
 
-        // 初始化窗口大小检测
-        function checkOrientation() {
-            // 可以在这里添加横竖屏切换时的处理
-            console.log('Window resized:', window.innerWidth, 'x', window.innerHeight);
-        }
-        
-        window.addEventListener('resize', checkOrientation);
-        window.addEventListener('orientationchange', checkOrientation);
-
-        // initialisation
+        // initialize - audio first, then game
         (function init() {
+            // initialize audio system
             initAudio();
+            
+            // initialize game
             const pos = randomTargetPosition();
             target.x = pos.x;
             target.y = pos.y;
             
+            // attempt auto interaction
             setTimeout(() => {
                 handleUserInteraction();
             }, 500);
