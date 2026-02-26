@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Single Squash Challenge · Flower Effects · Background Music Fixed</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Original styles unchanged, only audio button position fine-tuned for visibility */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        html, body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: #000;
+            color: white;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            overscroll-behavior: none;
+        }
+        
+        body {
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+        
+        /* Page background image */
+        #background-image {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://amitofoicu.github.io/home/lianchi6.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.7;
+            z-index: -2;
+        }
+        
+        #background-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 20, 40, 0.85);
+            z-index: -1;
+        }
+        
+        /* Logo in top-left corner - NEW: square shape */
+        .logo-corner {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            z-index: 100;
+            width: 40px;
+            height: 40px;
+            overflow: hidden;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            /* Square shape - removed border-radius */
+            border-radius: 0;
+        }
+        
+        .logo-corner:hover, .logo-corner:active {
+            transform: scale(1.05);
+            border-color: #FFD700;
+            box-shadow: 0 6px 16px rgba(255, 215, 0, 0.4);
+        }
+        
+        .logo-corner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        /* More Games moved to top-right corner - UPDATED */
+        .more-games-corner {
+            position: absolute;
+            top: 15px;
+            right: 15px; /* Changed from left to right */
+            z-index: 100;
+            padding: 8px 15px;
+            background: linear-gradient(135deg, #ff3366, #ff6633);
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(255, 51, 102, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .more-games-corner:hover, .more-games-corner:active {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 51, 102, 0.6);
+        }
+        
+        .more-games-link {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .more-games-link i {
+            font-size: 16px;
+        }
+        
+        .game-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-top: 70px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+            background: linear-gradient(90deg, #FFD700, #FFA500, #FF6347);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 1px;
+            font-weight: 800;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            color: #e0e0ff;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.5;
+        }
+        
+        .game-ui {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .stat-box {
+            background: rgba(255, 255, 255, 0.12);
+            padding: 15px 20px;
+            border-radius: 12px;
+            min-width: 120px;
+            text-align: center;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+        
+        .stat-label {
+            font-size: 0.95rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+            color: #b0b0ff;
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #FFD700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .canvas-container {
+            width: 100%;
+            max-width: 800px;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            position: relative;
+            background-color: transparent;
+            touch-action: manipulation;
+            height: 500px;
+            margin: 0 auto;
+        }
+        
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .pc-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 25px;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .control-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 18px;
+            border-radius: 12px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .key {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            min-width: 50px;
+            text-align: center;
+            color: #FFD700;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center; /* Added for better alignment */
+        }
+        
+        button {
+            background: linear-gradient(to bottom, #4a6ee0, #3a5ed0);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(58, 94, 208, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            background: linear-gradient(to bottom, #5a7ef0, #4a6ee0);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(58, 94, 208, 0.6);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        button#restartBtn {
+            background: linear-gradient(to bottom, #FF9800, #F57C00);
+            box-shadow: 0 4px 12px rgba(245, 124, 0, 0.4);
+        }
+        
+        button#restartBtn:hover {
+            background: linear-gradient(to bottom, #FFB74D, #FF9800);
+            box-shadow: 0 6px 18px rgba(245, 124, 0, 0.6);
+        }
+        
+        /* Mute button styled to match other buttons - NEW */
+        .mute-btn {
+            background: linear-gradient(to bottom, #6c757d, #495057);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+            padding: 14px 20px; /* Slightly different padding for icon-only look but still balanced */
+        }
+        
+        .mute-btn:hover {
+            background: linear-gradient(to bottom, #868e96, #6c757d);
+            box-shadow: 0 6px 18px rgba(108, 117, 125, 0.6);
+        }
+        
+        #flower-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+            overflow: hidden;
+        }
+        
+        .flower {
+            position: absolute;
+            font-size: 24px;
+            opacity: 0;
+            animation: fall linear forwards;
+            filter: drop-shadow(0 0 4px rgba(255,215,0,0.5));
+            will-change: transform, opacity;
+        }
+        
+        @keyframes fall {
+            0% {
+                transform: translateY(-10vh) rotate(0deg) scale(0.8);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+                transform: translateY(0) rotate(15deg) scale(1);
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg) scale(0.5);
+                opacity: 0;
+            }
+        }
+        
+        .score-popup {
+            position: absolute;
+            font-size: 28px;
+            font-weight: 900;
+            color: #FFD700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+            z-index: 5;
+            pointer-events: none;
+            animation: scorePopup 1s ease-out forwards;
+        }
+        
+        @keyframes scorePopup {
+            0% {
+                opacity: 0;
+                transform: translateY(0) scale(0.5);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-30px) scale(1.2);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-60px) scale(0.8);
+            }
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.92);
+            padding: 45px;
+            border-radius: 16px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+            width: 90%;
+            max-width: 500px;
+            border: 2px solid #FFD700;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.4);
+            backdrop-filter: blur(10px);
+        }
+        
+        .game-over h2 {
+            font-size: 2.8rem;
+            color: #FFD700;
+            margin-bottom: 20px;
+        }
+        
+        .game-over p {
+            font-size: 1.4rem;
+            margin-bottom: 35px;
+            color: #e0e0ff;
+        }
+        
+        .game-over button {
+            margin: 0 auto;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .mobile-controls {
+            display: none;
+            margin-top: 25px;
+            width: 100%;
+            max-width: 300px;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .mobile-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+            touch-action: manipulation;
+        }
+        
+        /* Original audio control hidden - we're replacing it */
+        .audio-control {
+            display: none;
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-controls {
+                display: none !important;
+            }
+            .pc-controls {
+                display: flex !important;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .pc-controls {
+                display: none !important;
+            }
+            .mobile-controls {
+                display: flex;
+            }
+            h1 {
+                font-size: 2.2rem;
+            }
+            .subtitle {
+                font-size: 1rem;
+                padding: 0 10px;
+            }
+            .game-ui {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            .stats {
+                width: 100%;
+                justify-content: center;
+            }
+            .stat-box {
+                min-width: 100px;
+                padding: 12px 15px;
+            }
+            .stat-value {
+                font-size: 1.8rem;
+            }
+            .logo-corner {
+                top: 10px;
+                left: 10px;
+                width: 35px;
+                height: 35px;
+            }
+            .more-games-corner {
+                top: 10px;
+                right: 10px;
+                padding: 6px 12px;
+            }
+            .more-games-link {
+                font-size: 13px;
+            }
+            .canvas-container {
+                height: 400px;
+            }
+            .game-container {
+                padding: 15px;
+                padding-top: 60px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .game-container {
+                padding: 15px;
+                padding-top: 60px;
+            }
+            .stat-box {
+                min-width: 85px;
+                padding: 10px 12px;
+            }
+            .stat-label {
+                font-size: 0.85rem;
+            }
+            .stat-value {
+                font-size: 1.6rem;
+            }
+            .game-over {
+                padding: 30px 20px;
+                width: 95%;
+            }
+            .game-over h2 {
+                font-size: 2.2rem;
+            }
+            .game-over p {
+                font-size: 1.2rem;
+            }
+            .canvas-container {
+                height: 350px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .subtitle {
+                font-size: 0.9rem;
+                margin-bottom: 10px;
+            }
+            .game-ui {
+                margin-bottom: 10px;
+            }
+            .logo-corner {
+                width: 32px;
+                height: 32px;
+            }
+        }
+        
+        @media (max-width: 480px) and (max-height: 850px) {
+            .game-container {
+                padding-top: 50px;
+            }
+            .canvas-container {
+                height: 300px;
+            }
+            .header {
+                margin-bottom: 15px;
+            }
+            .stat-box {
+                padding: 8px 10px;
+                min-width: 70px;
+            }
+            .stat-value {
+                font-size: 1.4rem;
+            }
+            .mobile-controls {
+                margin-top: 15px;
+            }
+            .mobile-btn {
+                width: 70px;
+                height: 70px;
+                font-size: 28px;
+            }
+        }
+        
+        @media (max-width: 375px) and (max-height: 670px) {
+            .canvas-container {
+                height: 280px;
+            }
+            .game-container {
+                padding-top: 40px;
+                padding: 10px;
+                padding-top: 40px;
+            }
+            h1 {
+                font-size: 1.6rem;
+            }
+            .stat-box {
+                padding: 6px 8px;
+                min-width: 65px;
+            }
+            .stat-label {
+                font-size: 0.75rem;
+            }
+            .stat-value {
+                font-size: 1.2rem;
+            }
+            .mobile-btn {
+                width: 65px;
+                height: 65px;
+                font-size: 24px;
+            }
+            .logo-corner {
+                width: 28px;
+                height: 28px;
+            }
+        }
+        
+        @media (orientation: landscape) and (max-height: 600px) {
+            .game-container {
+                padding-top: 15px;
+            }
+            .header {
+                margin-bottom: 10px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            .subtitle {
+                font-size: 0.9rem;
+                margin-bottom: 10px;
+            }
+            .game-ui {
+                margin-bottom: 10px;
+            }
+            .stat-box {
+                padding: 8px 12px;
+                min-width: 80px;
+            }
+            .stat-value {
+                font-size: 1.4rem;
+            }
+            .canvas-container {
+                height: 280px;
+            }
+            .mobile-controls {
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Page background image - lianchi6.jpg -->
+    <div id="background-image"></div>
+    <div id="background-overlay"></div>
+    
+    <!-- Special container for flower effects -->
+    <div id="flower-effects"></div>
+    
+    <!-- Logo in top-left corner - NEW: square shape -->
+    <div class="logo-corner">
+        <img src="https://amitofoicu.github.io/home/logo.jpg" alt="Logo">
+    </div>
+    
+    <!-- More Games moved to top-right corner - UPDATED -->
+    <div class="more-games-corner">
+        <a href="https://amitofoicu.github.io/home/main.html" class="more-games-link">
+            <i class="fas fa-gamepad"></i>
+            <span>More Games</span>
+        </a>
+    </div>
+    
+    <!-- Original audio control removed, replaced with button in controls -->
+    
+    <div class="game-container">
+        <div class="header">
+            <h1>Single Squash Challenge</h1>
+            <p class="subtitle">Press Space to launch the ball, hit targets to score!</p>
+        </div>
+        
+        <div class="game-ui">
+            <div class="stats">
+                <div class="stat-box">
+                    <div class="stat-label">Score</div>
+                    <div id="score" class="stat-value">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Lives</div>
+                    <div id="lives" class="stat-value">3</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Level</div>
+                    <div id="level" class="stat-value">1</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="canvas-container">
+            <canvas id="gameCanvas" width="800" height="500"></canvas>
+        </div>
+        
+        <div class="mobile-controls">
+            <div class="mobile-btn" id="mobileLeft">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <div class="mobile-btn" id="mobileSpace">
+                <i class="fas fa-arrow-up"></i>
+                <span style="font-size: 12px; margin-left: 5px;">Launch</span>
+            </div>
+            <div class="mobile-btn" id="mobileRight">
+                <i class="fas fa-arrow-right"></i>
+            </div>
+        </div>
+        
+        <div class="pc-controls">
+            <div class="control-info">
+                <div class="control-item">
+                    <div class="key">← →</div>
+                    <span>Move Paddle</span>
+                </div>
+                <div class="control-item">
+                    <div class="key">Space</div>
+                    <span>Launch Ball / Pause</span>
+                </div>
+                <div class="control-item">
+                    <div class="key">R</div>
+                    <span>Restart</span>
+                </div>
+            </div>
+            
+            <div class="buttons">
+                <button id="startBtn">
+                    <i class="fas fa-play"></i>
+                    <span>Start Game</span>
+                </button>
+                <button id="pauseBtn">
+                    <i class="fas fa-pause"></i>
+                    <span>Pause Game</span>
+                </button>
+                <button id="restartBtn">
+                    <i class="fas fa-redo"></i>
+                    <span>Restart</span>
+                </button>
+                <!-- Mute button placed to the right of Restart button - NEW -->
+                <button id="audioToggleBtn" class="mute-btn">
+                    <i class="fas fa-volume-up" id="audioIcon"></i>
+                    <span>Mute</span>
+                </button>
+            </div>
+        </div>
+        
+        <div id="gameOver" class="game-over">
+            <h2>Game Over</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <button id="playAgainBtn">
+                <i class="fas fa-redo"></i>
+                <span>Play Again</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Audio elements: added preload and ensured OGG availability, also added js auto-play logic fix -->
+    <audio id="backgroundMusic" loop preload="auto" playsinline>
+        <source src="https://amitofoicu.github.io/home/beijing.ogg" type="audio/ogg">
+        <!-- Fallback format in case OGG is not supported (almost all support it) -->
+    </audio>
+    <audio id="scoreSound" preload="auto" playsinline>
+        <source src="https://amitofoicu.github.io/home/xiaochu.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="winSound" preload="auto" playsinline>
+        <source src="https://amitofoicu.github.io/home/win.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        (function() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // ---------- Game State ----------
+            let gameRunning = false;
+            let gamePaused = false;
+            let score = 0;
+            let lives = 3;
+            let level = 1;
+            let animationId = null;
+            let ballOnPaddle = true;
+            let lastScoreForEffect = 0;
+            let isMobile = false;
+
+            // ---------- Paddle ----------
+            const paddle = {
+                width: 100,
+                height: 15,
+                x: canvas.width / 2 - 50,
+                y: canvas.height - 30,
+                speed: 8,
+                color: '#4a6ee0',
+                borderColor: '#5a7ef0'
+            };
+
+            // ---------- Ball ----------
+            const ball = {
+                x: canvas.width / 2,
+                y: canvas.height - 45,
+                radius: 10,
+                speedX: 0,
+                speedY: 0,
+                color: '#FFD700',
+                borderColor: '#FFA500'
+            };
+
+            // ---------- Targets ----------
+            let targets = [];
+            let targetRows = 5;
+            let targetCols = 10;
+            let targetWidth = 70;
+            let targetHeight = 20;
+            let targetPadding = 5;
+            let targetOffsetTop = 50;
+            let targetOffsetLeft = 25;
+
+            // ---------- Audio ----------
+            const backgroundMusic = document.getElementById('backgroundMusic');
+            const scoreSound = document.getElementById('scoreSound');
+            const winSound = document.getElementById('winSound');
+            let musicEnabled = true;      // Whether user allows music
+            let audioInitialized = false;  // Whether audio has been activated (first gesture)
+
+            // ---------- Flower Configuration ----------
+            const flowerColors = ['#FF3366', '#FF6633', '#FF33CC', '#33FF99', '#33CCFF', '#FFCC00', '#9966FF', '#FF99FF', '#66FFCC'];
+            const flowerIcons = ['❀', '✿', '❁', '🌸', '🌺', '🌼', '🌻', '🌷', '💮'];
+
+            // Load background image (for canvas)
+            const bgImage = new Image();
+            bgImage.src = 'https://amitofoicu.github.io/home/lianchi6.jpg';
+            bgImage.crossOrigin = 'Anonymous';
+
+            // ---------- Helper Functions ----------
+            function detectDevice() {
+                isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                return isMobile;
+            }
+
+            function adjustTargetParameters() {
+                const canvasWidth = canvas.width;
+                if (isMobile && window.innerWidth < 768) {
+                    if (canvasWidth < 400) {
+                        targetCols = 6;
+                        targetRows = 4;
+                        targetWidth = Math.max(40, (canvasWidth - targetOffsetLeft * 2 - targetPadding * (targetCols - 1)) / targetCols);
+                        targetHeight = 15;
+                        targetPadding = 3;
+                        targetOffsetTop = 40;
+                        targetOffsetLeft = (canvasWidth - (targetCols * targetWidth + (targetCols - 1) * targetPadding)) / 2;
+                    } else {
+                        targetCols = 8;
+                        targetRows = 5;
+                        targetWidth = Math.max(45, (canvasWidth - targetOffsetLeft * 2 - targetPadding * (targetCols - 1)) / targetCols);
+                        targetHeight = 18;
+                        targetPadding = 4;
+                        targetOffsetTop = 45;
+                        targetOffsetLeft = (canvasWidth - (targetCols * targetWidth + (targetCols - 1) * targetPadding)) / 2;
+                    }
+                    targetWidth = Math.min(Math.max(targetWidth, 40), 70);
+                    targetHeight = Math.min(Math.max(targetHeight, 12), 20);
+                    const totalWidth = targetCols * targetWidth + (targetCols - 1) * targetPadding;
+                    if (totalWidth > canvasWidth - 10) {
+                        targetWidth = (canvasWidth - 10 - (targetCols - 1) * targetPadding) / targetCols;
+                    }
+                } else {
+                    targetCols = 10;
+                    targetRows = 5;
+                    targetWidth = 70;
+                    targetHeight = 20;
+                    targetPadding = 5;
+                    targetOffsetTop = 50;
+                    targetOffsetLeft = 25;
+                    if (canvas.width < 600) {
+                        targetCols = 8;
+                        targetWidth = Math.max(50, (canvas.width - targetOffsetLeft * 2 - targetPadding * (targetCols - 1)) / targetCols);
+                    }
+                }
+            }
+
+            function initTargets() {
+                targets = [];
+                adjustTargetParameters();
+                for (let r = 0; r < targetRows; r++) {
+                    for (let c = 0; c < targetCols; c++) {
+                        let isSpecial = Math.random() < 0.1;
+                        let color, points, isLife;
+                        if (isSpecial) {
+                            if (Math.random() < 0.5) {
+                                color = '#FFD700';
+                                points = 50;
+                                isLife = false;
+                            } else {
+                                color = '#FF5252';
+                                points = 10;
+                                isLife = true;
+                            }
+                        } else {
+                            const hue = 200 + (r * 20);
+                            color = `hsl(${hue}, 70%, 60%)`;
+                            points = 10;
+                            isLife = false;
+                        }
+                        targets.push({
+                            x: c * (targetWidth + targetPadding) + targetOffsetLeft,
+                            y: r * (targetHeight + targetPadding) + targetOffsetTop,
+                            width: targetWidth,
+                            height: targetHeight,
+                            color: color,
+                            points: points,
+                            isLife: isLife,
+                            visible: true
+                        });
+                    }
+                }
+            }
+
+            function createFlowersFromTarget(targetX, targetY, targetWidth, targetHeight) {
+                const flowerContainer = document.getElementById('flower-effects');
+                const count = 2 + Math.floor(Math.random() * 2);
+                const canvasRect = canvas.getBoundingClientRect();
+                const centerCanvasX = targetX + targetWidth / 2;
+                const centerCanvasY = targetY + targetHeight / 2;
+                const viewportX = canvasRect.left + centerCanvasX;
+                const viewportY = canvasRect.top + centerCanvasY;
+
+                for (let i = 0; i < count; i++) {
+                    const flower = document.createElement('div');
+                    flower.className = 'flower';
+                    
+                    const iconIndex = Math.floor(Math.random() * flowerIcons.length);
+                    const colorIndex = Math.floor(Math.random() * flowerColors.length);
+                    
+                    flower.textContent = flowerIcons[iconIndex];
+                    flower.style.color = flowerColors[colorIndex];
+                    
+                    const offsetX = (Math.random() - 0.5) * 30;
+                    const offsetY = (Math.random() - 0.5) * 20;
+                    
+                    flower.style.left = (viewportX + offsetX) + 'px';
+                    flower.style.top = (viewportY + offsetY) + 'px';
+                    
+                    const baseSize = isMobile ? 20 : 24;
+                    flower.style.fontSize = (baseSize + Math.random() * 12) + 'px';
+                    
+                    const duration = 3 + Math.random() * 4;
+                    const delay = Math.random() * 0.5;
+                    flower.style.animation = `fall ${duration}s linear ${delay}s forwards`;
+                    
+                    flowerContainer.appendChild(flower);
+                    
+                    setTimeout(() => {
+                        if (flower.parentNode) flower.remove();
+                    }, (duration + delay) * 1000);
+                }
+            }
+
+            function createScoreFlowerEffect() {
+                const flowerContainer = document.getElementById('flower-effects');
+                const flowerCount = isMobile ? 15 : 25; 
+                for (let i = 0; i < flowerCount; i++) {
+                    const flower = document.createElement('div');
+                    flower.className = 'flower';
+                    const iconIndex = Math.floor(Math.random() * flowerIcons.length);
+                    const colorIndex = Math.floor(Math.random() * flowerColors.length);
+                    flower.textContent = flowerIcons[iconIndex];
+                    flower.style.color = flowerColors[colorIndex];
+                    flower.style.left = Math.random() * 100 + 'vw';
+                    flower.style.fontSize = (isMobile ? 16 : 20) + Math.random() * (isMobile ? 15 : 20) + 'px';
+                    const duration = 3 + Math.random() * 4;
+                    const delay = Math.random() * 2;
+                    flower.style.animation = `fall ${duration}s linear ${delay}s forwards`;
+                    flowerContainer.appendChild(flower);
+                    setTimeout(() => {
+                        if (flower.parentNode) flower.remove();
+                    }, (duration + delay) * 1000);
+                }
+            }
+
+            function drawPaddle() {
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                ctx.shadowBlur = 5;
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+                ctx.fillStyle = paddle.color;
+                ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+                ctx.strokeStyle = paddle.borderColor;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(paddle.x, paddle.y, paddle.width, paddle.height);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.fillRect(paddle.x + 5, paddle.y + 3, paddle.width - 10, paddle.height - 6);
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+            }
+
+            function drawBall() {
+                if (ballOnPaddle) {
+                    const pulseSize = Math.sin(Date.now() / 200) * 2;
+                    ctx.shadowColor = 'rgba(255, 215, 0, 0.5)';
+                    ctx.shadowBlur = 10 + pulseSize * 3;
+                    ctx.beginPath();
+                    ctx.arc(ball.x, ball.y, ball.radius + pulseSize, 0, Math.PI * 2);
+                    ctx.fillStyle = '#FFD700';
+                    ctx.fill();
+                    ctx.strokeStyle = '#FFA500';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    if (!isMobile) {
+                        ctx.font = "14px Arial";
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.textAlign = "center";
+                        ctx.fillText("Press Space to Launch", ball.x, ball.y - ball.radius - 15);
+                    }
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+                } else {
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+                    ctx.shadowBlur = 8;
+                    ctx.beginPath();
+                    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = ball.color;
+                    ctx.fill();
+                    ctx.strokeStyle = ball.borderColor;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+                }
+                ctx.beginPath();
+                ctx.arc(ball.x - ball.radius/3, ball.y - ball.radius/3, ball.radius/3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.fill();
+            }
+
+            function drawTargets() {
+                targets.forEach(target => {
+                    if (!target.visible) return;
+                    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+                    ctx.shadowBlur = 3;
+                    ctx.fillStyle = target.color;
+                    ctx.fillRect(target.x, target.y, target.width, target.height);
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(target.x, target.y, target.width, target.height);
+                    if (target.points === 50) {
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                        ctx.fillRect(target.x + 5, target.y + 3, target.width - 10, target.height - 6);
+                    } else if (target.isLife) {
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                        ctx.beginPath();
+                        ctx.arc(target.x + target.width/2, target.y + target.height/2, target.height/3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.shadowColor = 'transparent';
+                    ctx.shadowBlur = 0;
+                });
+            }
+
+            function drawGameBackground() {
+                if (bgImage.complete && bgImage.naturalHeight > 0) {
+                    ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+                } else {
+                    ctx.fillStyle = '#0a0f23';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+                ctx.lineWidth = 1;
+                for (let x = 0; x < canvas.width; x += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, canvas.height);
+                    ctx.stroke();
+                }
+                for (let y = 0; y < canvas.height; y += 40) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(canvas.width, y);
+                    ctx.stroke();
+                }
+            }
+
+            function createScoreAnimation(x, y, points) {
+                const canvasContainer = document.querySelector('.canvas-container');
+                const scorePopup = document.createElement('div');
+                scorePopup.className = 'score-popup';
+                scorePopup.textContent = `+${points}`;
+                const fontSize = isMobile ? '20px' : '28px';
+                scorePopup.style.fontSize = fontSize;
+                const rect = canvas.getBoundingClientRect();
+                const relativeX = x * (rect.width / canvas.width);
+                const relativeY = y * (rect.height / canvas.height);
+                scorePopup.style.left = `${relativeX}px`;
+                scorePopup.style.top = `${relativeY}px`;
+                canvasContainer.appendChild(scorePopup);
+                setTimeout(() => {
+                    if (scorePopup.parentNode) scorePopup.remove();
+                }, 1000);
+            }
+
+            function launchBall() {
+                if (ballOnPaddle && gameRunning && !gamePaused) {
+                    ballOnPaddle = false;
+                    const baseSpeed = isMobile ? 4 : 5;
+                    ball.speedX = (Math.random() > 0.5 ? 1 : -1) * baseSpeed;
+                    ball.speedY = -baseSpeed;
+                }
+            }
+
+            // Function to play audio, handling user gesture restrictions
+            function playAudioWithContext(audioElement, volume = 0.5) {
+                if (!musicEnabled) return Promise.reject('music disabled');
+                audioElement.volume = volume;
+                // Attempt to play and catch errors (auto-play policy)
+                const playPromise = audioElement.play();
+                if (playPromise !== undefined) {
+                    return playPromise.catch(error => {
+                        console.log("Audio playback requires gesture:", error);
+                        // Silently fail, will be resumed by subsequent gestures
+                    });
+                }
+                return playPromise;
+            }
+
+            // Actual audio activation function: called on first gesture, starts background music (if allowed)
+            function activateAudioOnFirstGesture() {
+                if (audioInitialized) return;
+                audioInitialized = true;
+                console.log("Audio activated, attempting to play background music");
+                if (musicEnabled) {
+                    // Set volume and attempt to play background music - unified to 1.0
+                    backgroundMusic.volume = 1.0;
+                    backgroundMusic.play().catch(e => {
+                        console.log("Background music still needs additional gesture", e);
+                        // Some browsers might require a second gesture, but already marked as activated, subsequent toggle can trigger again
+                    });
+                }
+                // Preload other audio
+                winSound.load();
+                scoreSound.load();
+            }
+
+            // ---------- Ball Update & Collision ----------
+            function updateBall() {
+                if (ballOnPaddle) {
+                    ball.x = paddle.x + paddle.width / 2;
+                    ball.y = paddle.y - ball.radius;
+                } else {
+                    ball.x += ball.speedX;
+                    ball.y += ball.speedY;
+
+                    if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) ball.speedX = -ball.speedX;
+                    if (ball.y - ball.radius < 0) ball.speedY = -ball.speedY;
+
+                    if (ball.y + ball.radius > paddle.y && ball.y - ball.radius < paddle.y + paddle.height &&
+                        ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
+                        let hitPoint = (ball.x - paddle.x) / paddle.width;
+                        const angleMultiplier = isMobile ? 8 : 10;
+                        ball.speedX = (hitPoint - 0.5) * angleMultiplier;
+                        ball.speedY = -Math.abs(ball.speedY);
+                    }
+
+                    if (ball.y + ball.radius > canvas.height) {
+                        lives--;
+                        updateUI();
+                        if (lives <= 0) { gameOver(); return; }
+                        else {
+                            ballOnPaddle = true;
+                            ball.x = paddle.x + paddle.width / 2;
+                            ball.y = paddle.y - ball.radius;
+                            ball.speedX = 0; ball.speedY = 0;
+                        }
+                    }
+
+                    targets.forEach(target => {
+                        if (!target.visible) return;
+                        if (ball.x + ball.radius > target.x && ball.x - ball.radius < target.x + target.width &&
+                            ball.y + ball.radius > target.y && ball.y - ball.radius < target.y + target.height) {
+                            
+                            target.visible = false;
+                            ball.speedY = -ball.speedY;
+                            
+                            score += target.points;
+                            createScoreAnimation(ball.x, ball.y - 20, target.points);
+                            
+                            createFlowersFromTarget(target.x, target.y, target.width, target.height);
+                            
+                            if (musicEnabled) {
+                                playAudioWithContext(winSound, 0.5);  // win.mp3 volume changed to 0.5
+                            }
+                            
+                            if (Math.floor(score / 100) > Math.floor(lastScoreForEffect / 100)) {
+                                createScoreFlowerEffect();
+                                lastScoreForEffect = score;
+                                if (musicEnabled) {
+                                    playAudioWithContext(scoreSound,0.5);  // xiaochu.mp3 volume changed to 0.5
+                                }
+                            }
+                            
+                            if (target.isLife) lives = Math.min(lives + 1, 5);
+                            
+                            let newLevel = Math.floor(score / 100) + 1;
+                            if (newLevel > level) {
+                                level = newLevel;
+                                ball.speedX *= (isMobile ? 1.05 : 1.1);
+                                ball.speedY *= (isMobile ? 1.05 : 1.1);
+                            }
+                            
+                            updateUI();
+                            
+                            if (targets.every(t => !t.visible)) {
+                                initTargets();
+                                lives = Math.min(lives + 1, 5);
+                                updateUI();
+                            }
+                        }
+                    });
+                }
+            }
+
+            function updateUI() {
+                document.getElementById('score').textContent = score;
+                document.getElementById('lives').textContent = lives;
+                document.getElementById('level').textContent = level;
+            }
+
+            function gameOver() {
+                gameRunning = false;
+                cancelAnimationFrame(animationId);
+                document.getElementById('finalScore').textContent = score;
+                document.getElementById('gameOver').style.display = 'block';
+                
+                // Pause background music when game is over
+                if (musicEnabled) {
+                    backgroundMusic.pause();
+                }
+            }
+
+            function gameLoop() {
+                drawGameBackground();
+                drawTargets();
+                drawPaddle();
+                drawBall();
+                if (!gamePaused && gameRunning) updateBall();
+                if (gameRunning) animationId = requestAnimationFrame(gameLoop);
+            }
+
+            const keys = {};
+            window.addEventListener('keydown', (e) => {
+                keys[e.key] = true;
+                if (e.key === ' ' && gameRunning) {
+                    if (ballOnPaddle) launchBall();
+                    else togglePause();
+                    e.preventDefault();
+                }
+                if (e.key === 'r' || e.key === 'R') restartGame();
+            });
+            window.addEventListener('keyup', (e) => { keys[e.key] = false; });
+
+            function handlePaddleMovement() {
+                if (keys['ArrowLeft'] || keys['Left'] || keys['a'] || keys['A']) {
+                    paddle.x = Math.max(0, paddle.x - paddle.speed);
+                }
+                if (keys['ArrowRight'] || keys['Right'] || keys['d'] || keys['D']) {
+                    paddle.x = Math.min(canvas.width - paddle.width, paddle.x + paddle.speed);
+                }
+                if (gameRunning && !gamePaused) requestAnimationFrame(handlePaddleMovement);
+            }
+
+            function togglePause() {
+                gamePaused = !gamePaused;
+                if (!isMobile) {
+                    document.getElementById('pauseBtn').innerHTML = gamePaused ? 
+                        '<i class="fas fa-play"></i><span>Resume Game</span>' : 
+                        '<i class="fas fa-pause"></i><span>Pause Game</span>';
+                }
+                
+                // Handle background music when pausing/resuming
+                if (musicEnabled && audioInitialized) {
+                    if (gamePaused) {
+                        // Pause music when game is paused
+                        backgroundMusic.pause();
+                    } else {
+                        // Resume music when game is resumed from pause
+                        backgroundMusic.play().catch(e => {
+                            console.log("Could not resume background music", e);
+                        });
+                    }
+                }
+                
+                if (!gamePaused && gameRunning) handlePaddleMovement();
+            }
+
+            function startGame() {
+                if (!gameRunning) {
+                    initGame();
+                    gameRunning = true;
+                    gamePaused = false;
+                    if (!isMobile) document.getElementById('pauseBtn').innerHTML = '<i class="fas fa-pause"></i><span>Pause Game</span>';
+                    
+                    // Start background music if enabled and audio initialized
+                    if (musicEnabled && audioInitialized) {
+                        backgroundMusic.play().catch(e => {
+                            console.log("Could not start background music", e);
+                        });
+                    }
+                    
+                    gameLoop();
+                    handlePaddleMovement();
+                }
+            }
+
+            function pauseGame() { if (gameRunning) togglePause(); }
+
+            function restartGame() {
+                gameRunning = false;
+                gamePaused = false;
+                cancelAnimationFrame(animationId);
+                
+                // Pause background music when restarting
+                if (musicEnabled) {
+                    backgroundMusic.pause();
+                }
+                
+                startGame();
+            }
+
+            function initGame() {
+                score = 0;
+                lives = 3;
+                level = 1;
+                ballOnPaddle = true;
+                lastScoreForEffect = 0;
+                paddle.x = canvas.width / 2 - paddle.width / 2;
+                if (isMobile) {
+                    paddle.width = Math.min(120, canvas.width * 0.2);
+                    paddle.speed = 6;
+                } else {
+                    paddle.width = 100;
+                    paddle.speed = 8;
+                }
+                ball.radius = isMobile ? Math.min(10, canvas.width * 0.02) : 10;
+                ball.x = paddle.x + paddle.width / 2;
+                ball.y = paddle.y - ball.radius;
+                ball.speedX = 0; ball.speedY = 0;
+                initTargets();
+                updateUI();
+                document.getElementById('gameOver').style.display = 'none';
+            }
+
+            // Audio control button (now in button group)
+            document.getElementById('audioToggleBtn').addEventListener('click', function() {
+                musicEnabled = !musicEnabled;
+                const icon = document.getElementById('audioIcon');
+                const btn = document.getElementById('audioToggleBtn');
+                if (musicEnabled) {
+                    icon.className = 'fas fa-volume-up';
+                    btn.innerHTML = '<i class="fas fa-volume-up" id="audioIcon"></i><span>Mute</span>';
+                    // If already activated by gesture, attempt to play; otherwise wait for next gesture
+                    if (audioInitialized) {
+                        backgroundMusic.volume = 1.0;  // Background music volume
+                        // Only play if game is running and not paused
+                        if (gameRunning && !gamePaused) {
+                            backgroundMusic.play().catch(e => {});
+                        }
+                    } else {
+                        // If not yet activated, clicking the button itself is a gesture, so activate
+                        activateAudioOnFirstGesture();
+                    }
+                } else {
+                    icon.className = 'fas fa-volume-mute';
+                    btn.innerHTML = '<i class="fas fa-volume-mute" id="audioIcon"></i><span>Unmute</span>';
+                    backgroundMusic.pause();
+                }
+            });
+
+            // Mobile controls
+            document.getElementById('mobileLeft').addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowLeft'] = true; });
+            document.getElementById('mobileLeft').addEventListener('touchend', e => { e.preventDefault(); keys['ArrowLeft'] = false; });
+            document.getElementById('mobileRight').addEventListener('touchstart', e => { e.preventDefault(); keys['ArrowRight'] = true; });
+            document.getElementById('mobileRight').addEventListener('touchend', e => { e.preventDefault(); keys['ArrowRight'] = false; });
+            document.getElementById('mobileSpace').addEventListener('touchstart', e => {
+                e.preventDefault();
+                if (gameRunning) {
+                    if (ballOnPaddle) launchBall();
+                    else togglePause();
+                }
+            });
+
+            document.getElementById('startBtn').addEventListener('click', startGame);
+            document.getElementById('pauseBtn').addEventListener('click', pauseGame);
+            document.getElementById('restartBtn').addEventListener('click', restartGame);
+            document.getElementById('playAgainBtn').addEventListener('click', restartGame);
+
+            function resizeCanvas() {
+                const container = document.querySelector('.canvas-container');
+                canvas.width = Math.min(container.clientWidth, 800);
+                canvas.height = container.clientHeight;
+                paddle.y = canvas.height - 30;
+                if (isMobile) {
+                    paddle.width = Math.min(120, canvas.width * 0.2);
+                    paddle.speed = 6;
+                } else {
+                    paddle.width = 100;
+                    paddle.speed = 8;
+                }
+                ball.radius = isMobile ? Math.min(10, canvas.width * 0.02) : 10;
+                if (ballOnPaddle) {
+                    ball.x = paddle.x + paddle.width / 2;
+                    ball.y = paddle.y - ball.radius;
+                }
+                if (gameRunning) initTargets();
+            }
+
+            // Unified first-gesture listener
+            function globalGestureInit() {
+                // Activate audio on user's first touch/click/key press
+                activateAudioOnFirstGesture();
+                // Remove all listeners, only execute once
+                window.removeEventListener('touchstart', globalGestureInit);
+                window.removeEventListener('touchend', globalGestureInit);
+                window.removeEventListener('click', globalGestureInit);
+                window.removeEventListener('keydown', globalGestureInit);
+            }
+
+            window.addEventListener('load', () => {
+                detectDevice();
+                resizeCanvas();
+                setTimeout(() => { startGame(); }, 500);
+                
+                winSound.load();
+                scoreSound.load();
+                backgroundMusic.load();
+
+                // Add global gesture listeners, once user interacts, activate audio
+                window.addEventListener('touchstart', globalGestureInit, { once: true });
+                window.addEventListener('touchend', globalGestureInit, { once: true });
+                window.addEventListener('click', globalGestureInit, { once: true });
+                window.addEventListener('keydown', globalGestureInit, { once: true });
+
+                // Ensure clicking "Start Game" etc. also activates audio (button events are also clicks)
+            });
+
+            window.addEventListener('resize', resizeCanvas);
+
+            let touchStartX = 0;
+            canvas.addEventListener('touchstart', (e) => {
+                if (!gameRunning || gamePaused) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                touchStartX = touch.clientX - rect.left;
+            }, { passive: false });
+            canvas.addEventListener('touchmove', (e) => {
+                if (!gameRunning || gamePaused) return;
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const touchX = touch.clientX - rect.left;
+                const deltaX = touchX - touchStartX;
+                paddle.x += deltaX;
+                if (paddle.x < 0) paddle.x = 0;
+                if (paddle.x + paddle.width > canvas.width) paddle.x = canvas.width - paddle.width;
+                touchStartX = touchX;
+                if (ballOnPaddle) ball.x = paddle.x + paddle.width / 2;
+            }, { passive: false });
+            canvas.addEventListener('touchend', (e) => {
+                if (!gameRunning || gamePaused) return;
+                e.preventDefault();
+                if (ballOnPaddle) launchBall();
+            }, { passive: false });
+
+            document.addEventListener('touchmove', e => { if (gameRunning) e.preventDefault(); }, { passive: false });
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', e => {
+                const now = new Date().getTime();
+                if (now - lastTouchEnd <= 300) e.preventDefault();
+                lastTouchEnd = now;
+            }, false);
+        })();
+    </script>
+</body>
+</html>
