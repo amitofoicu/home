@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Black 8 · One Shot Pocket</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            background: url('https://amitofoicu.github.io/home/lianchi6.jpg') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            position: relative;
+        }
+        /* loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(31, 34, 51, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+            font-size: 4vmin;
+            color: #ffd966;
+            backdrop-filter: blur(5px);
+        }
+        .spinner {
+            width: 10vmin;
+            height: 10vmin;
+            border: 1vmin solid rgba(255,209,102,0.3);
+            border-top-color: #ffd166;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 2vmin;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text {
+            font-size: 4vmin;
+            margin-top: 2vmin;
+        }
+        
+        .game-container {
+            background: rgba(61, 43, 26, 0.85);
+            backdrop-filter: blur(5px);
+            padding: 1.5vmin 2vmin 2vmin 2vmin;
+            border-radius: 4vmin;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.6), inset 2px 2px 8px #b87c4b;
+            border: 2px solid #aa6e3a;
+            position: relative;
+            width: 95%;
+            max-width: 820px;
+            margin: 0 auto;
+        }
+        .game-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1vmin;
+        }
+        .header-logo {
+            height: 7vmin;
+            width: auto;
+            border-radius: 1vmin;
+            border: 0.2vmin solid rgba(255,209,102,0.4);
+            background: rgba(0,0,0,0.2);
+        }
+        .game-title {
+            text-align: center;
+            color: #ffd966;
+            font-size: 5vmin;
+            font-weight: bold;
+            text-shadow: 3px 3px 0 #4f3a1e;
+            letter-spacing: 2px;
+            flex: 1;
+        }
+        .more-link {
+            color: #ffd966;
+            font-size: 4vmin;
+            font-weight: bold;
+            text-decoration: none;
+            padding: 1vmin 2vmin;
+            background: rgba(0,0,0,0.3);
+            border-radius: 2vmin;
+            border: 0.2vmin solid #ffd966;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        .more-link:hover {
+            background: rgba(255,209,102,0.2);
+            transform: scale(1.05);
+        }
+        .more-link:active {
+            transform: scale(0.95);
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 2.5vmin;
+            background: #1e3b2a;
+            box-shadow: inset 0 0 0 2px #7b5a3c, 0 10px 15px rgba(0,0,0,0.5);
+            touch-action: none;
+            cursor: crosshair;
+        }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2vmin 1vmin 1vmin 1vmin;
+            color: #f7e9c3;
+            text-shadow: 2px 2px 0 #4f3a1e;
+            font-weight: bold;
+            font-size: 5vmin;
+        }
+        .stroke-box {
+            background: #2f4d2e;
+            padding: 1vmin 5vmin;
+            border-radius: 10vmin;
+            border: 2px solid #dbb062;
+            box-shadow: inset 0 2px 5px #0f2b0e;
+            letter-spacing: 2px;
+        }
+        .bottom-panel {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1vmin 1vmin 0 1vmin;
+            gap: 2vmin;
+            flex-wrap: wrap;
+        }
+        .power-meter {
+            background: #5b4330;
+            padding: 1vmin 3vmin;
+            border-radius: 8vmin;
+            border: 2px solid #edc27a;
+            display: flex;
+            align-items: center;
+            gap: 2vmin;
+            color: #ffdd99;
+            font-size: 4vmin;
+            font-weight: bold;
+            flex: 1;
+            min-width: 200px;
+        }
+        .bar-bg {
+            width: 100%;
+            height: 4vmin;
+            background: #2a1e12;
+            border-radius: 2vmin;
+            border: 1px solid #ac8b5b;
+            overflow: hidden;
+        }
+        .bar-fill {
+            width: 20%;
+            height: 100%;
+            background: linear-gradient(90deg, #f9b81b, #f55d3e);
+            transition: width 0.03s;
+        }
+        .button-group {
+            display: flex;
+            align-items: center;
+            gap: 1.5vmin;
+            flex-shrink: 0;
+        }
+        .action-btn {
+            background: #3d5c3a;
+            border: 2px solid #e3b87c;
+            color: #ffefc0;
+            font-size: 3.5vmin;
+            padding: 0.8vmin 2.5vmin;
+            border-radius: 5vmin;
+            font-weight: bold;
+            box-shadow: 0 3px 0 #1d2e1b;
+            cursor: pointer;
+            white-space: nowrap;
+            min-width: 10vmin;
+            text-align: center;
+            transition: all 0.1s ease;
+        }
+        .action-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #1d2e1b;
+        }
+        .action-btn.mute {
+            background: #5b4330;
+            border-color: #edc27a;
+            min-width: 8vmin;
+            padding: 0.8vmin 1.5vmin;
+        }
+        .action-btn.next {
+            background: #4a7a4a;
+            border-color: #ffd966;
+        }
+        .hint {
+            color: #ffd966;
+            font-size: 3.2vmin;
+            padding: 1vmin;
+            background: #2d4a2d;
+            border-radius: 4vmin;
+            margin: 1vmin 0;
+            text-align: center;
+            border: 1px solid #b88c4a;
+        }
+        .white-foul {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #ff4444;
+            font-size: 6vmin;
+            font-weight: bold;
+            padding: 2vmin 4vmin;
+            border-radius: 4vmin;
+            border: 2px solid #ffaa00;
+            z-index: 10;
+            text-shadow: 2px 2px 0 #000;
+            box-shadow: 0 0 30px rgba(255,0,0,0.5);
+            animation: fadeOut 1.5s forwards;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        @media (max-width: 600px) {
+            .status-bar { font-size: 6vmin; }
+            .stroke-box { padding: 0.8vmin 4vmin; }
+            .action-btn { font-size: 4vmin; padding: 0.6vmin 2vmin; }
+            .bottom-panel { gap: 1vmin; }
+            .power-meter { font-size: 3.5vmin; padding: 0.8vmin 2vmin; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- loading overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading Game...</div>
+</div>
+
+<div class="game-container">
+    <div class="game-header">
+        <img src="https://amitofoicu.github.io/home/logo.jpg" alt="Logo" class="header-logo">
+        <div class="game-title">🎱 Black 8 Pro</div>
+        <a href="https://amitofoicu.github.io/home/main.html" class="more-link" target="_blank" rel="noopener noreferrer">More..</a>
+    </div>
+    <canvas id="poolCanvas" width="800" height="450"></canvas>
+    
+    <div class="hint">
+        👆 Drag cue ball · Pull back for power · Release to shoot
+    </div>
+
+    <div class="status-bar">
+        <span>Clear All 🎱to Win! Stroke</span>
+        <span class="stroke-box" id="strokeDisplay">0</span>
+    </div>
+
+    <div class="bottom-panel">
+        <div class="power-meter">
+            <span>💪</span>
+            <div class="bar-bg"><div class="bar-fill" id="powerFill" style="width: 20%;"></div></div>
+        </div>
+        <div class="button-group">
+            <button class="action-btn mute" id="muteBtn">🔊</button>
+            <button class="action-btn" id="restartBtn">🔄 New</button>
+            <button class="action-btn next" id="nextBtn" style="display: none;">✨ Next</button>
+        </div>
+    </div>
+</div>
+
+<!-- white ball foul message -->
+<div id="foulMessage" style="display: none;" class="white-foul">⚪ CUE BALL FOUL ⚪</div>
+
+<script>
+    (function() {
+        // ----- canvas and context -----
+        const canvas = document.getElementById('poolCanvas');
+        const ctx = canvas.getContext('2d');
+        const strokeSpan = document.getElementById('strokeDisplay');
+        const powerFill = document.getElementById('powerFill');
+        const nextBtn = document.getElementById('nextBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const muteBtn = document.getElementById('muteBtn');
+        const foulMessage = document.getElementById('foulMessage');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        // ----- audio management (iPhone optimised) -----
+        let isMuted = false;
+        let userInteracted = false;
+        let hasShot = false; // first shot flag to trigger BGM
+
+        // audio elements
+        let bgmAudio = null;
+        let winAudio = null;          // win.mp3 (black potted)
+        let xiaochuAudio = null;      // xiaochu.mp3 (victory fanfare)
+
+        // initialise audio (call after user tap)
+        function initAudio() {
+            console.log('Initializing audio...');
+            
+            // background music - OGG
+            bgmAudio = new Audio('https://amitofoicu.github.io/home/beijing.ogg');
+            bgmAudio.loop = true;
+            bgmAudio.volume = 1.0;
+            bgmAudio.setAttribute('playsinline', '');
+            bgmAudio.setAttribute('webkit-playsinline', '');
+            bgmAudio.load();
+            
+            // win sound (black ball pocketed)
+            winAudio = new Audio('https://amitofoicu.github.io/home/win.mp3');
+            winAudio.volume = 0.7;
+            winAudio.setAttribute('playsinline', '');
+            winAudio.setAttribute('webkit-playsinline', '');
+            winAudio.load();
+            
+            // victory fanfare (xiaochu)
+            xiaochuAudio = new Audio('https://amitofoicu.github.io/home/xiaochu.mp3');
+            xiaochuAudio.volume = 1.0;
+            xiaochuAudio.setAttribute('playsinline', '');
+            xiaochuAudio.setAttribute('webkit-playsinline', '');
+            xiaochuAudio.load();
+            
+            muteBtn.textContent = isMuted ? '🔇' : '🔊';
+            
+            // hide loading overlay after a moment
+            setTimeout(() => {
+                loadingOverlay.style.opacity = '0';
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                }, 500);
+            }, 1000);
+            
+            console.log('Audio initialized');
+        }
+
+        // Play BGM only after first shot (only if not muted)
+        function playBGM() {
+            if (!hasShot || isMuted || !bgmAudio) return; 
+            try {
+                if (!bgmAudio.paused) return; // already playing
+                bgmAudio.currentTime = 0;
+                const playPromise = bgmAudio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => console.log('BGM play failed:', e));
+                }
+            } catch (e) {
+                console.log('BGM error:', e);
+            }
+        }
+
+        function stopBGM() {
+            if (!bgmAudio) return;
+            try {
+                bgmAudio.pause();
+                bgmAudio.currentTime = 0;
+            } catch (e) {}
+        }
+
+        // clone and play to allow overlapping on iOS
+        function playSound(audio) {
+            if (!userInteracted || isMuted || !audio) return;
+            try {
+                const clone = audio.cloneNode();
+                clone.volume = audio.volume;
+                const playPromise = clone.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => console.log('sound play failed:', e));
+                }
+                // clean up clone
+                setTimeout(() => {
+                    clone.pause();
+                    clone.src = '';
+                }, 3000);
+            } catch (e) {
+                console.log('Sound error:', e);
+            }
+        }
+
+        // specific: win.mp3 (when black ball drops)
+        function playWinSound() {
+            playSound(winAudio);
+        }
+
+        // specific: xiaochu.mp3 (victory screen fanfare)
+        function playXiaochuSound() {
+            playSound(xiaochuAudio);
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            muteBtn.textContent = isMuted ? '🔇' : '🔊';
+            if (isMuted) {
+                stopBGM();
+            } else {
+                if (hasShot) {   // resume only if already shot
+                    playBGM();
+                }
+            }
+        }
+
+        function handleUserInteraction() {
+            if (!userInteracted) {
+                userInteracted = true;
+                // small preload hint for iOS
+            }
+        }
+
+        // ----- constants -----
+        const CW = 800;
+        const CH = 450;
+        const LEFT_WALL = 40;
+        const RIGHT_WALL = 760;
+        const TOP_WALL = 40;
+        const BOTTOM_WALL = 410;
+        const BALL_RADIUS = 14;
+        
+        const FRICTION = 0.98;
+        const MAX_POWER_SPEED = 25;
+        
+        const pockets = [
+            { x: LEFT_WALL, y: TOP_WALL },
+            { x: RIGHT_WALL, y: TOP_WALL },
+            { x: LEFT_WALL, y: BOTTOM_WALL },
+            { x: RIGHT_WALL, y: BOTTOM_WALL },
+            { x: (LEFT_WALL + RIGHT_WALL) / 2, y: TOP_WALL },
+            { x: (LEFT_WALL + RIGHT_WALL) / 2, y: BOTTOM_WALL }
+        ];
+        const POCKET_RADIUS = 28;
+
+        // ----- game state: 1 cue ball + 7 black balls -----
+        let white = { x: 200, y: 220, vx: 0, vy: 0 };
+        
+        // 7 black balls, each with position, velocity, and existence flag
+        let blackBalls = [];
+        const BLACK_COUNT = 7;
+        
+        // Track remaining black balls count for victory condition
+        let remainingBlacks = BLACK_COUNT;
+        let gameOver = false;
+        let winFlag = false;
+        let checkWhiteAfterStop = false;  // we will check after all balls stop if white fell or victory
+        
+        let strokes = 0;
+
+        // ----- aiming state -----
+        let isDragging = false;
+        let dragX = 0, dragY = 0;
+        let angle = 0;
+        let power = 0.2;
+
+        let isMouseOutside = false;
+
+        // ----- particle system (unchanged) -----
+        let particles = [];
+        const PARTICLE_COLORS = [
+            '#FF69B4', '#FFD700', '#FF4500', '#9370DB', '#00FF7F', 
+            '#FF1493', '#FFA500', '#32CD32', '#FFB6C1', '#87CEEB',
+            '#FF6346', '#FFFF00', '#FF00FF', '#00FFFF', '#FFDAB9'
+        ];
+
+        class Particle {
+            constructor(x, y, type = 'explosion') {
+                this.x = x;
+                this.y = y;
+                this.type = type;
+                
+                if (type === 'explosion') {
+                    const angle = Math.random() * Math.PI * 2;
+                    const speed = Math.random() * 8 + 5;
+                    this.vx = Math.cos(angle) * speed;
+                    this.vy = Math.sin(angle) * speed;
+                    this.size = Math.random() * 10 + 5;
+                    this.fadeSpeed = 0.01 + Math.random() * 0.01;
+                } else {
+                    this.vx = (Math.random() - 0.5) * 1.5;
+                    this.vy = Math.random() * 2 + 1.5;
+                    this.size = Math.random() * 8 + 4;
+                    this.fadeSpeed = 0.001;
+                }
+                
+                this.color = PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)];
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.05;
+                this.gravity = 0.05;
+                this.life = 1.0;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.type === 'rain') {
+                    this.vy += this.gravity * 0.5;
+                } else {
+                    this.vy += this.gravity;
+                }
+                
+                this.rotation += this.rotationSpeed;
+                
+                if (this.type === 'explosion') {
+                    this.life -= this.fadeSpeed;
+                }
+                
+                if (this.type === 'rain') {
+                    if (this.y > CH + 30) {
+                        this.y = -20;
+                        this.x = Math.random() * CW;
+                        this.vx = (Math.random() - 0.5) * 1.5;
+                        this.vy = Math.random() * 2 + 1.5;
+                    }
+                    if (this.x < 0 || this.x > CW) {
+                        this.vx *= -0.8;
+                    }
+                    return true;
+                } else {
+                    if (this.y > CH + 50) this.life = 0;
+                    return this.life > 0;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.globalAlpha = this.life;
+                
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    let angle = (i / 5) * Math.PI * 2;
+                    let petalLength = this.size;
+                    let petalWidth = this.size * 0.6;
+                    
+                    let x = Math.cos(angle) * petalLength;
+                    let y = Math.sin(angle) * petalLength;
+                    
+                    let cx1 = Math.cos(angle + 0.5) * petalWidth;
+                    let cy1 = Math.sin(angle + 0.5) * petalWidth;
+                    let cx2 = Math.cos(angle - 0.5) * petalWidth;
+                    let cy2 = Math.sin(angle - 0.5) * petalWidth;
+                    
+                    ctx.moveTo(0, 0);
+                    ctx.quadraticCurveTo(cx1, cy1, x, y);
+                    ctx.quadraticCurveTo(cx2, cy2, 0, 0);
+                }
+                
+                ctx.fillStyle = this.color;
+                ctx.shadowColor = 'rgba(255, 255, 255, 0.5)';
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                
+                ctx.restore();
+            }
+        }
+
+        function explodeFlowersFromPocket(pocketX, pocketY, count = 15) {
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle(pocketX, pocketY, 'explosion'));
+            }
+        }
+
+        function startRainFlowers(count = 40) {
+            particles = particles.filter(p => p.type === 'rain');
+            for (let i = 0; i < count; i++) {
+                particles.push(new Particle(
+                    Math.random() * CW,
+                    Math.random() * CH - CH,
+                    'rain'
+                ));
+            }
+        }
+
+        function stopRainFlowers() {
+            particles = particles.filter(p => p.type !== 'rain');
+        }
+
+        function updateParticles() {
+            particles = particles.filter(p => p.update());
+        }
+
+        function drawParticles() {
+            for (let p of particles) {
+                p.draw();
+            }
+            ctx.globalAlpha = 1.0;
+        }
+
+        // ----- helper functions for black balls placement -----
+        // Initial placement: all black balls and cue ball non-overlapping
+        function randomBlackPositions(count, cueX, cueY) {
+            let positions = [];
+            const minDist = BALL_RADIUS * 2 + 15;
+            let attempts = 0;
+            const maxAttempts = 5000;
+            
+            for (let i = 0; i < count; i++) {
+                let placed = false;
+                while (!placed && attempts < maxAttempts) {
+                    attempts++;
+                    let newX = LEFT_WALL + Math.random() * (RIGHT_WALL - LEFT_WALL);
+                    let newY = TOP_WALL + Math.random() * (BOTTOM_WALL - TOP_WALL);
+                    
+                    // check distance from cue
+                    let distCue = Math.hypot(newX - cueX, newY - cueY);
+                    if (distCue < minDist) continue;
+                    
+                    // check distance from already placed black balls
+                    let ok = true;
+                    for (let j = 0; j < positions.length; j++) {
+                        if (Math.hypot(newX - positions[j].x, newY - positions[j].y) < minDist) {
+                            ok = false;
+                            break;
+                        }
+                    }
+                    if (ok) {
+                        positions.push({ x: newX, y: newY, vx: 0, vy: 0, active: true });
+                        placed = true;
+                    }
+                }
+                if (!placed) {
+                    // fallback: place near center but with care
+                    positions.push({ x: 400 + (i * 20), y: 200 + (i * 15), vx: 0, vy: 0, active: true });
+                }
+            }
+            return positions;
+        }
+
+        function resetGame() {
+            // Reset cue ball
+            white = { x: 200, y: 220, vx: 0, vy: 0 };
+            
+            // Generate 7 black balls not overlapping cue
+            blackBalls = randomBlackPositions(BLACK_COUNT, white.x, white.y);
+            
+            remainingBlacks = BLACK_COUNT;
+            gameOver = false;
+            winFlag = false;
+            checkWhiteAfterStop = false;
+            strokes = 0;
+            strokeSpan.innerText = strokes;
+            isDragging = false;
+            power = 0.2;
+            powerFill.style.width = '20%';
+            nextBtn.style.display = 'none';
+            restartBtn.style.display = 'inline-block';
+            
+            stopRainFlowers();
+        }
+
+        function nextLevel() {
+            resetGame(); // same as reset, just for clarity
+        }
+
+        // ----- check pocket for any ball -----
+        function checkPocket(ball) {
+            for (let p of pockets) {
+                const dx = ball.x - p.x;
+                const dy = ball.y - p.y;
+                if (Math.sqrt(dx*dx + dy*dy) < POCKET_RADIUS) {
+                    return p;
+                }
+            }
+            return null;
+        }
+
+        function checkWhitePocket() {
+            return checkPocket(white) !== null;
+        }
+
+        function showFoulMessage() {
+            foulMessage.style.display = 'block';
+            setTimeout(() => {
+                foulMessage.style.display = 'none';
+            }, 1500);
+        }
+
+        function ballsAreStationary() {
+            if (Math.abs(white.vx) > 0.1 || Math.abs(white.vy) > 0.1) return false;
+            for (let b of blackBalls) {
+                if (b.active && (Math.abs(b.vx) > 0.1 || Math.abs(b.vy) > 0.1)) return false;
+            }
+            return true;
+        }
+
+        // ----- physics update (multi-ball) -----
+        function updatePhysics() {
+            if (!gameOver || checkWhiteAfterStop) {
+                // move all balls
+                white.x += white.vx;
+                white.y += white.vy;
+                
+                for (let b of blackBalls) {
+                    if (!b.active) continue;
+                    b.x += b.vx;
+                    b.y += b.vy;
+                }
+                
+                // wall collisions for white
+                if (white.x - BALL_RADIUS < LEFT_WALL) {
+                    white.x = LEFT_WALL + BALL_RADIUS;
+                    white.vx = -white.vx * 0.92;
+                }
+                if (white.x + BALL_RADIUS > RIGHT_WALL) {
+                    white.x = RIGHT_WALL - BALL_RADIUS;
+                    white.vx = -white.vx * 0.92;
+                }
+                if (white.y - BALL_RADIUS < TOP_WALL) {
+                    white.y = TOP_WALL + BALL_RADIUS;
+                    white.vy = -white.vy * 0.92;
+                }
+                if (white.y + BALL_RADIUS > BOTTOM_WALL) {
+                    white.y = BOTTOM_WALL - BALL_RADIUS;
+                    white.vy = -white.vy * 0.92;
+                }
+                
+                // wall collisions for active black balls
+                for (let b of blackBalls) {
+                    if (!b.active) continue;
+                    if (b.x - BALL_RADIUS < LEFT_WALL) {
+                        b.x = LEFT_WALL + BALL_RADIUS;
+                        b.vx = -b.vx * 0.92;
+                    }
+                    if (b.x + BALL_RADIUS > RIGHT_WALL) {
+                        b.x = RIGHT_WALL - BALL_RADIUS;
+                        b.vx = -b.vx * 0.92;
+                    }
+                    if (b.y - BALL_RADIUS < TOP_WALL) {
+                        b.y = TOP_WALL + BALL_RADIUS;
+                        b.vy = -b.vy * 0.92;
+                    }
+                    if (b.y + BALL_RADIUS > BOTTOM_WALL) {
+                        b.y = BOTTOM_WALL - BALL_RADIUS;
+                        b.vy = -b.vy * 0.92;
+                    }
+                }
+                
+                // collisions between white and each active black
+                for (let b of blackBalls) {
+                    if (!b.active) continue;
+                    const dx = b.x - white.x;
+                    const dy = b.y - white.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < BALL_RADIUS * 2 && dist > 0.001) {
+                        const nx = dx / dist;
+                        const ny = dy / dist;
+                        const vrelx = white.vx - b.vx;
+                        const vrely = white.vy - b.vy;
+                        const vn = vrelx * nx + vrely * ny;
+                        
+                        if (vn > 0) {
+                            const imp = (2 * vn) / 2 * 0.96;
+                            white.vx -= imp * nx;
+                            white.vy -= imp * ny;
+                            b.vx += imp * nx;
+                            b.vy += imp * ny;
+                        }
+                        
+                        const overlap = BALL_RADIUS * 2 - dist;
+                        if (overlap > 0) {
+                            const sepX = nx * overlap * 0.5;
+                            const sepY = ny * overlap * 0.5;
+                            white.x -= sepX;
+                            white.y -= sepY;
+                            b.x += sepX;
+                            b.y += sepY;
+                        }
+                    }
+                }
+                
+                // collisions among black balls (simplified, all pairs)
+                for (let i = 0; i < blackBalls.length; i++) {
+                    if (!blackBalls[i].active) continue;
+                    for (let j = i+1; j < blackBalls.length; j++) {
+                        if (!blackBalls[j].active) continue;
+                        const b1 = blackBalls[i];
+                        const b2 = blackBalls[j];
+                        const dx = b2.x - b1.x;
+                        const dy = b2.y - b1.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < BALL_RADIUS * 2 && dist > 0.001) {
+                            const nx = dx / dist;
+                            const ny = dy / dist;
+                            const vrelx = b1.vx - b2.vx;
+                            const vrely = b1.vy - b2.vy;
+                            const vn = vrelx * nx + vrely * ny;
+                            
+                            if (vn > 0) {
+                                const imp = (2 * vn) / 2 * 0.96;
+                                b1.vx -= imp * nx;
+                                b1.vy -= imp * ny;
+                                b2.vx += imp * nx;
+                                b2.vy += imp * ny;
+                            }
+                            
+                            const overlap = BALL_RADIUS * 2 - dist;
+                            if (overlap > 0) {
+                                const sepX = nx * overlap * 0.5;
+                                const sepY = ny * overlap * 0.5;
+                                b1.x -= sepX;
+                                b1.y -= sepY;
+                                b2.x += sepX;
+                                b2.y += sepY;
+                            }
+                        }
+                    }
+                }
+                
+                // friction
+                white.vx *= FRICTION;
+                white.vy *= FRICTION;
+                for (let b of blackBalls) {
+                    if (!b.active) continue;
+                    b.vx *= FRICTION;
+                    b.vy *= FRICTION;
+                }
+                
+                // stop tiny velocities
+                if (Math.abs(white.vx) < 0.1) white.vx = 0;
+                if (Math.abs(white.vy) < 0.1) white.vy = 0;
+                for (let b of blackBalls) {
+                    if (!b.active) continue;
+                    if (Math.abs(b.vx) < 0.1) b.vx = 0;
+                    if (Math.abs(b.vy) < 0.1) b.vy = 0;
+                }
+                
+                // pocket checks for black balls
+                for (let b of blackBalls) {
+                    if (!b.active) continue;
+                    const pocket = checkPocket(b);
+                    if (pocket) {
+                        b.active = false;
+                        remainingBlacks--;
+                        console.log('Black potted, remaining:', remainingBlacks);
+                        playWinSound();
+                        explodeFlowersFromPocket(pocket.x, pocket.y, 12);
+                    }
+                }
+                
+                // white foul check only if not already gameOver
+                if (!blackPocketFoulTriggered && checkWhitePocket()) {
+                    console.log('Cue ball foul');
+                    showFoulMessage();
+                    resetGame();
+                    return;
+                }
+                
+                // victory condition: all blacks potted
+                if (remainingBlacks === 0 && !winFlag && !checkWhiteAfterStop) {
+                    checkWhiteAfterStop = true; // wait for balls to stop
+                }
+            }
+            
+            // after all balls stop, handle victory or white foul (already reset if foul happened)
+            if (checkWhiteAfterStop) {
+                if (ballsAreStationary()) {
+                    if (checkWhitePocket()) {
+                        showFoulMessage();
+                        resetGame();
+                    } else {
+                        // VICTORY
+                        playXiaochuSound();
+                        gameOver = true;
+                        winFlag = true;
+                        startRainFlowers(50);
+                        
+                        if (victoryTimer) clearTimeout(victoryTimer);
+                        victoryTimer = setTimeout(() => {
+                            console.log('Auto next round');
+                            nextLevel();
+                        }, 3000);
+                        
+                        nextBtn.style.display = 'inline-block';
+                        restartBtn.style.display = 'none';
+                    }
+                    checkWhiteAfterStop = false;
+                }
+            }
+            
+            updateParticles();
+        }
+        let blackPocketFoulTriggered = false; // dummy to allow reset, but we use inline check
+
+        // ----- shoot -----
+        function shoot() {
+            if (gameOver) return;
+            if (white.vx !== 0 || white.vy !== 0) return;
+            if (remainingBlacks === 0) return; // already won
+
+            const speed = power * MAX_POWER_SPEED;
+            white.vx = Math.cos(angle) * speed;
+            white.vy = Math.sin(angle) * speed;
+            strokes++;
+            strokeSpan.innerText = strokes;
+            
+            if (!hasShot) {
+                hasShot = true;
+                setTimeout(() => {
+                    if (!isMuted) playBGM();
+                }, 200);
+            }
+        }
+
+        // ----- aim update (same as before, uses angle/power) -----
+        function updateAim() {
+            if (!isDragging) return;
+            
+            const dx = white.x - dragX;
+            const dy = white.y - dragY;
+            
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < 1) return;
+            
+            angle = Math.atan2(dy, dx);
+            
+            const MIN_POWER = 0.2;
+            const MAX_POWER = 1.2;
+            const OPTIMAL_DIST = 180;
+            
+            let rawPower = dist / OPTIMAL_DIST;
+            
+            if (rawPower < 0.5) {
+                power = MIN_POWER + (rawPower / 0.5) * 0.3;
+            } else if (rawPower < 1.2) {
+                power = MIN_POWER + 0.3 + ((rawPower - 0.5) / 0.7) * 0.5;
+            } else {
+                power = MIN_POWER + 0.8 + Math.min(rawPower - 1.2, 0.5) * 0.4;
+            }
+            
+            power = Math.max(MIN_POWER, Math.min(MAX_POWER, power));
+            
+            let visualPower = Math.min(power, 1.0);
+            powerFill.style.width = (visualPower * 100) + '%';
+        }
+
+        // Simple collision prediction for white → nearest black (visual only)
+        function predictCollision() {
+            const dirX = Math.cos(angle);
+            const dirY = Math.sin(angle);
+            const startX = white.x + dirX * BALL_RADIUS;
+            const startY = white.y + dirY * BALL_RADIUS;
+            
+            let closestHit = null;
+            let minDist = Infinity;
+            
+            for (let b of blackBalls) {
+                if (!b.active) continue;
+                const tx = b.x;
+                const ty = b.y;
+                const toTargetX = tx - startX;
+                const toTargetY = ty - startY;
+                const proj = toTargetX * dirX + toTargetY * dirY;
+                if (proj < 0) continue;
+                const closestX = startX + dirX * proj;
+                const closestY = startY + dirY * proj;
+                const perpDist = Math.hypot(tx - closestX, ty - closestY);
+                if (perpDist > BALL_RADIUS * 2) continue;
+                const hitDist = proj - Math.sqrt(Math.max(0, Math.pow(BALL_RADIUS * 2, 2) - perpDist * perpDist));
+                if (hitDist < 0) continue;
+                if (hitDist < minDist) {
+                    minDist = hitDist;
+                    closestHit = { hitX: startX + dirX * hitDist, hitY: startY + dirY * hitDist };
+                }
+            }
+            return closestHit;
+        }
+
+        // ----- draw -----
+        function draw() {
+            ctx.clearRect(0, 0, CW, CH);
+
+            ctx.fillStyle = '#1e5a3a';
+            ctx.fillRect(0, 0, CW, CH);
+
+            ctx.strokeStyle = '#dbb06b';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(LEFT_WALL - 2, TOP_WALL - 2, RIGHT_WALL - LEFT_WALL + 4, BOTTOM_WALL - TOP_WALL + 4);
+
+            ctx.fillStyle = '#2a1f12';
+            ctx.shadowColor = '#00000080';
+            ctx.shadowBlur = 10;
+            pockets.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, POCKET_RADIUS - 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#1f140e';
+                ctx.fill();
+                ctx.shadowBlur = 5;
+                ctx.fillStyle = '#4a3c2b';
+                ctx.arc(p.x, p.y, POCKET_RADIUS - 8, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.shadowBlur = 0;
+
+            // draw active black balls with number 8 (or 7 as per request? original was 8, keep 8)
+            for (let b of blackBalls) {
+                if (!b.active) continue;
+                ctx.shadowColor = '#333333';
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, BALL_RADIUS, 0, Math.PI * 2);
+                const grad = ctx.createRadialGradient(b.x - 3, b.y - 3, 3, b.x, b.y, BALL_RADIUS + 2);
+                grad.addColorStop(0, '#222222');
+                grad.addColorStop(0.7, '#000000');
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                ctx.shadowBlur = 5;
+                ctx.font = 'bold 16px "Segoe UI", Arial';
+                ctx.fillStyle = 'white';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('8', b.x, b.y);
+                
+                ctx.beginPath();
+                ctx.arc(b.x - 3, b.y - 3, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#fff9e6';
+                ctx.globalAlpha = 0.3;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+
+            // draw cue ball
+            ctx.shadowColor = '#cccccc';
+            ctx.shadowBlur = 18;
+            ctx.beginPath();
+            ctx.arc(white.x, white.y, BALL_RADIUS, 0, Math.PI * 2);
+            const wgrad = ctx.createRadialGradient(white.x - 4, white.y - 4, 4, white.x, white.y, BALL_RADIUS + 2);
+            wgrad.addColorStop(0, '#fafaf5');
+            wgrad.addColorStop(0.8, '#c0c0c0');
+            ctx.fillStyle = wgrad;
+            ctx.fill();
+
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(white.x - 1, white.y - 1, 5, 0, Math.PI * 2);
+            ctx.fillStyle = '#22222260';
+            ctx.fill();
+
+            // aiming guide
+            if (isDragging && white.vx === 0 && white.vy === 0 && remainingBlacks > 0 && !gameOver) {
+                let visualPower = Math.min(power, 1.0);
+                
+                ctx.beginPath();
+                ctx.arc(dragX, dragY, 15 + visualPower * 20, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255, 200, 0, 0.5)';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                ctx.setLineDash([8, 6]);
+                ctx.beginPath();
+                ctx.moveTo(white.x, white.y);
+                ctx.lineTo(white.x + Math.cos(angle) * 500, white.y + Math.sin(angle) * 500);
+                ctx.strokeStyle = 'white';
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.beginPath();
+                ctx.moveTo(dragX, dragY);
+                ctx.lineTo(white.x, white.y);
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.4)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.font = 'bold 14px Arial';
+                ctx.fillStyle = 'white';
+                ctx.shadowBlur = 4;
+                ctx.shadowColor = 'black';
+                ctx.fillText(Math.round(visualPower * 100) + '%', dragX - 15, dragY - 25);
+                ctx.shadowBlur = 0;
+
+                const hit = predictCollision();
+                if (hit) {
+                    ctx.beginPath();
+                    ctx.arc(hit.hitX, hit.hitY, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = 'yellow';
+                    ctx.fill();
+                }
+            }
+
+            drawParticles();
+
+            if (winFlag) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.fillRect(0, 0, CW, CH);
+                
+                ctx.shadowBlur = 30;
+                ctx.font = 'bold 52px "Segoe UI", Verdana';
+                ctx.fillStyle = '#FFD966';
+                ctx.strokeStyle = '#8B4513';
+                ctx.lineWidth = 6;
+                ctx.textAlign = 'center';
+                ctx.strokeText('🎉 VICTORY!', CW / 2, 150);
+                ctx.fillText('🎉 VICTORY!', CW / 2, 150);
+                
+                ctx.font = 'bold 24px "Segoe UI", Verdana';
+                ctx.fillStyle = '#FFFFFF';
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.strokeText('Next round in 3s', CW / 2, 280);
+                ctx.fillText('Next round in 3s', CW / 2, 280);
+            }
+        }
+
+        // ----- event handlers (unchanged from original style) -----
+        function getCanvasCoords(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
+            let canvasX = (clientX - rect.left) * scaleX;
+            let canvasY = (clientY - rect.top) * scaleY;
+
+            return { x: canvasX, y: canvasY };
+        }
+
+        function onMouseDown(e) {
+            e.preventDefault();
+            if (e.button !== 0) return;
+            handleUserInteraction();
+            if (gameOver) return;
+            if (white.vx !== 0 || white.vy !== 0) return;
+            if (remainingBlacks === 0) return;
+
+            const coords = getCanvasCoords(e);
+            dragX = coords.x;
+            dragY = coords.y;
+            isDragging = true;
+            isMouseOutside = false;
+        }
+
+        function onMouseMove(e) {
+            e.preventDefault();
+            if (!isDragging) return;
+            const coords = getCanvasCoords(e);
+            dragX = coords.x;
+            dragY = coords.y;
+            updateAim();
+        }
+
+        function onMouseUp(e) {
+            e.preventDefault();
+            if (e.button !== 0) return;
+            if (!isDragging) return;
+            isDragging = false;
+            isMouseOutside = false;
+            shoot();
+        }
+
+        function onTouchStart(e) {
+            e.preventDefault();
+            handleUserInteraction();
+            if (gameOver) return;
+            if (white.vx !== 0 || white.vy !== 0) return;
+            if (remainingBlacks === 0) return;
+            const coords = getCanvasCoords(e);
+            dragX = coords.x;
+            dragY = coords.y;
+            isDragging = true;
+        }
+
+        function onTouchMove(e) {
+            e.preventDefault();
+            if (!isDragging) return;
+            const coords = getCanvasCoords(e);
+            dragX = coords.x;
+            dragY = coords.y;
+            updateAim();
+        }
+
+        function onTouchEnd(e) {
+            e.preventDefault();
+            if (!isDragging) return;
+            isDragging = false;
+            shoot();
+        }
+
+        canvas.addEventListener('mousedown', onMouseDown);
+        canvas.addEventListener('mousemove', onMouseMove);
+        canvas.addEventListener('mouseup', onMouseUp);
+        canvas.addEventListener('mouseleave', () => { isMouseOutside = true; });
+        canvas.addEventListener('mouseenter', () => { isMouseOutside = false; });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const coords = getCanvasCoords(e);
+                dragX = coords.x;
+                dragY = coords.y;
+                updateAim();
+            }
+        });
+
+        window.addEventListener('mouseup', (e) => {
+            if (isDragging) {
+                isDragging = false;
+                isMouseOutside = false;
+                shoot();
+            }
+        });
+
+        canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+        canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+        canvas.addEventListener('touchend', onTouchEnd);
+        canvas.addEventListener('touchcancel', onTouchEnd);
+
+        restartBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleUserInteraction();
+            resetGame();
+        });
+
+        nextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleUserInteraction();
+            nextLevel();
+        });
+
+        muteBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleUserInteraction();
+            toggleMute();
+        });
+
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => { 
+            const now = Date.now(); 
+            if (now - lastTouchEnd <= 300) e.preventDefault(); 
+            lastTouchEnd = now; 
+        }, false);
+        
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.body.addEventListener('touchmove', (e) => { 
+            if (e.target === document.body) e.preventDefault(); 
+        }, { passive: false });
+
+        // initialisation
+        (function init() {
+            initAudio();
+            resetGame(); // this will place 7 black balls
+            
+            setTimeout(() => {
+                handleUserInteraction();
+            }, 500);
+        })();
+
+        let victoryTimer = null; // needed for auto next
+
+        function animate() {
+            updatePhysics();
+            draw();
+            requestAnimationFrame(animate);
+        }
+        animate();
+    })();
+</script>
+</body>
+</html>
