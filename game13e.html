@@ -733,10 +733,6 @@
             </div>
             
             <div class="buttons">
-                <button id="startBtn">
-                    <i class="fas fa-play"></i>
-                    <span>Start Game</span>
-                </button>
                 <button id="pauseBtn">
                     <i class="fas fa-pause"></i>
                     <span>Pause Game</span>
@@ -1394,7 +1390,6 @@
                 }
             });
 
-            document.getElementById('startBtn').addEventListener('click', startGame);
             document.getElementById('pauseBtn').addEventListener('click', pauseGame);
             document.getElementById('restartBtn').addEventListener('click', restartGame);
             document.getElementById('playAgainBtn').addEventListener('click', restartGame);
@@ -1445,7 +1440,7 @@
                 window.addEventListener('click', globalGestureInit, { once: true });
                 window.addEventListener('keydown', globalGestureInit, { once: true });
 
-                // Ensure clicking "Start Game" etc. also activates audio (button events are also clicks)
+                // Ensure clicking buttons etc. also activates audio (button events are also clicks)
             });
 
             window.addEventListener('resize', resizeCanvas);
