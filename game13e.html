@@ -670,7 +670,7 @@
     <div class="more-games-corner">
         <a href="https://amitofoicu.github.io/home/main.html" class="more-games-link">
             <i class="fas fa-gamepad"></i>
-            <span>More Games</span>
+            <span>More..</span>
         </a>
     </div>
     
@@ -735,7 +735,7 @@
             <div class="buttons">
                 <button id="pauseBtn">
                     <i class="fas fa-pause"></i>
-                    <span>Pause Game</span>
+                    <span>Pause</span>
                 </button>
                 <button id="restartBtn">
                     <i class="fas fa-redo"></i>
@@ -1275,7 +1275,7 @@
                 if (!isMobile) {
                     document.getElementById('pauseBtn').innerHTML = gamePaused ? 
                         '<i class="fas fa-play"></i><span>Resume Game</span>' : 
-                        '<i class="fas fa-pause"></i><span>Pause Game</span>';
+                        '<i class="fas fa-pause"></i><span>Pause</span>';
                 }
                 
                 // Handle background music when pausing/resuming
@@ -1299,7 +1299,7 @@
                     initGame();
                     gameRunning = true;
                     gamePaused = false;
-                    if (!isMobile) document.getElementById('pauseBtn').innerHTML = '<i class="fas fa-pause"></i><span>Pause Game</span>';
+                    if (!isMobile) document.getElementById('pauseBtn').innerHTML = '<i class="fas fa-pause"></i><span>Pause</span>';
                     
                     // Start background music if enabled and audio initialized
                     if (musicEnabled && audioInitialized) {
