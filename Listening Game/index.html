@@ -1,0 +1,1442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>声音听辨游戏</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 基础样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+        }
+        
+        body {
+            background: url('lianchi.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+            line-height: 1.5;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+            position: relative;
+        }
+        
+        /* 添加半透明遮罩层，提高文字可读性 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.85);
+            z-index: -1;
+        }
+        
+        /* 角标样式 */
+        .amitabha-badge {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: rgba(139, 69, 19, 0.9);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            z-index: 10000;
+            text-decoration: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .amitabha-badge:hover {
+            background-color: rgba(109, 54, 16, 0.95);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        
+        .amitabha-badge i {
+            font-size: 0.7rem;
+        }
+        
+        /* 容器布局 */
+        .container {
+            max-width: 100%;
+            min-height: 100vh;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* 头部样式 */
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #d4a76a;
+            flex-shrink: 0;
+        }
+        
+        h1 {
+            color: #8b4513;
+            font-size: 1.6rem;
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .subtitle {
+            color: #a0522d;
+            font-size: 0.9rem;
+            font-weight: normal;
+        }
+        
+        /* 分数区域 - 响应式设计 */
+        .score-section {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            padding: 15px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+            text-align: center;
+        }
+        
+        .score-display {
+            background: linear-gradient(to right, #f5e6d3, #e8d4b9);
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .score-count {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #8b4513;
+            margin: 5px 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .score-unit {
+            font-size: 0.9rem;
+            color: #a0522d;
+        }
+        
+        /* 主要内容区域 - 响应式布局 */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            flex-grow: 1;
+            min-height: 0;
+        }
+        
+        /* 音频播放区域 - 响应式设计 */
+        .audio-section {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            flex-grow: 1;
+        }
+        
+        .audio-player {
+            background-color: rgba(249, 245, 240, 0.9);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 200px;
+        }
+        
+        .audio-title {
+            font-size: 1rem;
+            color: #a0522d;
+            margin-bottom: 10px;
+        }
+        
+        /* 音频控制按钮容器 */
+        .audio-controls-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .audio-controls-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .audio-status {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 10px;
+            padding: 6px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 6px;
+        }
+        
+        /* 按钮样式 */
+        button {
+            background-color: #d4a76a;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-weight: 600;
+            flex: 1;
+            min-width: 120px;
+            max-width: 200px;
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        button:hover:not(:disabled) {
+            background-color: #b89156;
+            transform: translateY(-2px);
+        }
+        
+        .primary-btn {
+            background-color: #8b4513;
+        }
+        
+        .primary-btn:hover:not(:disabled) {
+            background-color: #6d3610;
+        }
+        
+        .secondary-btn {
+            background-color: #a0522d;
+        }
+        
+        .secondary-btn:hover:not(:disabled) {
+            background-color: #823c1f;
+        }
+        
+        .hint-btn {
+            background-color: #2d8b8b;
+        }
+        
+        .hint-btn:hover:not(:disabled) {
+            background-color: #247575;
+        }
+        
+        .replay-btn {
+            background-color: #8b3a3a;
+        }
+        
+        .replay-btn:hover:not(:disabled) {
+            background-color: #6d2c2c;
+        }
+        
+        /* 提交答案区域 - 居中显示 */
+        .answer-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+            width: 100%;
+        }
+        
+        .answer-input {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px;
+            border: 2px solid #e8d4b9;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+            -webkit-appearance: none;
+            background-color: rgba(255, 255, 255, 0.9);
+            position: relative;
+        }
+        
+        .answer-input:focus {
+            border-color: #d4a76a;
+        }
+        
+        /* 回答错误样式 - 显示在输入框内 */
+        .answer-input.error-message {
+            color: #dc3545 !important;
+            font-weight: bold;
+            border-color: #dc3545;
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+        
+        #submit-btn {
+            width: 100%;
+            max-width: 300px;
+            margin-top: 10px;
+        }
+        
+        /* 提示框样式 */
+        .hint-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .hint-popup {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 5px;
+            background-color: rgba(240, 247, 255, 0.95);
+            border: 1px solid #4a90e2;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 200px;
+            text-align: center;
+            display: none;
+        }
+        
+        .hint-popup.show {
+            display: block;
+        }
+        
+        .hint-popup:before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid #4a90e2;
+        }
+        
+        .hint-popup:after {
+            content: '';
+            position: absolute;
+            top: -7px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid rgba(240, 247, 255, 0.95);
+        }
+        
+        /* 结果消息 */
+        .result-message {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-weight: bold;
+            display: none;
+            font-size: 0.9rem;
+        }
+        
+        .success {
+            background-color: rgba(231, 247, 231, 0.9);
+            color: #2d5a2d;
+            border: 1px solid #a3d8a3;
+        }
+        
+        .error {
+            background-color: rgba(255, 231, 231, 0.9);
+            color: #8b3a3a;
+            border: 1px solid #e8a8a8;
+        }
+        
+        /* 页脚 */
+        footer {
+            text-align: center;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #e8d4b9;
+            color: #a0522d;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* iPhone安全区域适配 */
+        @supports (padding: max(0px)) {
+            .container {
+                padding-left: max(15px, env(safe-area-inset-left));
+                padding-right: max(15px, env(safe-area-inset-right));
+                padding-top: max(15px, env(safe-area-inset-top));
+                padding-bottom: max(15px, env(safe-area-inset-bottom));
+            }
+            
+            .amitabha-badge {
+                left: max(10px, env(safe-area-inset-left));
+                top: max(10px, env(safe-area-inset-top));
+            }
+            
+            footer {
+                padding-bottom: max(10px, env(safe-area-inset-bottom));
+            }
+        }
+        
+        /* 针对小屏幕的优化 */
+        @media (max-width: 767px) {
+            .container {
+                padding-bottom: 20px;
+            }
+            
+            .main-content {
+                flex: 1;
+                min-height: 0;
+                overflow-y: auto;
+                margin-bottom: 10px;
+            }
+            
+            .audio-section {
+                max-height: none;
+                overflow: visible;
+            }
+            
+            h1 {
+                font-size: 1.4rem;
+            }
+            
+            .score-count {
+                font-size: 1.6rem;
+            }
+            
+            .audio-controls-row {
+                flex-direction: column;
+            }
+            
+            button {
+                min-width: 100%;
+            }
+            
+            .amitabha-badge {
+                font-size: 0.7rem;
+                padding: 5px 10px;
+            }
+            
+            footer {
+                margin-top: auto;
+                padding-bottom: 20px;
+            }
+        }
+        
+        /* 针对平板和中等屏幕 */
+        @media (min-width: 481px) and (max-width: 767px) {
+            .audio-controls {
+                flex-wrap: wrap;
+            }
+            
+            button {
+                min-width: calc(50% - 5px);
+            }
+        }
+        
+        /* 针对大屏幕（电脑）的优化 */
+        @media (min-width: 1024px) {
+            .container {
+                max-width: 1100px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .score-count {
+                font-size: 2.2rem;
+            }
+            
+            .score-unit {
+                font-size: 1rem;
+            }
+            
+            .audio-title {
+                font-size: 1.2rem;
+            }
+            
+            .audio-status {
+                font-size: 1rem;
+            }
+            
+            button {
+                font-size: 1rem;
+                padding: 14px;
+                min-width: 140px;
+            }
+            
+            .answer-input {
+                font-size: 1.3rem;
+                padding: 15px;
+                max-width: 400px;
+            }
+            
+            #submit-btn {
+                max-width: 400px;
+            }
+            
+            footer {
+                font-size: 0.9rem;
+            }
+            
+            .amitabha-badge {
+                font-size: 0.9rem;
+                padding: 8px 16px;
+                top: 15px;
+                left: 15px;
+            }
+            
+            .amitabha-badge i {
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* iPhone X及更新型号适配 */
+        @media only screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3),
+               only screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3),
+               only screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2),
+               only screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3),
+               only screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
+            .container {
+                padding-top: max(20px, env(safe-area-inset-top));
+                padding-bottom: max(30px, env(safe-area-inset-bottom));
+            }
+            
+            .amitabha-badge {
+                top: max(15px, env(safe-area-inset-top));
+            }
+            
+            footer {
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
+        }
+        
+        /* 防止iPhone缩放 */
+        input, textarea, select {
+            font-size: 16px !important;
+        }
+        
+        /* 移除input type="number"的上下箭头 */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        /* 优化触摸响应 */
+        @media (hover: none) and (pointer: coarse) {
+            button:active:not(:disabled) {
+                opacity: 0.8;
+                transform: scale(0.98);
+            }
+            
+            button:hover:not(:disabled) {
+                transform: none;
+            }
+            
+            .amitabha-badge:active {
+                opacity: 0.8;
+                transform: scale(0.95);
+            }
+            
+            .amitabha-badge:hover {
+                transform: none;
+            }
+        }
+        
+        /* 确保内容不会超出屏幕 */
+        .container {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.05);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #d4a76a;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #b89156;
+        }
+        
+        /* 祝贺动画样式 */
+        .celebration-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+        }
+        
+        .celebration-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #d4a76a;
+            z-index: 10000;
+        }
+        
+        .celebration-text {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 25px;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+            animation: pulse 1.5s infinite;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background-color: #d4a76a;
+            opacity: 0.8;
+            animation: fall linear forwards;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+        
+        /* 暂停按钮样式 */
+        .pause-btn {
+            background-color: #a0522d;
+        }
+        
+        .pause-btn:hover:not(:disabled) {
+            background-color: #823c1f;
+        }
+        
+        /* 响应式调整祝贺动画 */
+        @media (max-width: 768px) {
+            .celebration-text {
+                font-size: 1.8rem;
+                margin-bottom: 15px;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .celebration-text {
+                font-size: 3rem;
+                margin-bottom: 30px;
+            }
+        }
+        
+        /* 修复iPhone上的flex布局问题 */
+        @media (max-height: 700px) {
+            .audio-player {
+                min-height: 180px;
+            }
+            
+            .main-content {
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 角标 -->
+    <a href="https://amitofoicu.github.io/home/main.html" class="amitabha-badge">
+        <i class="fas fa-hands-praying"></i> 更多游戏
+    </a>
+    
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-praying-hands"></i> 声音听辨游戏</h1>
+            <p class="subtitle">听声音，练习专注力</p>
+        </header>
+        
+        <!-- 分数区 -->
+        <div class="score-section">
+            <div class="score-display">
+                <div>累计分数</div>
+                <div class="score-count" id="score-count">0</div>
+            </div>
+        </div>
+        
+        <!-- 主要内容区域 -->
+        <div class="main-content">
+            <!-- 音频播放区 -->
+            <div class="audio-section">
+                <h3 style="color: #8b4513; margin-bottom: 10px; font-size: 1.1rem;"><i class="fas fa-volume-up"></i> 音频播放</h3>
+                
+                <div class="audio-player">
+                    <div class="audio-title">请仔细聆听音频，辨别佛号数量</div>
+                    <div class="audio-status" id="audio-status">点击播放按钮开始</div>
+                    
+                    <div class="audio-controls-container">
+                        <div class="audio-controls-row">
+                            <button id="play-btn"><i class="fas fa-play"></i> 播放</button>
+                            <button id="pause-btn" class="pause-btn" style="display: none;"><i class="fas fa-pause"></i> 暂停</button>
+                            <button id="replay-btn" class="replay-btn" disabled><i class="fas fa-redo"></i> 重新播放</button>
+                            <button id="change-btn" class="secondary-btn"><i class="fas fa-random"></i> 更换一首</button>
+                            <div class="hint-container">
+                                <button id="hint-btn" class="hint-btn" disabled><i class="fas fa-lightbulb"></i> 提示</button>
+                                <div class="hint-popup" id="hint-popup">
+                                    <strong>提示：</strong> <span id="hint-text"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 输入框和提交按钮 -->
+                    <div class="answer-section">
+                        <input type="number" id="answer" class="answer-input" min="1" max="200" placeholder="输入音频中播放的佛号数量">
+                        <button id="submit-btn" class="primary-btn" disabled><i class="fas fa-check-circle"></i> 提交答案</button>
+                    </div>
+                </div>
+                
+                <div class="result-message" id="result-message"></div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>声音听辨游戏 - 提升听力专注力</p>
+        </footer>
+    </div>
+
+    <!-- 祝贺动画层 -->
+    <div class="celebration-animation" id="celebration-animation"></div>
+
+    <script>
+        // 音频数据：音频文件
+        const audioData = [
+            { count: 7, filename: "https://amitofoicu.github.io/home/61-246-0001-7.mp3", score: 1000 },
+            { count: 10, filename: "https://amitofoicu.github.io/home/61-246-0001-10.mp3", score: 1000 },
+            { count: 11, filename: "https://amitofoicu.github.io/home/61-246-0001-11.mp3", score: 1000 },
+            { count: 21, filename: "https://amitofoicu.github.io/home/61-246-0001-21.mp3", score: 2000 },
+            { count: 22, filename: "https://amitofoicu.github.io/home/61-246-0001-22.mp3", score: 2000 },
+            { count: 33, filename: "https://amitofoicu.github.io/home/61-246-0001-33.mp3", score: 2000 },
+            { count: 44, filename: "https://amitofoicu.github.io/home/61-246-0001-44.mp3", score: 3000 },
+            { count: 49, filename: "https://amitofoicu.github.io/home/61-246-0001-49.mp3", score: 3000 },
+            { count: 55, filename: "https://amitofoicu.github.io/home/61-246-0001-55.mp3", score: 4000 },
+            { count: 66, filename: "https://amitofoicu.github.io/home/61-246-0001-66.mp3", score: 4000 },
+            { count: 77, filename: "https://amitofoicu.github.io/home/61-246-0001-77.mp3", score: 4000 },
+            { count: 81, filename: "https://amitofoicu.github.io/home/61-246-0001-81.mp3", score: 5000 },
+            { count: 99, filename: "https://amitofoicu.github.io/home/61-246-0001-99.mp3", score: 5000 },
+            { count: 100, filename: "https://amitofoicu.github.io/home/61-246-0001-100.mp3", score: 5000 },
+            { count: 108, filename: "https://amitofoicu.github.io/home/61-246-0001-108.mp3", score: 10000 }
+        ];
+        
+        // 游戏状态
+        let gameState = {
+            currentAudio: null,
+            score: 0,
+            answeredAudios: new Set(),
+            isPlaying: false,
+            currentAudioIndex: null,
+            audioLoaded: false,
+            audioElement: null,
+            audioUnlocked: false,
+            // 预加载的音频对象
+            preloadedAudio: {
+                win: null,
+                xiaochu: null
+            },
+            // 音频加载状态
+            audioPreloaded: {
+                win: false,
+                xiaochu: false
+            }
+        };
+        
+        // 从本地存储加载游戏状态
+        function loadGameState() {
+            try {
+                const savedState = localStorage.getItem('buddhaGameState');
+                if (savedState) {
+                    const parsed = JSON.parse(savedState);
+                    gameState.score = parsed.score || 0;
+                    gameState.answeredAudios = new Set(parsed.answeredAudios || []);
+                }
+            } catch (e) {
+                console.log('无法加载游戏状态，使用默认值');
+            }
+        }
+        
+        // 保存游戏状态到本地存储
+        function saveGameState() {
+            try {
+                const stateToSave = {
+                    score: gameState.score,
+                    answeredAudios: Array.from(gameState.answeredAudios)
+                };
+                localStorage.setItem('buddhaGameState', JSON.stringify(stateToSave));
+            } catch (e) {
+                console.log('无法保存游戏状态');
+            }
+        }
+        
+        // DOM元素
+        const audioStatusEl = document.getElementById('audio-status');
+        const playBtn = document.getElementById('play-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const replayBtn = document.getElementById('replay-btn');
+        const changeBtn = document.getElementById('change-btn');
+        const hintBtn = document.getElementById('hint-btn');
+        const hintPopup = document.getElementById('hint-popup');
+        const hintText = document.getElementById('hint-text');
+        const answerInput = document.getElementById('answer');
+        const submitBtn = document.getElementById('submit-btn');
+        const scoreCountEl = document.getElementById('score-count');
+        const resultMessage = document.getElementById('result-message');
+        const celebrationAnimation = document.getElementById('celebration-animation');
+        
+        // 预加载音频函数
+        function preloadAudio(url, type) {
+            return new Promise((resolve, reject) => {
+                const audio = new Audio();
+                audio.preload = 'auto';
+                audio.volume = 1.0;
+                
+                // 添加时间戳防止缓存
+                const timestamp = new Date().getTime();
+                const urlWithTimestamp = `${url}?t=${timestamp}`;
+                audio.src = urlWithTimestamp;
+                
+                audio.addEventListener('canplaythrough', function() {
+                    console.log(`${type}音频预加载完成`);
+                    gameState.preloadedAudio[type] = audio;
+                    gameState.audioPreloaded[type] = true;
+                    resolve(audio);
+                });
+                
+                audio.addEventListener('error', function(e) {
+                    console.error(`${type}音频预加载失败:`, e);
+                    gameState.audioPreloaded[type] = false;
+                    reject(e);
+                });
+                
+                // 开始加载
+                audio.load();
+            });
+        }
+        
+        // 预加载所有效果音频
+        function preloadAllAudio() {
+            console.log('开始预加载效果音频...');
+            
+            // 预加载win.mp3
+            preloadAudio('win.mp3', 'win').then(() => {
+                console.log('win.mp3 预加载成功');
+            }).catch(e => {
+                console.warn('win.mp3 预加载失败，将使用实时加载');
+            });
+            
+            // 预加载xiaochu.mp3
+            preloadAudio('xiaochu.mp3', 'xiaochu').then(() => {
+                console.log('xiaochu.mp3 预加载成功');
+            }).catch(e => {
+                console.warn('xiaochu.mp3 预加载失败，将使用实时加载');
+            });
+        }
+        
+        // 播放预加载的音频
+        function playPreloadedAudio(type, volume = 1.0) {
+            return new Promise((resolve, reject) => {
+                if (gameState.preloadedAudio[type] && gameState.audioPreloaded[type]) {
+                    const audio = gameState.preloadedAudio[type];
+                    
+                    // 克隆音频对象，避免多个同时播放的问题
+                    const audioClone = new Audio();
+                    audioClone.src = audio.src;
+                    audioClone.volume = volume;
+                    audioClone.currentTime = 0;
+                    
+                    const playPromise = audioClone.play();
+                    
+                    if (playPromise !== undefined) {
+                        playPromise.then(() => {
+                            console.log(`${type}音频播放成功`);
+                            resolve(audioClone);
+                            
+                            // 播放结束后清理
+                            audioClone.addEventListener('ended', function() {
+                                audioClone.src = '';
+                                audioClone = null;
+                            });
+                        }).catch(error => {
+                            console.error(`${type}音频播放失败:`, error);
+                            reject(error);
+                        });
+                    } else {
+                        resolve(audioClone);
+                    }
+                } else {
+                    // 如果预加载失败，使用实时加载
+                    console.log(`${type}音频未预加载，使用实时加载`);
+                    const audio = new Audio();
+                    
+                    const timestamp = new Date().getTime();
+                    const url = `${type}.mp3?t=${timestamp}`;
+                    audio.src = url;
+                    audio.volume = volume;
+                    
+                    audio.addEventListener('canplaythrough', function() {
+                        const playPromise = audio.play();
+                        
+                        if (playPromise !== undefined) {
+                            playPromise.then(() => {
+                                console.log(`${type}音频实时播放成功`);
+                                resolve(audio);
+                            }).catch(error => {
+                                reject(error);
+                            });
+                        } else {
+                            resolve(audio);
+                        }
+                    });
+                    
+                    audio.addEventListener('error', function(e) {
+                        console.error(`${type}音频实时加载失败:`, e);
+                        reject(e);
+                    });
+                    
+                    audio.load();
+                }
+            });
+        }
+        
+        // 创建音频元素
+        function createAudioElement() {
+            if (gameState.audioElement) {
+                gameState.audioElement.pause();
+                gameState.audioElement = null;
+            }
+            
+            const audio = new Audio();
+            audio.preload = 'auto';
+            audio.controls = false;
+            audio.volume = 1.0;
+            
+            // 添加事件监听器
+            audio.addEventListener('canplaythrough', function() {
+                console.log('音频可以播放');
+                gameState.audioLoaded = true;
+                audioStatusEl.textContent = '音频加载完成，可以播放';
+                playBtn.disabled = false;
+                hintBtn.disabled = false;
+                replayBtn.disabled = false;
+                changeBtn.disabled = false;
+                
+                if (!gameState.isPlaying) {
+                    submitBtn.disabled = false;
+                }
+            });
+            
+            audio.addEventListener('error', function(e) {
+                console.error('音频加载错误:', e);
+                audioStatusEl.textContent = '音频加载失败，请检查网络或文件路径';
+                playBtn.disabled = true;
+                hintBtn.disabled = true;
+                replayBtn.disabled = true;
+                changeBtn.disabled = false;
+                submitBtn.disabled = false;
+                showAlert('音频加载失败，请检查文件路径或网络连接');
+            });
+            
+            audio.addEventListener('ended', function() {
+                console.log('音频播放结束');
+                gameState.isPlaying = false;
+                playBtn.style.display = 'inline-flex';
+                pauseBtn.style.display = 'none';
+                replayBtn.disabled = false;
+                changeBtn.disabled = false;
+                submitBtn.disabled = false;
+                audioStatusEl.textContent = '音频播放完成';
+                showResultMessage('音频播放完成，请仔细回想佛号数量', 'success');
+            });
+            
+            return audio;
+        }
+        
+        // 加载音频文件
+        function loadAudioFile(filename) {
+            gameState.audioLoaded = false;
+            audioStatusEl.textContent = '音频加载中，请稍候...';
+            playBtn.disabled = true;
+            hintBtn.disabled = true;
+            replayBtn.disabled = true;
+            changeBtn.disabled = true;
+            submitBtn.disabled = true;
+            
+            gameState.audioElement = createAudioElement();
+            
+            const audioPath = filename;
+            console.log('加载音频文件:', audioPath);
+            gameState.audioElement.src = audioPath;
+            
+            gameState.audioElement.load();
+        }
+        
+        // 随机选择一个音频
+        function selectRandomAudio() {
+            const randomIndex = Math.floor(Math.random() * audioData.length);
+            selectAudio(randomIndex);
+        }
+        
+        // 选择音频
+        function selectAudio(index) {
+            gameState.currentAudioIndex = index;
+            gameState.currentAudio = {
+                index: index,
+                count: audioData[index].count,
+                filename: audioData[index].filename,
+                score: audioData[index].score
+            };
+            
+            // 清空输入框
+            answerInput.value = '';
+            answerInput.classList.remove('error-message');
+            answerInput.placeholder = '输入佛号数量';
+            
+            resultMessage.style.display = 'none';
+            hintPopup.classList.remove('show');
+            
+            loadAudioFile(audioData[index].filename);
+            
+            console.log(`开始加载音频：${audioData[index].filename}，佛号${audioData[index].count}声，分数值：${audioData[index].score}`);
+        }
+        
+        // 显示错误信息在输入框内
+        function showErrorInInput(inputElement, message) {
+            // 保存原始placeholder
+            const originalPlaceholder = inputElement.placeholder;
+            
+            // 显示错误信息
+            inputElement.value = '';
+            inputElement.placeholder = message;
+            inputElement.classList.add('error-message');
+            
+            // 3秒后恢复
+            setTimeout(() => {
+                inputElement.placeholder = originalPlaceholder;
+                inputElement.classList.remove('error-message');
+                inputElement.value = '';
+                inputElement.focus();
+            }, 3000);
+        }
+        
+        // 播放音频
+        function playAudio() {
+            if (!gameState.currentAudio) {
+                showAlert('请等待音频选择完成！');
+                return;
+            }
+            
+            if (!gameState.audioLoaded) {
+                showAlert('音频尚未加载完成，请稍候！');
+                return;
+            }
+            
+            if (!gameState.audioElement) {
+                showAlert('音频元素未创建，请重试！');
+                return;
+            }
+            
+            try {
+                gameState.isPlaying = true;
+                playBtn.style.display = 'none';
+                pauseBtn.style.display = 'inline-flex';
+                hintBtn.disabled = true;
+                replayBtn.disabled = true;
+                changeBtn.disabled = true;
+                submitBtn.disabled = true;
+                audioStatusEl.textContent = '音频播放中...';
+                
+                const playPromise = gameState.audioElement.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log('音频播放成功');
+                        gameState.audioUnlocked = true;
+                    }).catch(error => {
+                        console.error('播放失败:', error);
+                        showAlert('播放失败：' + error.message);
+                        
+                        gameState.isPlaying = false;
+                        playBtn.style.display = 'inline-flex';
+                        pauseBtn.style.display = 'none';
+                        hintBtn.disabled = false;
+                        replayBtn.disabled = false;
+                        changeBtn.disabled = false;
+                        submitBtn.disabled = false;
+                        audioStatusEl.textContent = '播放失败，请重试';
+                    });
+                }
+            } catch (error) {
+                console.error('播放音频时发生错误:', error);
+                showAlert('播放音频时发生错误：' + error.message);
+                
+                gameState.isPlaying = false;
+                playBtn.style.display = 'inline-flex';
+                pauseBtn.style.display = 'none';
+                hintBtn.disabled = false;
+                replayBtn.disabled = false;
+                changeBtn.disabled = false;
+                submitBtn.disabled = false;
+            }
+        }
+        
+        // 重新播放音频
+        function replayAudio() {
+            if (!gameState.currentAudio) {
+                showAlert('请等待音频选择完成！');
+                return;
+            }
+            
+            if (!gameState.audioLoaded) {
+                showAlert('音频尚未加载完成，请稍候！');
+                return;
+            }
+            
+            if (!gameState.audioElement) {
+                showAlert('音频元素未创建，请重试！');
+                return;
+            }
+            
+            try {
+                gameState.audioElement.currentTime = 0;
+                gameState.isPlaying = true;
+                playBtn.style.display = 'none';
+                pauseBtn.style.display = 'inline-flex';
+                hintBtn.disabled = true;
+                replayBtn.disabled = true;
+                changeBtn.disabled = true;
+                submitBtn.disabled = true;
+                audioStatusEl.textContent = '重新播放中...';
+                
+                const playPromise = gameState.audioElement.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.error('重新播放失败:', error);
+                        showAlert('重新播放失败：' + error.message);
+                        
+                        gameState.isPlaying = false;
+                        playBtn.style.display = 'inline-flex';
+                        pauseBtn.style.display = 'none';
+                        hintBtn.disabled = false;
+                        replayBtn.disabled = false;
+                        changeBtn.disabled = false;
+                        submitBtn.disabled = false;
+                        audioStatusEl.textContent = '重新播放失败，请重试';
+                    });
+                }
+            } catch (error) {
+                console.error('重新播放音频时发生错误:', error);
+                showAlert('重新播放音频时发生错误：' + error.message);
+                
+                gameState.isPlaying = false;
+                playBtn.style.display = 'inline-flex';
+                pauseBtn.style.display = 'none';
+                hintBtn.disabled = false;
+                replayBtn.disabled = false;
+                changeBtn.disabled = false;
+                submitBtn.disabled = false;
+            }
+        }
+        
+        // 暂停音频
+        function pauseAudio() {
+            if (!gameState.audioElement) {
+                return;
+            }
+            
+            try {
+                gameState.audioElement.pause();
+                gameState.isPlaying = false;
+                playBtn.style.display = 'inline-flex';
+                pauseBtn.style.display = 'none';
+                hintBtn.disabled = false;
+                replayBtn.disabled = false;
+                changeBtn.disabled = false;
+                submitBtn.disabled = false;
+                audioStatusEl.textContent = '音频已暂停';
+            } catch (error) {
+                console.error('暂停音频时发生错误:', error);
+            }
+        }
+        
+        // 显示提示
+        function showHint() {
+            if (!gameState.currentAudio) {
+                showAlert('请等待音频加载完成！');
+                return;
+            }
+            
+            if (!gameState.audioLoaded) {
+                showAlert('音频尚未加载完成，请稍候！');
+                return;
+            }
+            
+            const correctCount = gameState.currentAudio.count;
+            const scoreValue = gameState.currentAudio.score;
+            hintText.textContent = `正确答案：${correctCount}声，分数：${scoreValue}`;
+            hintPopup.classList.add('show');
+            
+            setTimeout(() => {
+                hintPopup.classList.remove('show');
+            }, 3000);
+        }
+        
+        // 更换音频
+        function changeAudio() {
+            selectRandomAudio();
+            resultMessage.style.display = 'none';
+            hintPopup.classList.remove('show');
+            
+            showResultMessage('随机音频更换完成，欢迎继续挑战！', 'success');
+            
+            setTimeout(() => {
+                resultMessage.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 显示祝贺动画
+        function showCelebrationAnimation(message) {
+            const celebrationEl = document.getElementById('celebration-animation');
+            
+            celebrationEl.innerHTML = `
+                <div class="celebration-content">
+                    <div class="celebration-text">${message}</div>
+                    <i class="fas fa-award" style="font-size: 4rem; color: #d4a76a;"></i>
+                </div>
+            `;
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = getRandomColor();
+                confetti.style.width = Math.random() * 10 + 5 + 'px';
+                confetti.style.height = confetti.style.width;
+                confetti.style.animationDuration = Math.random() * 3 + 2 + 's';
+                confetti.style.animationDelay = Math.random() * 2 + 's';
+                celebrationEl.appendChild(confetti);
+            }
+            
+            celebrationEl.style.display = 'block';
+            
+            setTimeout(() => {
+                celebrationEl.style.display = 'none';
+                celebrationEl.innerHTML = '';
+            }, 3000);
+        }
+        
+        // 获取随机颜色
+        function getRandomColor() {
+            const colors = ['#d4a76a', '#8b4513', '#a0522d', '#2d8b8b', '#8b3a3a'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+        
+        // 提交答案
+        function submitAnswer() {
+            if (!gameState.currentAudio) {
+                showAlert('请等待音频加载完成！');
+                return;
+            }
+            
+            if (!gameState.audioLoaded) {
+                showAlert('音频尚未加载完成，请稍候！');
+                return;
+            }
+            
+            if (gameState.isPlaying) {
+                showAlert('音频正在播放中，请先暂停或等待播放完成后再提交答案！');
+                return;
+            }
+            
+            const userAnswer = parseInt(answerInput.value);
+            if (!userAnswer || userAnswer < 1 || userAnswer > 200) {
+                showAlert('请输入有效的佛号数量（1-200）！');
+                return;
+            }
+            
+            const correctCount = gameState.currentAudio.count;
+            const audioIndex = gameState.currentAudio.index;
+            const scoreValue = gameState.currentAudio.score;
+            
+            const isCorrect = userAnswer === correctCount;
+            
+            if (isCorrect) {
+                if (!gameState.answeredAudios.has(audioIndex)) {
+                    gameState.score += scoreValue;
+                    gameState.answeredAudios.add(audioIndex);
+                    
+                    scoreCountEl.textContent = gameState.score;
+                }
+                
+                showResultMessage(`回答正确！获得${scoreValue}分数。当前累计：${gameState.score}`, 'success');
+                
+                // 播放预加载的祝贺音频
+                playPreloadedAudio('win', 1.0).then(() => {
+                    console.log('祝贺音频播放完成');
+                }).catch(error => {
+                    console.error('祝贺音频播放失败:', error);
+                });
+                
+                showCelebrationAnimation('回答正确！');
+                
+                saveGameState();
+                
+                setTimeout(() => {
+                    changeAudio();
+                }, 2000);
+            } else {
+                // 显示错误信息在输入框内
+                showErrorInInput(answerInput, '回答错误！请继续努力！');
+            }
+        }
+        
+        // 显示结果消息
+        function showResultMessage(message, type) {
+            resultMessage.className = `result-message ${type}`;
+            resultMessage.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'times-circle'}"></i> ${message}`;
+            resultMessage.style.display = 'block';
+        }
+        
+        // 显示警告消息
+        function showAlert(message) {
+            alert(message);
+        }
+        
+        // 确保容器适应屏幕大小
+        function ensureContainerFitsScreen() {
+            const container = document.querySelector('.container');
+            const windowHeight = window.innerHeight;
+            
+            container.style.minHeight = windowHeight + 'px';
+            
+            window.addEventListener('resize', function() {
+                const newHeight = window.innerHeight;
+                container.style.minHeight = newHeight + 'px';
+            });
+        }
+        
+        // 初始化游戏
+        function initGame() {
+            ensureContainerFitsScreen();
+            
+            loadGameState();
+            
+            scoreCountEl.textContent = gameState.score;
+            
+            // 绑定事件
+            playBtn.addEventListener('click', playAudio);
+            pauseBtn.addEventListener('click', pauseAudio);
+            replayBtn.addEventListener('click', replayAudio);
+            hintBtn.addEventListener('click', showHint);
+            changeBtn.addEventListener('click', changeAudio);
+            submitBtn.addEventListener('click', submitAnswer);
+            
+            // 允许按回车提交答案
+            answerInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    submitAnswer();
+                }
+            });
+            
+            // 初始随机选择一个音频
+            setTimeout(() => {
+                selectRandomAudio();
+            }, 500);
+            
+            // 页面加载完成后聚焦到输入框
+            setTimeout(() => {
+                answerInput.focus();
+            }, 300);
+            
+            // 防止iOS键盘弹起时页面滚动
+            answerInput.addEventListener('focus', function() {
+                setTimeout(() => {
+                    window.scrollTo(0, 0);
+                    document.body.scrollTop = 0;
+                }, 100);
+            });
+            
+            if ('ontouchstart' in window) {
+                document.body.classList.add('touch-device');
+            }
+            
+            // 预加载效果音频
+            setTimeout(() => {
+                preloadAllAudio();
+            }, 1000);
+        }
+        
+        // 页面加载完成后初始化游戏
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
