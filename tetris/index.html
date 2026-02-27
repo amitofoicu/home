@@ -612,8 +612,6 @@
         </div>
     </div>
 
-
-
     <!-- audio elements (same sources) -->
     <audio id="backgroundMusic" loop preload="auto"><source src="https://amitofoicu.github.io/home/beijing.ogg" type="audio/ogg"></audio>
     <audio id="clearSound" preload="auto"><source src="https://amitofoicu.github.io/home/win.mp3" type="audio/mpeg"></audio>
@@ -624,7 +622,7 @@
     <audio id="flowerSound" preload="auto"><source src="https://amitofoicu.github.io/home/xiaochu.mp3" type="audio/mpeg"></audio>
 
     <script>
-        // ---------- CORE LOGIC (translated to english) ----------
+        // ---------- CORE LOGIC ----------
         const COLS = 10, ROWS = 20;
         const COLORS = ['#FFFFFF','#00D8FF','#0066FF','#FF8000','#FFD700','#00CC00','#AA00FF','#FF3333'];
         const SHAPES = [
@@ -682,22 +680,35 @@
                 audio.play().then(() => {
                     audio.pause();
                     audio.currentTime = 0;
-                    audio.volume = audio.id === 'backgroundMusic' ? 0.3 : 0.5;
+                    // Set final volumes after preload
+                    if (audio.id === 'backgroundMusic') audio.volume = 0.5;
+                    else if (audio.id === 'moveSound' || audio.id === 'rotateSound' || audio.id === 'dropSound') audio.volume = 0.1;
+                    else if (audio.id === 'clearSound') audio.volume = 0.1;
+                    else if (audio.id === 'perfectSound') audio.volume = 0.7;
+                    else if (audio.id === 'flowerSound') audio.volume = 0.6;
                 }).catch(() => {
-                    audio.volume = audio.id === 'backgroundMusic' ? 0.3 : 0.5;
+                    // Set volumes even if autoplay fails
+                    if (audio.id === 'backgroundMusic') audio.volume = 0.5;
+                    else if (audio.id === 'moveSound' || audio.id === 'rotateSound' || audio.id === 'dropSound') audio.volume = 0.1;
+                    else if (audio.id === 'clearSound') audio.volume = 0.1;
+                    else if (audio.id === 'perfectSound') audio.volume = 0.7;
+                    else if (audio.id === 'flowerSound') audio.volume = 0.6;
                 });
             });
         }
 
         function initAudio() {
             if (audioInitialized) return;
-            backgroundMusic.volume = 0.5;
-            clearSound.volume = 0.1;
-            moveSound.volume = 0.1;
-            rotateSound.volume = 0.1;
-            dropSound.volume = 0.1;
-            perfectSound.volume = 0.7;
-            flowerSound.volume = 0.6;
+            
+            // Set all volumes to desired levels
+            backgroundMusic.volume = 0.5;      //背景音乐
+            clearSound.volume = 0.1;            //消除音效 (win.mp3)
+            moveSound.volume = 0.1;              //移动音效 (ai.mp3) - LOW VOLUME
+            rotateSound.volume = 0.1;             //旋转音效 (ai.mp3) - LOW VOLUME
+            dropSound.volume = 0.1;               //下落音效 (ai.mp3) - LOW VOLUME
+            perfectSound.volume = 0.7;             //完美通关音效 (win.mp3)
+            flowerSound.volume = 0.6;               //花瓣音效 (xiaochu.mp3)
+            
             [backgroundMusic, clearSound, moveSound, rotateSound, dropSound, perfectSound, flowerSound].forEach(a => {
                 a.addEventListener('error', e => console.log(`Audio load error: ${a.id}`));
             });
@@ -842,7 +853,12 @@
             let rotated=Array.from({length:cols},()=>Array(rows).fill(0));
             for(let y=0;y<rows;y++) for(let x=0;x<cols;x++) rotated[x][rows-1-y]=shape[y][x];
             let original=currentPiece.shape; currentPiece.shape=rotated;
-            if(checkCollision(currentPiece,pieceRow,pieceCol)) { currentPiece.shape=original; playSound(moveSound); } else playSound(rotateSound);
+            if(checkCollision(currentPiece,pieceRow,pieceCol)) { 
+                currentPiece.shape=original; 
+                playSound(moveSound);   //碰撞时播放移动音效 (ai.mp3)
+            } else {
+                playSound(rotateSound);  //成功旋转播放旋转音效 (ai.mp3)
+            }
             drawBoard();
         }
 
@@ -851,7 +867,9 @@
             if(dy>0){ hasAccelerated=true; if(isPlaying) isPerfectGame=false; }
             let newRow=pieceRow+dy, newCol=pieceCol+dx;
             if(!checkCollision(currentPiece,newRow,newCol)){
-                pieceRow=newRow; pieceCol=newCol; drawBoard(); if(dx!==0) playSound(moveSound); return true;
+                pieceRow=newRow; pieceCol=newCol; drawBoard(); 
+                if(dx!==0) playSound(moveSound);  //左右移动播放移动音效 (ai.mp3)
+                return true;
             }
             if(dy>0){ mergePiece(); clearLines(); spawnNewPiece(); }
             return false;
@@ -864,7 +882,7 @@
             while(!checkCollision(currentPiece, pieceRow+1, pieceCol)) {
                 pieceRow++;
             }
-            mergePiece();
+            mergePiece();  //mergePiece内部会播放dropSound (ai.mp3)
             clearLines();
             spawnNewPiece();
             drawBoard();
