@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>俄罗斯方块</title>
+    <title>俄罗斯方块 · 禅意加速</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -12,7 +12,7 @@
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
-            touch-action: manipulation; /* 防止双击缩放 */
+            touch-action: manipulation;
         }
 
         :root {
@@ -38,7 +38,6 @@
             overscroll-behavior: contain;
         }
 
-        /* 左上角logo (方形) + 顶部标题区重构 */
         .top-bar {
             position: absolute;
             top: 15px;
@@ -48,7 +47,7 @@
             align-items: center;
             justify-content: space-between;
             z-index: 100;
-            pointer-events: none; /* 容器不阻挡点击，内部链接可点 */
+            pointer-events: none;
         }
 
         .logo-area {
@@ -65,38 +64,9 @@
             border: 2px solid #FFD700;
             box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
             object-fit: cover;
-            background: white; /* fallback */
+            background: white;
         }
 
-        .buddha-link {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 6px 15px;
-            border-radius: 30px;
-            border: 2px solid #FFD700;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-            backdrop-filter: blur(5px);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #FFD700;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: bold;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-
-        .buddha-link:hover {
-            color: #FFFFFF;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-            transform: scale(1.05);
-        }
-
-        .buddha-link i {
-            font-size: 16px;
-        }
-
-        /* 更多游戏按钮现在放在右侧 */
         .more-games-top {
             pointer-events: auto;
         }
@@ -120,19 +90,12 @@
             white-space: nowrap;
         }
 
-        .more-games-btn:hover {
-            color: #FFD700;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-            transform: scale(1.05);
-        }
-
         @keyframes pulse {
             0% { box-shadow: 0 0 10px rgba(255, 20, 147, 0.5); }
             50% { box-shadow: 0 0 20px rgba(255, 20, 147, 0.8); }
             100% { box-shadow: 0 0 10px rgba(255, 20, 147, 0.5); }
         }
 
-        /* 诗词左下角保留 */
         .poem-container {
             position: absolute;
             bottom: 20px;
@@ -162,21 +125,7 @@
             margin-bottom: 5px;
             letter-spacing: 1px;
         }
-        .poem-line {
-            margin-bottom: 4px;
-            animation: fadeIn 2s ease-out;
-        }
-        .poem-line:nth-child(2) { animation-delay: 0.2s; }
-        .poem-line:nth-child(3) { animation-delay: 0.4s; }
-        .poem-line:nth-child(4) { animation-delay: 0.6s; }
-        .poem-line:nth-child(5) { animation-delay: 0.8s; }
-        .poem-line:nth-child(6) { animation-delay: 1s; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
 
-        /* 天花散落动画容器 */
         .flower-container {
             position: fixed;
             top: 0;
@@ -198,7 +147,7 @@
             background-repeat: no-repeat;
         }
 
-        /* 游戏主要内容样式 */
+        /* 游戏主要内容 */
         .game-container {
             display: flex;
             flex-direction: column;
@@ -208,7 +157,7 @@
             height: 100%;
             max-height: 100%;
             z-index: 2;
-            margin-top: 25px; /* 为顶部logo留空间 */
+            margin-top: 25px;
         }
 
         .header {
@@ -224,31 +173,44 @@
             margin-bottom: 5px;
         }
 
-        .stats {
+        /* ========= 重构状态栏：只保留分数，并且居中放在开始按钮左侧 ========= */
+        .stats-slim {
             display: flex;
-            justify-content: space-around;
+            align-items: center;
+            justify-content: space-between;
             width: 100%;
             margin-bottom: 8px;
-            background: rgba(255,255,255,0.2);
-            padding: 8px 10px;
-            border-radius: 30px;
-            border: 2px solid rgba(255,255,255,0.25);
-            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 15px;
+            border-radius: 40px;
+            border: 1px solid rgba(255,255,255,0.2);
             backdrop-filter: blur(10px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            flex-shrink: 0;
         }
-        .stat-item { text-align: center; }
-        .stat-label {
-            font-size: clamp(10px, 2.5vw, 12px);
-            color: #e0e0e0;
-            margin-bottom: 2px;
+
+        .score-area {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             font-weight: bold;
+            background: rgba(255,255,255,0.15);
+            padding: 5px 16px;
+            border-radius: 40px;
+            border: 1px solid #FFD700;
+            box-shadow: 0 0 12px rgba(255,215,0,0.3);
+            margin: 0 auto;  /* 水平居中，但父容器flex左右留白，实际左侧无元素，会自然居中 */
         }
-        .stat-value {
-            font-size: clamp(18px, 5vw, 24px);
-            font-weight: bold;
-            color: #ffffff;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        .score-area i {
+            color: #FFD700;
+            font-size: 18px;
+        }
+        .score-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #fff;
+            text-shadow: 0 0 8px #FFD700;
+            min-width: 60px;
+            text-align: center;
         }
 
         .game-area {
@@ -271,7 +233,7 @@
             min-height: 0;
         }
 
-        /* 重构：下一个 + 控制条放在同一行 */
+        /* 下一个 + 控制条 */
         .next-row {
             display: flex;
             align-items: center;
@@ -306,7 +268,6 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
-        /* 新按钮组: 开始+暂停 与 静音 放在同一行 */
         .control-group {
             display: flex;
             align-items: center;
@@ -388,6 +349,7 @@
             object-fit: contain;
         }
 
+        /* 底部控制区 (增加一行空白) */
         .controls-container {
             margin-top: 8px;
             display: flex;
@@ -439,6 +401,18 @@
         .dpad-button.right { grid-column: 3; grid-row: 1; }
         .dpad-button.down { grid-column: 2; grid-row: 2; }
 
+        /* ↓↓↓ 新增空白行：在向下箭头下方增加一个空白区域（占位不阻挡点击）↓↓↓ */
+        .dpad-spacer {
+            grid-column: 2;
+            grid-row: 3;        /* 第三行 */
+            height: 5px;        /* 空白高度，可调整 */
+            pointer-events: none;
+        }
+        /* 原dpad-controls只有两行，现在通过grid隐式行增加第三行，并放置一个空白元素 */
+        .dpad-controls {
+            grid-template-rows: repeat(2, 1fr) 5px;  /* 第三行高度5px */
+        }
+
         /* 游戏结束画面 */
         .game-over, .perfect-game-over {
             position: absolute;
@@ -466,14 +440,7 @@
             0% { box-shadow: 0 0 20px rgba(0,255,0,0.5); border-color: #00ff00; }
             100% { box-shadow: 0 0 40px rgba(0,255,0,0.8); border-color: #00ffcc; }
         }
-        .perfect-game-over h2 {
-            font-size: clamp(24px,6vw,32px);
-            color: #00ff00;
-            margin-bottom: 20px;
-            text-align: center;
-            text-shadow: 0 0 15px rgba(0,255,0,0.8);
-        }
-        .perfect-game-over p { font-size: clamp(18px,4.5vw,24px); margin-bottom: 25px; text-align: center; color: #fff; }
+
         .infinity-symbol {
             font-size: clamp(36px,8vw,48px);
             color: #00ff00;
@@ -488,42 +455,34 @@
             100% { text-shadow: 0 0 20px #0f0, 0 0 40px #0f0; transform: scale(1.05); }
         }
 
-        /* 安全区域适配 */
         @supports (padding: max(0px)) {
             body { padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(10px, env(safe-area-inset-right)); padding-top: max(10px, env(safe-area-inset-top)); padding-bottom: max(10px, env(safe-area-inset-bottom)); }
             .poem-container { left: max(20px, env(safe-area-inset-left)); bottom: max(20px, env(safe-area-inset-bottom)); }
             .top-bar { left: max(15px, env(safe-area-inset-left)); right: max(15px, env(safe-area-inset-right)); top: max(15px, env(safe-area-inset-top)); }
         }
 
-        /* 横屏优化 */
         @media (orientation: landscape) and (max-height: 600px) {
             .game-container { flex-direction: row; justify-content: space-between; }
             .header { margin-right: 10px; width: auto; max-width: 20%; }
-            .stats { flex-direction: column; width: auto; margin-right: 10px; }
+            .stats-slim { width: auto; margin-right: 10px; }
             .game-area { flex-direction: row; width: auto; flex: 1; }
             .game-board-container { flex-direction: row; max-width: none; }
             .next-row { flex-direction: column; width: auto; margin-right: 10px; }
             .main-game { flex: 1; height: 100%; }
             .controls-container { margin-top: 0; margin-left: 10px; width: auto; max-width: 30%; }
-            .poem-container { max-width: 200px; }
         }
-
-        /* 移除旧的暂停按钮样式，不再需要 */
-        .control-button.pause { display: none; }
     </style>
 </head>
 <body>
-    <!-- 天花散落动画容器 -->
     <div class="flower-container" id="flowerContainer"></div>
 
-    <!-- 全新顶部栏：左侧logo，右侧更多游戏 -->
     <div class="top-bar">
         <div class="logo-area">
             <img src="https://amitofoicu.github.io/home/logo.jpg" alt="logo" class="site-logo" onerror="this.style.display='none'">
         </div>
         <div class="more-games-top">
             <a href="https://amitofoicu.github.io/home/main.html" class="more-games-btn">
-                <i class="fas fa-gamepad"></i> 更多游戏
+                <i class="fas fa-gamepad"></i> 更多..
             </a>
         </div>
     </div>
@@ -533,24 +492,23 @@
             <h1><i class="fas fa-crown"></i> 俄罗斯方块 </h1>
         </div>
         
-        <div class="stats">
-            <div class="stat-item"><div class="stat-label">分数</div><div class="stat-value" id="score">0</div></div>
-            <div class="stat-item"><div class="stat-label">等级</div><div class="stat-value" id="level">1</div></div>
-            <div class="stat-item"><div class="stat-label">行数</div><div class="stat-value" id="lines">0</div></div>
+        <!-- 新的精简状态栏：只有分数，居中显示（实际通过score-area本身居中） -->
+        <div class="stats-slim">
+            <div class="score-area">
+                <i class="fas fa-star"></i>
+                <span class="score-value" id="score">0</span>
+            </div>
         </div>
         
         <div class="game-area">
             <div class="game-board-container">
-                <!-- 重构：下一个 + 按钮行 -->
                 <div class="next-row">
                     <div class="next-piece-label">
                         <i class="fas fa-hourglass-half"></i> 下一个
                         <canvas id="nextPieceCanvas" class="next-piece-canvas"></canvas>
                     </div>
                     <div class="control-group">
-                        <!-- 开始按钮 (同时包含暂停功能：点击开始/暂停切换) -->
                         <button class="mini-control-btn" id="startPauseBtn"><i class="fas fa-play"></i> 开始</button>
-                        <!-- 静音按钮 -->
                         <button class="sound-toggle-btn" id="soundToggle"><i class="fas fa-volume-up"></i></button>
                     </div>
                 </div>
@@ -558,13 +516,11 @@
                 <div class="main-game">
                     <div class="game-canvas-container">
                         <canvas id="gameCanvas"></canvas>
-                        <!-- 普通游戏结束 -->
                         <div class="game-over" id="gameOver">
                             <h2>游戏结束!</h2>
                             <p>最终分数: <span id="finalScore">0</span></p>
                             <button class="mini-control-btn" id="restartBtn">重新开始</button>
                         </div>
-                        <!-- 完美通关 -->
                         <div class="perfect-game-over" id="perfectGameOver">
                             <h2>🎉 恭喜！ 🎉</h2>
                             <p>完美通关 所获福德:</p>
@@ -577,6 +533,7 @@
                 </div>
             </div>
             
+            <!-- 底部方向键 + 下方空白行 -->
             <div class="controls-container">
                 <div class="mobile-controls">
                     <div class="dpad-controls">
@@ -584,14 +541,15 @@
                         <button class="dpad-button center" id="centerBtn"><i class="fas fa-redo-alt"></i></button>
                         <button class="dpad-button right" id="rightBtn"><i class="fas fa-arrow-right"></i></button>
                         <button class="dpad-button down" id="downBtn"><i class="fas fa-arrow-down"></i></button>
+                        <!-- 新增空白行元素 (第三行) 只占位不可见 -->
+                        <div class="dpad-spacer"></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-
-    <!-- 音频元素 -->
+    <!-- 音频 -->
     <audio id="backgroundMusic" loop preload="auto"><source src="https://amitofoicu.github.io/home/beijing.ogg" type="audio/ogg"></audio>
     <audio id="clearSound" preload="auto"><source src="https://amitofoicu.github.io/home/win.mp3" type="audio/mpeg"></audio>
     <audio id="moveSound" preload="auto"><source src="https://amitofoicu.github.io/home/ai.mp3" type="audio/mpeg"></audio>
@@ -601,7 +559,7 @@
     <audio id="flowerSound" preload="auto"><source src="https://amitofoicu.github.io/home/xiaochu.mp3" type="audio/mpeg"></audio>
 
     <script>
-        // ---------- 游戏核心逻辑 (完全保留，仅调整UI相关变量和按钮逻辑) ----------
+        // ---------- 核心逻辑 (基于原版修改：移除等级/行数，空格加速，分数显示调整) ----------
         const COLS = 10, ROWS = 20;
         const COLORS = ['#FFFFFF','#00D8FF','#0066FF','#FF8000','#FFD700','#00CC00','#AA00FF','#FF3333'];
         const SHAPES = [
@@ -626,15 +584,12 @@
         const nextPieceCanvas = document.getElementById('nextPieceCanvas');
         const ctx = gameCanvas.getContext('2d');
         const nextCtx = nextPieceCanvas.getContext('2d');
-        const scoreElement = document.getElementById('score');
-        const levelElement = document.getElementById('level');
-        const linesElement = document.getElementById('lines');
+        const scoreElement = document.getElementById('score');        // 只显示分数
         const gameOverElement = document.getElementById('gameOver');
         const perfectGameOverElement = document.getElementById('perfectGameOver');
         const finalScoreElement = document.getElementById('finalScore');
         const flowerContainer = document.getElementById('flowerContainer');
 
-        // 按钮重新映射
         const startPauseBtn = document.getElementById('startPauseBtn');
         const soundToggle = document.getElementById('soundToggle');
         const restartBtn = document.getElementById('restartBtn');
@@ -653,7 +608,6 @@
         const perfectSound = document.getElementById('perfectSound');
         const flowerSound = document.getElementById('flowerSound');
 
-        // 初始化音频
         function initAudio() {
             if (audioInitialized) return;
             backgroundMusic.volume = 0.3;
@@ -663,8 +617,9 @@
             dropSound.volume = 0.5;
             perfectSound.volume = 0.7;
             flowerSound.volume = 0.6;
-            const audios = [backgroundMusic, clearSound, moveSound, rotateSound, dropSound, perfectSound, flowerSound];
-            audios.forEach(a => { a.addEventListener('error', e => console.log(`音频加载错误: ${a.id}`)); });
+            [backgroundMusic, clearSound, moveSound, rotateSound, dropSound, perfectSound, flowerSound].forEach(a => {
+                a.addEventListener('error', e => console.log(`音频加载错误: ${a.id}`));
+            });
             backgroundMusic.loop = true;
             audioInitialized = true;
         }
@@ -673,7 +628,6 @@
         function playBackgroundMusic() { if (!soundEnabled || !isPlaying || isPaused) return; try { backgroundMusic.play(); musicPaused = false; } catch(e){} }
         function pauseBackgroundMusic() { try { backgroundMusic.pause(); musicPaused = true; } catch(e){} }
 
-        // 切换音效 (静音/恢复)
         function toggleSound() {
             if (soundEnabled) {
                 soundEnabled = false;
@@ -688,7 +642,7 @@
             }
         }
 
-        // 天花散落效果
+        // 天花散落
         function createFlowerEffect(linesCleared) {
             if (!soundEnabled) return;
             playSound(flowerSound);
@@ -723,7 +677,6 @@
             }
         }
 
-        // 核心游戏函数 (完全保留原有逻辑)
         function init() {
             board = Array.from({length:ROWS},()=>Array(COLS).fill(0));
             score=0; level=1; lines=0; gameOver=false; isPlaying=false; isPaused=false; dropInterval=1000;
@@ -733,7 +686,6 @@
             gameOverElement.style.display='none'; perfectGameOverElement.style.display='none';
             flowerContainer.innerHTML=''; pauseBackgroundMusic();
             resizeCanvas();
-            // 更新开始按钮文字
             startPauseBtn.innerHTML = '<i class="fas fa-play"></i> 开始';
             startPauseBtn.classList.remove('pause-style');
         }
@@ -750,7 +702,6 @@
         function drawBoard(){
             ctx.clearRect(0,0,gameCanvas.width,gameCanvas.height);
             ctx.fillStyle='#FFFFFF'; ctx.fillRect(0,0,gameCanvas.width,gameCanvas.height);
-            // 网格
             ctx.strokeStyle='rgba(0,0,0,0.1)'; ctx.lineWidth=1;
             for(let x=0;x<=COLS;x++){ ctx.beginPath(); ctx.moveTo(x*blockSize,0); ctx.lineTo(x*blockSize,ROWS*blockSize); ctx.stroke(); }
             for(let y=0;y<=ROWS;y++){ ctx.beginPath(); ctx.moveTo(0,y*blockSize); ctx.lineTo(COLS*blockSize,y*blockSize); ctx.stroke(); }
@@ -826,6 +777,23 @@
             return false;
         }
 
+        // 新增：硬降（空格加速）——直接落到底
+        function hardDrop() {
+            if(!currentPiece||isPaused||!isPlaying) return;
+            // 加速下落会破坏完美通关条件
+            hasAccelerated = true;
+            isPerfectGame = false;
+            // 一直向下移动直到碰撞
+            while(!checkCollision(currentPiece, pieceRow+1, pieceCol)) {
+                pieceRow++;
+            }
+            // 触底，合并并生成新块
+            mergePiece();
+            clearLines();
+            spawnNewPiece();
+            drawBoard();
+        }
+
         function spawnNewPiece(){
             currentPiece=nextPiece; nextPiece=createRandomPiece(); pieceRow=0; pieceCol=Math.floor(COLS/2)-Math.floor(currentPiece.shape[0].length/2);
             if(checkCollision(currentPiece,pieceRow,pieceCol)){
@@ -837,7 +805,10 @@
             drawNextPiece(); drawBoard();
         }
 
-        function updateDisplay(){ scoreElement.textContent=score; levelElement.textContent=level; linesElement.textContent=lines; }
+        function updateDisplay(){ 
+            scoreElement.textContent = score; 
+            // 等级和行数不再显示，但内部逻辑保留
+        }
 
         function resizeCanvas(){
             let container=document.querySelector('.game-canvas-container');
@@ -862,17 +833,14 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // 新的开始/暂停一体按钮
         function toggleStartPause(){
             if(gameOver) { init(); }
             if(!isPlaying){
-                // 开始游戏
                 isPlaying=true; isPaused=false;
                 playBackgroundMusic();
                 startPauseBtn.innerHTML = '<i class="fas fa-pause"></i> 暂停';
                 startPauseBtn.classList.add('pause-style');
             } else {
-                // 暂停/继续
                 isPaused = !isPaused;
                 if(isPaused){
                     startPauseBtn.innerHTML = '<i class="fas fa-play"></i> 继续';
@@ -884,7 +852,6 @@
             }
         }
 
-        // 重置游戏 (重新开始)
         function resetGame(){
             init();
             isPlaying=false; isPaused=false;
@@ -895,35 +862,37 @@
 
         function zenDecrypt(){ window.open('https://amitofoicu.github.io/home/yiqu.html', '_blank'); }
 
-        // 键盘事件
+        // 键盘事件：增加空格硬降
         function handleKeyDown(e){
             if(!isPlaying||isPaused) return;
             switch(e.key){
-                case 'ArrowLeft': movePiece(-1,0); break;
-                case 'ArrowRight': movePiece(1,0); break;
-                case 'ArrowDown': movePiece(0,1); break;
-                case 'ArrowUp': rotatePiece(); break;
-                case ' ': e.preventDefault(); // 空格禁用硬降，因为完美通关不能使用
-                case 'Spacebar': e.preventDefault(); break; 
-                case 'p': case 'P': toggleStartPause(); break;
-                case 'm': case 'M': toggleSound(); break;
+                case 'ArrowLeft': movePiece(-1,0); e.preventDefault(); break;
+                case 'ArrowRight': movePiece(1,0); e.preventDefault(); break;
+                case 'ArrowDown': movePiece(0,1); e.preventDefault(); break;
+                case 'ArrowUp': rotatePiece(); e.preventDefault(); break;
+                case ' ':          // 空格键加速下落（硬降）
+                case 'Spacebar':
+                    e.preventDefault();
+                    hardDrop();
+                    break;
+                case 'p': case 'P': toggleStartPause(); e.preventDefault(); break;
+                case 'm': case 'M': toggleSound(); e.preventDefault(); break;
             }
         }
 
-        // 长按逻辑略 (保留)
         function setupEventListeners(){
             initAudio();
             document.addEventListener('keydown', handleKeyDown);
             startPauseBtn.addEventListener('click', toggleStartPause);
             soundToggle.addEventListener('click', toggleSound);
-            restartBtn.addEventListener('click', ()=>{ resetGame(); toggleStartPause(); }); // 重新开始后自动开始
+            restartBtn.addEventListener('click', ()=>{ resetGame(); toggleStartPause(); });
             zenDecryptBtn.addEventListener('click', zenDecrypt);
             leftBtn.addEventListener('click', ()=>movePiece(-1,0));
             rightBtn.addEventListener('click', ()=>movePiece(1,0));
             downBtn.addEventListener('click', ()=>movePiece(0,1));
             centerBtn.addEventListener('click', rotatePiece);
 
-            // 长按加速 (简化)
+            // 长按简化
             let holdInterval;
             function startHold(dx,dy){
                 if(dy>0){ hasAccelerated=true; if(isPlaying) isPerfectGame=false; }
