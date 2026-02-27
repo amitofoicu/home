@@ -18,6 +18,8 @@
         :root {
             --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
             --safe-area-inset-top: env(safe-area-inset-top, 0px);
+            --safe-area-inset-left: env(safe-area-inset-left, 0px);
+            --safe-area-inset-right: env(safe-area-inset-right, 0px);
         }
 
         body {
@@ -34,8 +36,10 @@
             justify-content: center;
             overflow: hidden;
             padding: 10px;
-            padding-top: max(15px, env(safe-area-inset-top)); /* 增加顶部安全区 */
-            padding-bottom: calc(10px + var(--safe-area-inset-bottom));
+            padding-top: max(15px, env(safe-area-inset-top));
+            padding-bottom: max(10px, env(safe-area-inset-bottom));
+            padding-left: max(10px, env(safe-area-inset-left));
+            padding-right: max(10px, env(safe-area-inset-right));
             position: relative;
             overscroll-behavior: contain;
         }
@@ -47,7 +51,7 @@
             justify-content: space-between;
             width: 100%;
             max-width: 400px;
-            margin-top: 5px;           /* 增加顶部边距，避免标题贴边 */
+            margin-top: 5px;
             margin-bottom: 12px;
             padding: 0 8px;
             z-index: 10;
@@ -81,7 +85,7 @@
             left: 50%;
             transform: translateX(-50%);
             font-weight: bold;
-            top: 50%;                  /* 垂直居中 */
+            top: 50%;
             transform: translate(-50%, -50%);
             line-height: 1.2;
         }
@@ -173,7 +177,7 @@
             height: 100%;
             max-height: 100%;
             z-index: 2;
-            margin-top: 0;              /* 移除多余外边距 */
+            margin-top: 0;
         }
 
         .game-area {
@@ -324,6 +328,7 @@
             align-items: center;
             justify-content: center;
             max-height: 70vh;
+            width: 100%;
         }
 
         #gameCanvas {
@@ -340,6 +345,8 @@
             object-fit: contain;
             /* 移除任何可能的轮廓线 */
             outline: none;
+            /* 确保画布内容与边框之间没有间隙 */
+            image-rendering: crisp-edges; /* 保持方块边缘清晰 */
         }
 
         /* 键盘方向提示 - 放在canvas正下方 */
@@ -364,7 +371,7 @@
             font-size: 16px;
         }
 
-        /* 底部控制区 */
+        /* 底部控制区 - iPhone优化 */
         .controls-container {
             margin-top: 8px;
             display: flex;
@@ -372,7 +379,10 @@
             align-items: center;
             width: 100%;
             flex-shrink: 0;
-            padding-bottom: var(--safe-area-inset-bottom);
+            /* 为iPhone底部安全区添加额外内边距，避免与地址栏重叠 */
+            padding-bottom: max(10px, env(safe-area-inset-bottom, 15px));
+            /* 增加底部额外空间，确保箭头不被遮挡 */
+            margin-bottom: env(safe-area-inset-bottom, 0);
         }
 
         .mobile-controls {
@@ -408,6 +418,8 @@
             box-shadow: 0 4px 0 #283593, 0 6px 12px rgba(0,0,0,0.2);
             /* 移除可能的轮廓线 */
             outline: none;
+            /* 增加触摸区域 */
+            -webkit-tap-highlight-color: transparent;
         }
         .dpad-button:active {
             background: linear-gradient(145deg, #7986CB, #5C6BC0);
@@ -471,15 +483,50 @@
             100% { text-shadow: 0 0 20px #0f0, 0 0 40px #0f0; transform: scale(1.05); }
         }
 
-        /* 移动端隐藏键盘提示 */
+        /* iPhone特定优化 */
         @media (max-width: 768px) {
             .keyboard-hint {
                 display: none;
             }
+            
+            /* 为iPhone增加底部额外间距，避免箭头与地址栏重叠 */
+            .controls-container {
+                padding-bottom: max(15px, env(safe-area-inset-bottom, 20px));
+                margin-bottom: 5px;
+            }
+            
+            /* 确保画布在iPhone上左右完全贴合边框 */
+            #gameCanvas {
+                border-width: 4px;
+                max-width: calc(100% - 8px); /* 确保边框内不留白 */
+                margin: 0 auto;
+            }
+            
+            .game-canvas-container {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+            }
+            
+            /* 调整标题栏在iPhone上的边距 */
+            .game-header {
+                margin-top: 10px;
+                margin-bottom: 8px;
+            }
+            
+            /* 增加底部箭头与画布的间距 */
+            .controls-container {
+                margin-top: 12px;
+            }
         }
 
         @supports (padding: max(0px)) {
-            body { padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(10px, env(safe-area-inset-right)); padding-top: max(15px, env(safe-area-inset-top)); padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+            body { 
+                padding-left: max(10px, env(safe-area-inset-left)); 
+                padding-right: max(10px, env(safe-area-inset-right)); 
+                padding-top: max(15px, env(safe-area-inset-top)); 
+                padding-bottom: max(15px, env(safe-area-inset-bottom)); 
+            }
             .poem-container { left: max(20px, env(safe-area-inset-left)); bottom: max(20px, env(safe-area-inset-bottom)); }
         }
 
@@ -502,9 +549,9 @@
         <div class="header-left">
             <img src="https://amitofoicu.github.io/home/logo.jpg" alt="logo" class="site-logo" onerror="this.style.display='none'">
         </div>
-        <span class="game-title"><i class="" style="margin-right: 4px;"></i>俄罗斯方块</span>
+        <span class="game-title"><i class="fas fa-crown" style="margin-right: 4px;"></i>俄罗斯方块</span>
         <a href="https://amitofoicu.github.io/home/main.html" class="more-games-btn">
-            <i class=""></i> 更多..
+            <i class="fas fa-gamepad"></i> 更多..
         </a>
     </div>
 
@@ -744,8 +791,6 @@
             for(let y=0;y<=ROWS;y++){ ctx.beginPath(); ctx.moveTo(0,y*blockSize); ctx.lineTo(COLS*blockSize,y*blockSize); ctx.stroke(); }
             for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++) if(board[y][x]) drawBlock(ctx,x,y,COLORS[board[y][x]]);
             if(currentPiece) for(let y=0;y<currentPiece.shape.length;y++) for(let x=0;x<currentPiece.shape[y].length;x++) if(currentPiece.shape[y][x]) { let bx=pieceCol+x, by=pieceRow+y; if(by>=0) drawBlock(ctx,bx,by,currentPiece.color); }
-            // 移除黄色边框，改用金色边框但已在CSS中定义，这里不重复绘制
-            // ctx.strokeStyle='#FFCC00'; ctx.lineWidth=4; ctx.strokeRect(0,0,COLS*blockSize,ROWS*blockSize);
         }
 
         function drawNextPiece(){
@@ -847,10 +892,20 @@
             let container=document.querySelector('.game-canvas-container');
             if(!container) return;
             let cw=container.clientWidth, ch=container.clientHeight;
-            let maxW=Math.floor(cw/COLS)-1, maxH=Math.floor(ch/ROWS)-1;
-            blockSize=Math.min(maxW,maxH,30); blockSize=Math.max(blockSize,10);
-            gameCanvas.width=COLS*blockSize; gameCanvas.height=ROWS*blockSize;
-            drawBoard(); drawNextPiece();
+            // 确保画布尺寸精确，避免左右出现间隙
+            let maxW = cw - 10; // 留出一些边距
+            let maxH = ch - 10;
+            let maxBlockW = Math.floor(maxW / COLS);
+            let maxBlockH = Math.floor(maxH / ROWS);
+            blockSize = Math.min(maxBlockW, maxBlockH, 30);
+            blockSize = Math.max(blockSize, 10);
+            
+            // 精确计算画布宽度，确保10个方块刚好填满
+            gameCanvas.width = COLS * blockSize;
+            gameCanvas.height = ROWS * blockSize;
+            
+            drawBoard(); 
+            drawNextPiece();
         }
 
         function handleNaturalDrop(){
@@ -952,6 +1007,13 @@
             setupEventListeners();
             gameLoop();
             setTimeout(() => preloadAllAudio(), 100);
+            // 确保画布尺寸精确
+            setTimeout(resizeCanvas, 200);
+        });
+        
+        // 监听旋转事件，确保画布重绘
+        window.addEventListener('orientationchange', function() {
+            setTimeout(resizeCanvas, 300);
         });
     </script>
 </body>
