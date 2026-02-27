@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>俄罗斯方块 · 禅意加速</title>
+    <title>俄罗斯方块</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -22,7 +22,7 @@
         body {
             font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, rgba(44, 62, 80, 0.75) 0%, rgba(52, 73, 94, 0.75) 100%), 
-                        url('https://amitofoicu.github.io/home/lianchi.jpg') center center fixed;
+                        url('https://amitofoicu.github.io/home/lianchi6.jpg') center center fixed;
             background-size: cover;
             color: #fff;
             height: 100vh;
@@ -38,23 +38,22 @@
             overscroll-behavior: contain;
         }
 
-        .top-bar {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            right: 15px;
+        /* 移除之前的 top-bar，改用新的标题栏布局 */
+        .game-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            z-index: 100;
-            pointer-events: none;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 12px;
+            padding: 0 8px;
+            z-index: 10;
         }
 
-        .logo-area {
+        .header-left {
             display: flex;
             align-items: center;
-            gap: 10px;
-            pointer-events: auto;
+            gap: 8px;
         }
 
         .site-logo {
@@ -67,8 +66,11 @@
             background: white;
         }
 
-        .more-games-top {
-            pointer-events: auto;
+        .game-title {
+            font-size: clamp(20px, 5vw, 26px);
+            color: #ffcc00;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            white-space: nowrap;
         }
 
         .more-games-btn {
@@ -157,23 +159,8 @@
             height: 100%;
             max-height: 100%;
             z-index: 2;
-            margin-top: 25px;
+            margin-top: 5px;
         }
-
-        .header {
-            text-align: center;
-            margin-bottom: 8px;
-            width: 100%;
-            flex-shrink: 0;
-        }
-        .header h1 {
-            font-size: clamp(22px, 5vw, 28px);
-            color: #ffcc00;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-            margin-bottom: 5px;
-        }
-
-        /* ========= 状态栏完全移除，分数合并到下一行 ========= */
 
         .game-area {
             display: flex;
@@ -195,7 +182,7 @@
             min-height: 0;
         }
 
-        /* 下一个 + 控制条 (现在包含分数在开始按钮左侧) */
+        /* 下一个 + 控制条 */
         .next-row {
             display: flex;
             align-items: center;
@@ -237,7 +224,6 @@
             flex-wrap: nowrap;
         }
 
-        /* 重新设计的分数徽章，放在开始按钮左侧 */
         .score-badge {
             display: flex;
             align-items: center;
@@ -320,8 +306,9 @@
             margin: 0 5px;
             flex: 1;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             max-height: 70vh;
         }
 
@@ -336,6 +323,28 @@
             max-width: 300px;
             max-height: 600px;
             object-fit: contain;
+        }
+
+        /* 键盘方向提示 - 放在canvas正下方 */
+        .keyboard-hint {
+            margin-top: 8px;
+            color: rgba(255,255,255,0.7);
+            font-size: 14px;
+            background: rgba(0,0,0,0.3);
+            padding: 6px 18px;
+            border-radius: 40px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.2);
+            letter-spacing: 0.5px;
+            font-weight: 400;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            text-align: center;
+            white-space: nowrap;
+        }
+        .keyboard-hint i {
+            color: #FFD700;
+            margin: 0 4px;
+            font-size: 16px;
         }
 
         /* 底部控制区 */
@@ -360,7 +369,7 @@
         .dpad-controls {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(2, 1fr) 5px;  /* 第三行高度5px 空白占位 */
+            grid-template-rows: repeat(2, 1fr) 5px;
             gap: 8px;
             width: clamp(150px, 40vw, 200px);
             height: clamp(100px, 26vw, 130px);
@@ -390,7 +399,6 @@
         .dpad-button.right { grid-column: 3; grid-row: 1; }
         .dpad-button.down { grid-column: 2; grid-row: 2; }
 
-        /* 空白行占位 */
         .dpad-spacer {
             grid-column: 2;
             grid-row: 3;
@@ -440,46 +448,21 @@
             100% { text-shadow: 0 0 20px #0f0, 0 0 40px #0f0; transform: scale(1.05); }
         }
 
-        /* footer note — 默认显示，移动端通过媒体查询隐藏 */
-        .footer-note {
-            position: absolute;
-            bottom: 10px;
-            right: 20px;
-            color: rgba(255,255,255,0.7);
-            font-size: 13px;
-            background: rgba(0,0,0,0.3);
-            padding: 5px 12px;
-            border-radius: 30px;
-            backdrop-filter: blur(5px);
-            border: 1px solid rgba(255,255,255,0.2);
-            letter-spacing: 0.5px;
-            z-index: 20;
-            font-weight: 400;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-            pointer-events: none;
-        }
-        .footer-note i {
-            color: #FFD700;
-            margin: 0 2px;
-        }
-
-        /* 移动端隐藏 footer-note */
+        /* 移动端隐藏键盘提示 (可选，如果需要显示则保留) */
         @media (max-width: 768px) {
-            .footer-note {
-                display: none;
+            .keyboard-hint {
+                display: none; /* 移动端隐藏提示，保持干净 */
             }
         }
 
         @supports (padding: max(0px)) {
             body { padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(10px, env(safe-area-inset-right)); padding-top: max(10px, env(safe-area-inset-top)); padding-bottom: max(10px, env(safe-area-inset-bottom)); }
             .poem-container { left: max(20px, env(safe-area-inset-left)); bottom: max(20px, env(safe-area-inset-bottom)); }
-            .top-bar { left: max(15px, env(safe-area-inset-left)); right: max(15px, env(safe-area-inset-right)); top: max(15px, env(safe-area-inset-top)); }
-            .footer-note { right: max(20px, env(safe-area-inset-right)); bottom: max(15px, env(safe-area-inset-bottom)); }
         }
 
         @media (orientation: landscape) and (max-height: 600px) {
             .game-container { flex-direction: row; justify-content: space-between; }
-            .header { margin-right: 10px; width: auto; max-width: 20%; }
+            .game-header { max-width: 20%; flex-direction: column; align-items: flex-start; }
             .game-area { flex-direction: row; width: auto; flex: 1; }
             .game-board-container { flex-direction: row; max-width: none; }
             .next-row { flex-direction: column; width: auto; margin-right: 10px; }
@@ -491,39 +474,27 @@
 <body>
     <div class="flower-container" id="flowerContainer"></div>
 
-    <div class="top-bar">
-        <div class="logo-area">
+    <!-- 新的标题栏：logo在左侧，标题在logo右侧，更多按钮在右侧 -->
+    <div class="game-header">
+        <div class="header-center">
             <img src="https://amitofoicu.github.io/home/logo.jpg" alt="logo" class="site-logo" onerror="this.style.display='none'">
+            <span class="game-title"><i class="fas fa-crown" style="margin-right: 4px;"></i>俄罗斯方块</span>
         </div>
-        <div class="more-games-top">
-            <a href="https://amitofoicu.github.io/home/main.html" class="more-games-btn">
-                <i class="fas fa-gamepad"></i> 更多..
-            </a>
-        </div>
-    </div>
-
-    <!-- footer note 在移动端隐藏 (已通过CSS媒体查询) -->
-    <div class="footer-note">
-        <i class="fas fa-arrow-left"></i> <i class="fas fa-arrow-up"></i> <i class="fas fa-arrow-right"></i> <i class="fas fa-arrow-down"></i> 滑动 / 键盘方向
+        <a href="https://amitofoicu.github.io/home/main.html" class="more-games-btn">
+            <i class="fas fa-gamepad"></i> 更多..
+        </a>
     </div>
 
     <div class="game-container">
-        <div class="header">
-            <h1><i class="fas fa-crown"></i> 俄罗斯方块 </h1>
-        </div>
-        
-        <!-- 原本的stats-slim整行移除，分数整合到下方开始按钮左侧 -->
-        
         <div class="game-area">
             <div class="game-board-container">
-                <!-- 新布局：next + 分数/控制区 -->
+                <!-- next + 分数/控制区 -->
                 <div class="next-row">
                     <div class="next-piece-label">
                         <i class="fas fa-hourglass-half"></i> 下一个
                         <canvas id="nextPieceCanvas" class="next-piece-canvas"></canvas>
                     </div>
                     <div class="control-group">
-                        <!-- 分数徽章 放在开始按钮左侧 -->
                         <div class="score-badge">
                             <i class="fas fa-star"></i>
                             <span class="score-value" id="score">0</span>
@@ -536,6 +507,13 @@
                 <div class="main-game">
                     <div class="game-canvas-container">
                         <canvas id="gameCanvas"></canvas>
+                        <!-- 键盘方向提示放在canvas正下方 -->
+                        <div class="keyboard-hint">
+                            <i class="fas fa-arrow-left"></i>
+                            <i class="fas fa-arrow-up"></i>
+                            <i class="fas fa-arrow-right"></i>
+                            <i class="fas fa-arrow-down"></i> 滑动 / 键盘方向
+                        </div>
                         <div class="game-over" id="gameOver">
                             <h2>🎉 恭喜！ 🎉</h2>
                             <p>得分: <span id="finalScore">0</span></p>
@@ -561,7 +539,6 @@
                         <button class="dpad-button center" id="centerBtn"><i class="fas fa-redo-alt"></i></button>
                         <button class="dpad-button right" id="rightBtn"><i class="fas fa-arrow-right"></i></button>
                         <button class="dpad-button down" id="downBtn"><i class="fas fa-arrow-down"></i></button>
-                        <!-- 新增空白行元素 (第三行) 只占位不可见 -->
                         <div class="dpad-spacer"></div>
                     </div>
                 </div>
@@ -569,7 +546,7 @@
         </div>
     </div>
 
-    <!-- 音频 - 添加preload="auto"确保预先加载 -->
+    <!-- 音频 -->
     <audio id="backgroundMusic" loop preload="auto"><source src="https://amitofoicu.github.io/home/beijing.ogg" type="audio/ogg"></audio>
     <audio id="clearSound" preload="auto"><source src="https://amitofoicu.github.io/home/win.mp3" type="audio/mpeg"></audio>
     <audio id="moveSound" preload="auto"><source src="https://amitofoicu.github.io/home/ai.mp3" type="audio/mpeg"></audio>
@@ -604,7 +581,7 @@
         const nextPieceCanvas = document.getElementById('nextPieceCanvas');
         const ctx = gameCanvas.getContext('2d');
         const nextCtx = nextPieceCanvas.getContext('2d');
-        const scoreElement = document.getElementById('score');        // 分数徽章里的值
+        const scoreElement = document.getElementById('score');
         const gameOverElement = document.getElementById('gameOver');
         const perfectGameOverElement = document.getElementById('perfectGameOver');
         const finalScoreElement = document.getElementById('finalScore');
@@ -628,19 +605,17 @@
         const perfectSound = document.getElementById('perfectSound');
         const flowerSound = document.getElementById('flowerSound');
 
-        // 预加载所有音频：立即加载并尝试播放以触发加载 (静音)
+        // 预加载音频
         function preloadAllAudio() {
             const allAudio = [backgroundMusic, clearSound, moveSound, rotateSound, dropSound, perfectSound, flowerSound];
             allAudio.forEach(audio => {
-                audio.load(); // 确保preload生效
-                // 尝试播放并立即暂停以触发加载 (部分浏览器需要用户手势，但load已经足够)
-                audio.volume = 0.01; // 极低音量几乎无声
+                audio.load();
+                audio.volume = 0.01;
                 audio.play().then(() => {
                     audio.pause();
                     audio.currentTime = 0;
-                    audio.volume = audio.id === 'backgroundMusic' ? 0.3 : 0.5; // 恢复音量
+                    audio.volume = audio.id === 'backgroundMusic' ? 0.3 : 0.5;
                 }).catch(() => {
-                    // 静默失败，至少load()已经调用
                     audio.volume = audio.id === 'backgroundMusic' ? 0.3 : 0.5;
                 });
             });
@@ -660,7 +635,7 @@
             });
             backgroundMusic.loop = true;
             audioInitialized = true;
-            preloadAllAudio(); // 立即预加载
+            preloadAllAudio();
         }
 
         function playSound(sound) { if (!soundEnabled) return; try { sound.currentTime = 0; sound.play().catch(()=>{}); } catch(e){} }
@@ -816,7 +791,6 @@
             return false;
         }
 
-        // 硬降（空格加速）
         function hardDrop() {
             if(!currentPiece||isPaused||!isPlaying) return;
             hasAccelerated = true;
@@ -897,7 +871,6 @@
 
         function zenDecrypt(){ window.open('https://amitofoicu.github.io/home/yiqu.html', '_blank'); }
 
-        // 键盘事件
         function handleKeyDown(e){
             if(!isPlaying||isPaused) return;
             switch(e.key){
@@ -912,7 +885,7 @@
         }
 
         function setupEventListeners(){
-            initAudio(); // 包含预加载
+            initAudio();
             document.addEventListener('keydown', handleKeyDown);
             startPauseBtn.addEventListener('click', toggleStartPause);
             soundToggle.addEventListener('click', toggleSound);
@@ -923,7 +896,6 @@
             downBtn.addEventListener('click', ()=>movePiece(0,1));
             centerBtn.addEventListener('click', rotatePiece);
 
-            // 长按简化
             let holdInterval;
             function startHold(dx,dy){
                 if(dy>0){ hasAccelerated=true; if(isPlaying) isPerfectGame=false; }
@@ -955,7 +927,6 @@
             init();
             setupEventListeners();
             gameLoop();
-            // 立即再触发一次预加载
             setTimeout(() => preloadAllAudio(), 100);
         });
     </script>
