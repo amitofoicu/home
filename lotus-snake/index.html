@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotus Snake · Breathing Glow + 2 Blossoms</title>
+    <title>Lotus Snake</title>
     <style>
         * {
             box-sizing: border-box;
@@ -341,7 +341,7 @@
             </div>
         </div>
         <div class="footer-note">
-            ← ↑ → ↓  SWIPE / ARROWS · Breathing Glow + 2 Blossoms
+            ← ↑ → ↓  SWIPE / ARROWS
         </div>
     </div>
 
@@ -750,6 +750,7 @@
             }
 
             function resetGame() {
+		clearAllPetals();
                 if (gameInterval) { clearInterval(gameInterval); gameInterval = null; }
                 snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
                 direction = 'RIGHT';
