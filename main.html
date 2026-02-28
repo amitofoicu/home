@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>轻松小游戏&工具合集 · 台球小游戏已加入</title>
+    <title>轻松小游戏&工具合集 · 莲池贪吃蛇已加入</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -318,6 +318,14 @@
             background: #0f4e3a;
             color: white;
         }
+        /* 莲池贪吃蛇 使用池塘色调 */
+        .game-card[data-type="snake"] .game-thumbnail {
+            background: linear-gradient(45deg, #0a2f1f, #1e5a3a, #2d8b5a) !important;
+        }
+        .game-card[data-type="snake"] .game-type {
+            background: #1e5a3a;
+            color: white;
+        }
         
         @media (max-width: 1200px) {
             .game-list {
@@ -365,7 +373,7 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-gamepad"></i> 轻松小游戏&工具合集</h1>
-            <p class="subtitle">令人身心愉悦且放松小游戏！<br>新增 · 台球小游戏 · 黑8入袋 & 黑7版  🎱</p>
+            <p class="subtitle">令人身心愉悦且放松小游戏！<br>新增 · 莲池贪吃蛇 · 花雨版 🐍🌸</p>
             
             <div class="filters">
                 <button class="filter-btn active" data-filter="all">所有游戏</button>
@@ -383,6 +391,7 @@
                 <button class="filter-btn" data-filter="golf">高尔夫</button>
                 <button class="filter-btn" data-filter="basketball">篮球</button>
                 <button class="filter-btn" data-filter="billiard">台球</button>
+                <button class="filter-btn" data-filter="snake">贪吃蛇</button>
             </div>
         </header>
         
@@ -567,7 +576,7 @@
                 </div>
             </div>
             
-            <!-- 11号：贪吃蛇 -->
+            <!-- 11号：贪吃蛇 (原版, 保留作为对照) -->
             <div class="game-card" data-type="arcade">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #da22ff, #9733ee);">
                     <i class="fas fa-snake"></i>
@@ -575,12 +584,12 @@
                     <div class="game-type">街机</div>
                 </div>
                 <div class="game-content">
-                    <h3 class="game-title">贪吃蛇</h3>
+                    <h3 class="game-title">贪吃蛇 · 经典</h3>
                     <div class="game-meta">
                         <span class="game-rating"><i class="fas fa-star"></i> 4.7/5</span>
                         <span><i class="far fa-clock"></i> 5-20分钟</span>
                     </div>
-                    <p class="game-description">经典贪吃蛇</p>
+                    <p class="game-description">经典贪吃蛇，怀旧风格。</p>
                     <a href="https://amitofoicu.github.io/home/game6.html" class="game-link" target="_blank">立即游玩 <i class="fas fa-external-link-alt"></i></a>
                 </div>
             </div>
@@ -729,7 +738,7 @@
                 </div>
             </div>
 
-            <!-- 20号：台球小游戏 (黑8版) 原版 game17.html 链接 -->
+            <!-- 20号：台球小游戏 (黑8版) -->
             <div class="game-card" data-type="billiard sports">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #1a3f2c, #2d6a4a, #40916c);">
                     <i class="fas fa-8"></i>
@@ -747,7 +756,7 @@
                 </div>
             </div>
             
-            <!-- 21号：台球小游戏 (黑7版) 使用 game17pro.html 链接 - 新增卡片，保留原20号 -->
+            <!-- 21号：台球小游戏 (黑7版) -->
             <div class="game-card" data-type="billiard sports">
                 <div class="game-thumbnail" style="background: linear-gradient(45deg, #0f3a2a, #1f5a3f, #2f7a54);">
                     <i class="fas fa-8"></i>
@@ -764,13 +773,31 @@
                     <a href="https://amitofoicu.github.io/home/game17pro.html" class="game-link" target="_blank">开球！ 🎱 <i class="fas fa-external-link-alt"></i></a>
                 </div>
             </div>
+
+            <!-- 22号：莲池贪吃蛇 (新加入) -->
+            <div class="game-card" data-type="snake arcade">
+                <div class="game-thumbnail" style="background: linear-gradient(45deg, #0a2f1f, #1e5a3a, #2d8b5a);">
+                    <i class="fas fa-snake"></i>
+                    <div class="game-number">22</div>
+                    <div class="game-type">贪吃蛇</div>
+                </div>
+                <div class="game-content">
+                    <h3 class="game-title">🐍 莲池贪吃蛇 · 花雨版</h3>
+                    <div class="game-meta">
+                        <span class="game-rating"><i class="fas fa-star"></i> 5.0/5</span>
+                        <span><i class="far fa-clock"></i> 5-20分钟</span>
+                    </div>
+                    <p class="game-description">莲花池塘背景，音效预加载，点击开始即播背景乐。结束花瓣雨，静音开关，滑动/键盘控制。</p>
+                    <a href="https://amitofoicu.github.io/home/lotus-snake/index.html" class="game-link" target="_blank">开始莲池冒险 <i class="fas fa-external-link-alt"></i></a>
+                </div>
+            </div>
         </div>
         
         <div class="footer">
             <div class="footer-links">
                 <a href="https://www.fashui.org">更多发现</a>
             </div>
-            <div style="margin-top: 15px;">✨ 静心 · 放松 · 愉悦 · 现在包括两个台球小游戏（黑8版 & 黑7版） ✨</div>
+            <div style="margin-top: 15px;">✨ 静心 · 放松 · 愉悦 · 现在包括莲池贪吃蛇(花雨版) ✨</div>
         </div>
     </div>
     
