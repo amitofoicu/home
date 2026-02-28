@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotus Snake · Blossom + Vibration (iOS fix)</title>
+    <title>莲花蛇 · 全资源预加载 + 呼吸光晕</title>
     <style>
         * {
             box-sizing: border-box;
@@ -49,7 +49,6 @@
             gap: 12px;
             flex-wrap: nowrap;
             min-width: 0;
-            visibility: visible;
         }
         .logo-square {
             width: 38px;
@@ -76,7 +75,6 @@
             text-shadow: 2px 2px 0 #2b5e3b;
             white-space: nowrap;
             color: white;
-            background: transparent;
             pointer-events: none;
         }
         .more-games {
@@ -283,9 +281,40 @@
             pointer-events: none;
             z-index: 999;
         }
+        .preload-images {
+            display: none;
+        }
+        /* 加载指示器（可选） */
+        .loading-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.7);
+            color: gold;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 10000;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
+    <!-- 加载状态提示（调试用，可删除） -->
+    <div class="loading-status" id="loadingStatus">加载资源中...</div>
+
+    <!-- 预加载所有图片 (可见但隐藏) -->
+    <div class="preload-images">
+        <img src="https://amitofoicu.github.io/home/lotus1.jpg" alt="lotus1" id="preload-lotus1">
+        <img src="https://amitofoicu.github.io/home/lotus2.jpg" alt="lotus2" id="preload-lotus2">
+        <img src="https://amitofoicu.github.io/home/lotus3.jpg" alt="lotus3" id="preload-lotus3">
+        <img src="https://amitofoicu.github.io/home/lotus4.jpg" alt="lotus4" id="preload-lotus4">
+        <img src="https://amitofoicu.github.io/home/logo.jpg" alt="logo" id="preload-logo">
+        <img src="https://amitofoicu.github.io/home/lianchi6.jpg" alt="background" id="preload-bg">
+    </div>
+
+    <!-- 预加载音频 (通过Web Audio API) 已在脚本中处理 -->
+
     <canvas id="petalCanvas"></canvas>
 
     <div class="game-container">
@@ -310,40 +339,188 @@
                 <button class="btn sound-btn" id="muteBtn">🔊 MUTE</button>
             </div>
             <div class="score-panel">
-                <span>🍎</span>
+                <span>🌸</span>
                 <span class="score-number" id="scoreDisplay">0</span>
             </div>
         </div>
         <div class="footer-note">
-            ← ↑ → ↓  SWIPE / ARROWS
+            ← ↑ → ↓  SWIPE / ARROWS · 呼吸光晕 + 2朵迸发
         </div>
     </div>
 
     <script>
         (function() {
-            // ---------- canvas & contexts ----------
             const canvas = document.getElementById('gameCanvas');
             const ctx = canvas.getContext('2d');
             const scoreSpan = document.getElementById('scoreDisplay');
             const petalCanvas = document.getElementById('petalCanvas');
             const pCtx = petalCanvas.getContext('2d');
+            const loadingStatus = document.getElementById('loadingStatus');
 
             const startBtn = document.getElementById('startBtn');
             const pauseBtn = document.getElementById('pauseBtn');
             const muteBtn = document.getElementById('muteBtn');
             const moreGames = document.getElementById('moreGamesBtn');
 
-            // ---------- game constants ----------
             const GRID_SIZE = 20;
             const CELL_SIZE = canvas.width / GRID_SIZE;
 
-            // state
+            // 游戏状态
             let snake = [
                 {x: 10, y: 10},
                 {x: 9, y: 10},
                 {x: 8, y: 10}
             ];
-            let food = {x: 15, y: 10};
+            
+            // 食物数组
+            let foods = [];
+            
+            const foodImageUrls = [
+                'https://amitofoicu.github.io/home/lotus1.jpg',
+                'https://amitofoicu.github.io/home/lotus2.jpg',
+                'https://amitofoicu.github.io/home/lotus3.jpg',
+                'https://amitofoicu.github.io/home/lotus4.jpg'
+            ];
+            let foodImages = [];
+            let imagesLoaded = false;
+
+            // 跟踪所有资源加载状态
+            let resourcesLoaded = {
+                images: 0,
+                audio: 0,
+                totalImages: 6, // 4 lotus + logo + bg
+                totalAudio: 3,   // bgm, win, xiaochu
+            };
+
+            function updateLoadingStatus() {
+                const total = resourcesLoaded.totalImages + resourcesLoaded.totalAudio;
+                const loaded = resourcesLoaded.images + resourcesLoaded.audio;
+                if (loaded >= total) {
+                    loadingStatus.textContent = '✅ 所有资源加载完成';
+                    loadingStatus.style.backgroundColor = 'rgba(0,100,0,0.8)';
+                    setTimeout(() => {
+                        loadingStatus.style.opacity = '0';
+                        setTimeout(() => {
+                            loadingStatus.style.display = 'none';
+                        }, 500);
+                    }, 1500);
+                } else {
+                    loadingStatus.textContent = `加载资源中... ${loaded}/${total}`;
+                }
+            }
+
+            // 预加载图片 (包括所有jpg)
+            function preloadAllImages() {
+                return new Promise((resolve) => {
+                    // 要预加载的图片列表
+                    const allImages = [
+                        'https://amitofoicu.github.io/home/lotus1.jpg',
+                        'https://amitofoicu.github.io/home/lotus2.jpg',
+                        'https://amitofoicu.github.io/home/lotus3.jpg',
+                        'https://amitofoicu.github.io/home/lotus4.jpg',
+                        'https://amitofoicu.github.io/home/logo.jpg',
+                        'https://amitofoicu.github.io/home/lianchi6.jpg'
+                    ];
+                    
+                    let loadedCount = 0;
+                    
+                    allImages.forEach((url, idx) => {
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+                        
+                        img.onload = () => {
+                            loadedCount++;
+                            resourcesLoaded.images = loadedCount;
+                            
+                            // 存储莲花图片到foodImages数组
+                            if (idx < 4) {
+                                foodImages[idx] = img;
+                            }
+                            
+                            updateLoadingStatus();
+                            
+                            if (loadedCount === allImages.length) {
+                                imagesLoaded = true;
+                                resolve();
+                            }
+                        };
+                        
+                        img.onerror = () => {
+                            console.warn('图片加载失败', url);
+                            loadedCount++;
+                            resourcesLoaded.images = loadedCount;
+                            
+                            if (idx < 4) {
+                                // 创建备用颜色占位
+                                const canvas = document.createElement('canvas');
+                                canvas.width = 100;
+                                canvas.height = 100;
+                                const ctx = canvas.getContext('2d');
+                                ctx.fillStyle = ['#ff4d4d', '#ffaa33', '#ff66b2', '#aa66ff'][idx % 4];
+                                ctx.beginPath();
+                                ctx.arc(50, 50, 40, 0, 2*Math.PI);
+                                ctx.fill();
+                                const fallbackImg = new Image();
+                                fallbackImg.src = canvas.toDataURL();
+                                foodImages[idx] = fallbackImg;
+                            }
+                            
+                            updateLoadingStatus();
+                            
+                            if (loadedCount === allImages.length) {
+                                imagesLoaded = true;
+                                resolve();
+                            }
+                        };
+                        
+                        img.src = url;
+                    });
+                });
+            }
+
+            // 随机生成食物数量 N (1-5)
+            function randomFoodN() {
+                return Math.floor(Math.random() * 5) + 1;
+            }
+
+            // 随机图片索引
+            function randomFoodImageIndex() {
+                return Math.floor(Math.random() * 4);
+            }
+
+            // 生成一组新的食物
+            function generateFoods() {
+                const snakeSet = new Set(snake.map(cell => `${cell.x},${cell.y}`));
+                let free = [];
+                for (let i = 0; i < GRID_SIZE; i++) {
+                    for (let j = 0; j < GRID_SIZE; j++) {
+                        if (!snakeSet.has(`${i},${j}`)) free.push({x: i, y: j});
+                    }
+                }
+                
+                if (free.length === 0) return false;
+                
+                const N = Math.min(randomFoodN(), free.length);
+                
+                const newFoods = [];
+                const shuffled = [...free];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                
+                for (let i = 0; i < N; i++) {
+                    newFoods.push({
+                        x: shuffled[i].x,
+                        y: shuffled[i].y,
+                        imageIndex: randomFoodImageIndex()
+                    });
+                }
+                
+                foods = newFoods;
+                return true;
+            }
+
             let direction = 'RIGHT';
             let nextDirection = 'RIGHT';
             let score = 0;
@@ -352,65 +529,77 @@
             let gameInterval = null;
             const gameSpeed = 200;
 
-            // ---------- AUDIO: preload all files (fixed iOS unlocking) ----------
+            // 呼吸光晕动画相关
+            let glowPhase = 0;
+            const glowSpeed = 0.02;
+
+            // 音频
             let audioCtx = null;
-            let bgmBuffer = null;      // beijing.ogg
-            let winBuffer = null;       // win.mp3
-            let xiaochuBuffer = null;   // xiaochu.mp3
+            let bgmBuffer = null;
+            let winBuffer = null;
+            let xiaochuBuffer = null;
             let bgmSource = null;
             let muted = false;
-            let preloadCompleted = false;
-            let audioInitialized = false;  // flag to ensure we unlock only once
+            let audioUnlocked = false;
 
             try {
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
                 audioCtx = new AudioContext();
-            } catch (e) { console.warn("no audio"); }
+            } catch (e) { console.warn("Web Audio not supported"); }
 
-            // preload all three files immediately and in parallel
-            async function preloadAllSounds() {
-                if (!audioCtx) {
-                    preloadCompleted = true;
-                    return;
+            // 预加载所有音频文件
+            async function preloadAllAudio() {
+                if (!audioCtx) { 
+                    resourcesLoaded.audio = 3;
+                    updateLoadingStatus();
+                    return; 
                 }
+                
                 try {
-                    const [bgmArray, winArray, xcArray] = await Promise.all([
+                    // 并行获取所有音频数据
+                    const [bgmData, winData, xcData] = await Promise.all([
                         fetch('https://amitofoicu.github.io/home/beijing.ogg').then(r => r.arrayBuffer()),
                         fetch('https://amitofoicu.github.io/home/win.mp3').then(r => r.arrayBuffer()),
                         fetch('https://amitofoicu.github.io/home/xiaochu.mp3').then(r => r.arrayBuffer())
                     ]);
-
+                    
+                    // 并行解码
                     const [bgm, win, xc] = await Promise.all([
-                        audioCtx.decodeAudioData(bgmArray),
-                        audioCtx.decodeAudioData(winArray),
-                        audioCtx.decodeAudioData(xcArray)
+                        audioCtx.decodeAudioData(bgmData),
+                        audioCtx.decodeAudioData(winData),
+                        audioCtx.decodeAudioData(xcData)
                     ]);
-
+                    
                     bgmBuffer = bgm;
                     winBuffer = win;
                     xiaochuBuffer = xc;
-                    preloadCompleted = true;
-                    console.log('all audio preloaded');
+                    
+                    resourcesLoaded.audio = 3;
+                    updateLoadingStatus();
+                    
+                    console.log('✅ 所有音频预加载完成');
                 } catch (err) {
-                    console.warn('preload failed', err);
-                    preloadCompleted = true;
+                    console.warn('❌ 音频预加载失败', err);
+                    resourcesLoaded.audio = 3; // 标记为完成，避免卡住
+                    updateLoadingStatus();
                 }
             }
-            preloadAllSounds();
 
-            // iOS audio unlocking: must be called from a user gesture
-            function unlockAudio() {
-                if (!audioCtx || audioInitialized) return Promise.resolve();
-                audioInitialized = true;
-                // resume and create silent buffer to unlock
+            // 开始预加载所有资源
+            Promise.all([preloadAllImages(), preloadAllAudio()]).then(() => {
+                console.log('所有资源加载完成');
+                // 可以开始游戏了
+            });
+
+            function unlockAudioForIOS() {
+                if (!audioCtx || audioUnlocked) return Promise.resolve();
+                audioUnlocked = true;
                 return audioCtx.resume().then(() => {
-                    // create and play a silent buffer (required for some iOS versions)
-                    const buffer = audioCtx.createBuffer(1, 1, 22050);
+                    const silentBuffer = audioCtx.createBuffer(1, 1, 22050);
                     const src = audioCtx.createBufferSource();
-                    src.buffer = buffer;
+                    src.buffer = silentBuffer;
                     src.connect(audioCtx.destination);
                     src.start();
-                    console.log('audio unlocked');
                 }).catch(e => console.warn('unlock failed', e));
             }
 
@@ -463,94 +652,82 @@
                 }
             }
 
-            // ---------- 🌸 VIBRATION + BLOSSOM (colorful petals) ON EAT (iOS compatible) ----------
-            function triggerEatFeedback() {
-                // 1) vibration (works on iPhone with iOS 13+ if not in silent? but we call anyway)
-                if (navigator.vibrate) {
-                    navigator.vibrate(30); // short thud
-                } else {
-                    // fallback: no vibration, but we still do petals
-                    console.log("vibrate not supported");
-                }
+            // 花瓣动画
+            let petals = [];
+            let petalAnimation = null;
 
-                // 2) random colorful blossom burst around food position (visual connection)
-                // convert food grid to canvas pixel, then to screen coordinate approx
-                let foodCanvasX = food.x * CELL_SIZE + CELL_SIZE/2;
-                let foodCanvasY = food.y * CELL_SIZE + CELL_SIZE/2;
-                // get canvas rectangle to map to screen
+            // 迸发2朵彩色小花 (在指定位置)
+            function spawnTwoBlossomsAt(x, y) {
                 const canvasRect = canvas.getBoundingClientRect();
-                const screenX = canvasRect.left + (foodCanvasX / canvas.width) * canvasRect.width;
-                const screenY = canvasRect.top + (foodCanvasY / canvas.height) * canvasRect.height;
+                const screenX = canvasRect.left + (x / canvas.width) * canvasRect.width;
+                const screenY = canvasRect.top + (y / canvas.height) * canvasRect.height;
 
-                for (let i = 0; i < 25; i++) { // burst 25 fresh petals near food
-                    let offsetX = (Math.random() - 0.5) * 180;
-                    let offsetY = (Math.random() - 0.5) * 150;
+                for (let i = 0; i < 2; i++) {
+                    const angle = Math.random() * 2 * Math.PI;
+                    const dist = 40 + Math.random() * 70;
+                    const offsetX = Math.cos(angle) * dist;
+                    const offsetY = Math.sin(angle) * dist * 0.6 - 15;
                     petals.push({
                         x: screenX + offsetX,
-                        y: screenY + offsetY - 30,
-                        size: 8 + Math.random() * 22,
-                        speedY: 1.5 + Math.random() * 5,
-                        speedX: (Math.random() - 0.5) * 1.6,
-                        color: `hsl(${Math.random() * 360}, 85%, 70%)`, // full rainbow
+                        y: screenY + offsetY,
+                        size: 14 + Math.random() * 20,
+                        speedY: 1.2 + Math.random() * 4,
+                        speedX: (Math.random() - 0.5) * 1.5,
+                        color: `hsl(${Math.random() * 360}, 90%, 70%)`,
                         angle: Math.random() * 6.28,
                         spin: (Math.random() - 0.5) * 0.08,
                     });
                 }
-                // limit total petals
-                if (petals.length > 600) petals.splice(0, 200);
+                if (petals.length > 700) petals.splice(0, 200);
             }
 
-            // ---------- petal rain (continuous background + burst) ----------
-            let petals = [];
-            let petalAnimation = null;
-            function startPetalRain() {
+            function startBackgroundRain() {
                 if (petalAnimation) cancelAnimationFrame(petalAnimation);
                 petals = [];
-                for (let i = 0; i < 180; i++) {
+                for (let i = 0; i < 150; i++) {
                     petals.push({
                         x: Math.random() * window.innerWidth,
                         y: Math.random() * window.innerHeight * 0.2 - 120,
-                        size: 7 + Math.random() * 20,
-                        speedY: 1 + Math.random() * 4,
-                        speedX: (Math.random() - 0.5) * 0.7,
+                        size: 5 + Math.random() * 18,
+                        speedY: 0.8 + Math.random() * 3.5,
+                        speedX: (Math.random() - 0.5) * 0.6,
                         color: `hsl(${Math.random() * 60 + 300}, 80%, 70%)`,
                         angle: Math.random() * 6.28,
-                        spin: (Math.random() - 0.5) * 0.04,
+                        spin: (Math.random() - 0.5) * 0.03,
                     });
                 }
-                function drawPetals() {
-                    pCtx.clearRect(0, 0, petalCanvas.width, petalCanvas.height);
-                    pCtx.shadowColor = 'rgba(255,180,200,0.6)';
-                    pCtx.shadowBlur = 12;
-                    for (let p of petals) {
-                        p.y += p.speedY;
-                        p.x += p.speedX;
-                        p.angle += p.spin;
-                        if (p.y > window.innerHeight + 60) {
-                            p.y = -30;
-                            p.x = Math.random() * window.innerWidth;
-                        }
-                        pCtx.save();
-                        pCtx.translate(p.x, p.y);
-                        pCtx.rotate(p.angle);
-                        pCtx.fillStyle = p.color;
-                        pCtx.beginPath();
-                        pCtx.ellipse(0, 0, p.size*0.7, p.size*0.4, 0, 0, 2*Math.PI);
-                        pCtx.fill();
-                        pCtx.restore();
-                    }
-                    petalAnimation = requestAnimationFrame(drawPetals);
-                }
-                drawPetals();
             }
 
-            function stopPetalRain() {
-                if (petalAnimation) { cancelAnimationFrame(petalAnimation); petalAnimation = null; }
+            function drawPetals() {
                 pCtx.clearRect(0, 0, petalCanvas.width, petalCanvas.height);
+                pCtx.shadowColor = 'rgba(255,180,200,0.5)';
+                pCtx.shadowBlur = 10;
+                for (let i = petals.length - 1; i >= 0; i--) {
+                    const p = petals[i];
+                    p.y += p.speedY;
+                    p.x += p.speedX;
+                    p.angle += p.spin;
+                    if (p.y > window.innerHeight + 100) {
+                        petals.splice(i, 1);
+                        continue;
+                    }
+                    pCtx.save();
+                    pCtx.translate(p.x, p.y);
+                    pCtx.rotate(p.angle);
+                    pCtx.fillStyle = p.color;
+                    pCtx.beginPath();
+                    pCtx.ellipse(0, 0, p.size*0.7, p.size*0.4, 0, 0, 2*Math.PI);
+                    pCtx.fill();
+                    pCtx.restore();
+                }
+                petalAnimation = requestAnimationFrame(drawPetals);
+            }
+            drawPetals();
+
+            function clearAllPetals() {
                 petals = [];
             }
 
-            // ---------- game over card ----------
             function showGameOverCard(finalScore) {
                 const old = document.querySelector('.gameover-overlay');
                 if (old) old.remove();
@@ -559,16 +736,16 @@
                 overlay.className = 'gameover-overlay';
                 overlay.innerHTML = `
                     <div class="gameover-card">
-                        <h1>🌸 LOTUS BLOSSOM 🌸</h1>
-                        <div class="final-score">SCORE: ${finalScore}</div>
-                        <button class="restart-btn" id="restartAfterGameover">PLAY AGAIN</button>
+                        <h1>🌸 莲花盛开 🌸</h1>
+                        <div class="final-score">得分: ${finalScore}</div>
+                        <button class="restart-btn" id="restartAfterGameover">再来一局</button>
                     </div>
                 `;
                 document.body.appendChild(overlay);
 
                 document.getElementById('restartAfterGameover').addEventListener('click', () => {
                     overlay.remove();
-                    stopPetalRain();
+                    clearAllPetals();
                     resetGame();
                     stopBGM();
                     gameRunning = false; gamePaused = false;
@@ -576,21 +753,6 @@
                 });
             }
 
-            // ---------- food generation ----------
-            function generateFood() {
-                const snakeSet = new Set(snake.map(cell => `${cell.x},${cell.y}`));
-                let free = [];
-                for (let i = 0; i < GRID_SIZE; i++) {
-                    for (let j = 0; j < GRID_SIZE; j++) {
-                        if (!snakeSet.has(`${i},${j}`)) free.push({x: i, y: j});
-                    }
-                }
-                if (free.length === 0) return false;
-                food = free[Math.floor(Math.random() * free.length)];
-                return true;
-            }
-
-            // ---------- reset game ----------
             function resetGame() {
                 if (gameInterval) { clearInterval(gameInterval); gameInterval = null; }
                 snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
@@ -598,29 +760,34 @@
                 nextDirection = 'RIGHT';
                 score = 0;
                 scoreSpan.textContent = '0';
-                generateFood();
+                generateFoods();
                 gameRunning = false;
                 gamePaused = false;
                 drawCanvas();
                 stopBGM();
             }
 
-            // ---------- start / pause / step ----------
             function startGame() {
-                // iOS audio must be unlocked inside user gesture
-                unlockAudio().then(() => {
+                unlockAudioForIOS().then(() => {
+                    if (!muted) {
+                        stopBGM();
+                        playBGM();
+                    }
+                    
                     if (!gameRunning) {
                         gameRunning = true;
                         gamePaused = false;
                         if (gameInterval) clearInterval(gameInterval);
                         gameInterval = setInterval(step, gameSpeed);
-                        if (!muted) playBGM();
                     } else if (gamePaused) {
                         gamePaused = false;
-                        if (!muted) playBGM();
                     }
                 }).catch(() => {
-                    // fallback: still try to start game even if audio unlock fails
+                    if (!muted) {
+                        stopBGM();
+                        playBGM();
+                    }
+                    
                     if (!gameRunning) {
                         gameRunning = true;
                         gamePaused = false;
@@ -647,6 +814,9 @@
 
             function step() {
                 if (!gameRunning || gamePaused) return;
+                
+                glowPhase += glowSpeed;
+                
                 direction = nextDirection;
                 let head = snake[0];
                 let newHead = {x: head.x, y: head.y};
@@ -659,7 +829,9 @@
                     gameOver(); return;
                 }
 
-                const eating = (newHead.x === food.x && newHead.y === food.y);
+                const eatenFoodIndex = foods.findIndex(f => f.x === newHead.x && f.y === newHead.y);
+                const eating = eatenFoodIndex !== -1;
+                
                 let newSnake = [newHead, ...snake];
                 if (!eating) newSnake.pop();
 
@@ -670,11 +842,26 @@
                 snake = newSnake;
 
                 if (eating) {
-                    playWin();               // audio
-                    triggerEatFeedback();    // 🌸 vibration + colorful petal burst near food
+                    const eatenFood = foods[eatenFoodIndex];
+                    foods.splice(eatenFoodIndex, 1);
+                    
+                    playWin();
+                    
+                    const foodCanvasX = eatenFood.x * CELL_SIZE + CELL_SIZE/2;
+                    const foodCanvasY = eatenFood.y * CELL_SIZE + CELL_SIZE/2;
+                    spawnTwoBlossomsAt(foodCanvasX, foodCanvasY);
+                    
+                    if (navigator.vibrate) navigator.vibrate(20);
+                    
                     score++;
                     scoreSpan.textContent = score;
-                    if (!generateFood()) { gameOver(); return; }
+                    
+                    if (foods.length === 0) {
+                        if (!generateFoods()) {
+                            gameOver(); 
+                            return;
+                        }
+                    }
                 }
                 drawCanvas();
             }
@@ -685,14 +872,17 @@
                 gamePaused = false;
                 stopBGM();
                 playXiaochu();
-                startPetalRain();          // full screen petals
+                startBackgroundRain();
                 showGameOverCard(score);
                 drawCanvas();
             }
 
-            // ---------- drawing ----------
+            // 绘制canvas - 呼吸光晕效果
             function drawCanvas() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                const breathIntensity = 0.7 + 0.5 * Math.sin(glowPhase);
+                
                 ctx.strokeStyle = 'rgba(255, 250, 210, 0.35)';
                 ctx.lineWidth = 1.5;
                 for (let i = 0; i <= GRID_SIZE; i++) {
@@ -701,15 +891,52 @@
                     ctx.moveTo(0, i*CELL_SIZE); ctx.lineTo(canvas.width, i*CELL_SIZE); ctx.stroke();
                 }
 
-                ctx.shadowColor = '#ffd966';
-                ctx.shadowBlur = 14;
-                ctx.beginPath();
-                ctx.arc(food.x*CELL_SIZE+CELL_SIZE/2, food.y*CELL_SIZE+CELL_SIZE/2, CELL_SIZE/2-3, 0, 2*Math.PI);
-                ctx.fillStyle = '#ff4133';
-                ctx.fill();
-                ctx.strokeStyle = '#fffac2';
-                ctx.lineWidth = 2.2;
-                ctx.stroke();
+                foods.forEach(food => {
+                    const img = foodImages[food.imageIndex];
+                    const x = food.x * CELL_SIZE + CELL_SIZE/2;
+                    const y = food.y * CELL_SIZE + CELL_SIZE/2;
+                    
+                    const baseGlow = 35;
+                    const glowSize = baseGlow * breathIntensity;
+                    
+                    if (img && img.complete && img.naturalWidth > 0) {
+                        const size = CELL_SIZE * 0.8;
+                        
+                        for (let i = 0; i < 3; i++) {
+                            ctx.shadowBlur = glowSize + i * 8;
+                            ctx.shadowColor = i === 0 ? '#ffcc00' : (i === 1 ? '#ffaa00' : '#ff8800');
+                            ctx.beginPath();
+                            ctx.arc(x, y, size/2 + 5, 0, 2*Math.PI);
+                            ctx.fillStyle = `rgba(255, 215, 0, ${0.15 * breathIntensity})`;
+                            ctx.fill();
+                        }
+                        
+                        ctx.shadowBlur = glowSize;
+                        ctx.shadowColor = '#ffdd44';
+                        ctx.drawImage(img, x - size/2, y - size/2, size, size);
+                        
+                        ctx.shadowBlur = glowSize + 10;
+                        ctx.shadowColor = '#ffaa22';
+                        ctx.drawImage(img, x - size/2, y - size/2, size, size);
+                        
+                    } else {
+                        ctx.shadowBlur = glowSize;
+                        ctx.shadowColor = '#ffcc00';
+                        
+                        ctx.beginPath();
+                        ctx.arc(x, y, CELL_SIZE/2 - 2, 0, 2*Math.PI);
+                        const colors = ['#ff4d4d', '#ffaa33', '#ff66b2', '#aa66ff'];
+                        ctx.fillStyle = colors[food.imageIndex % 4];
+                        ctx.fill();
+                        
+                        ctx.shadowBlur = glowSize + 10;
+                        ctx.shadowColor = '#ffaa00';
+                        ctx.fill();
+                    }
+                    
+                    ctx.shadowBlur = 0;
+                    ctx.shadowColor = 'transparent';
+                });
 
                 ctx.shadowBlur = 10;
                 snake.forEach((seg, idx) => {
@@ -735,7 +962,15 @@
                 ctx.shadowBlur = 0;
             }
 
-            // ---------- input handling (keyboard + touch) ----------
+            function animationLoop() {
+                if (gameRunning && !gamePaused) {
+                    drawCanvas();
+                }
+                requestAnimationFrame(animationLoop);
+            }
+            animationLoop();
+
+            // 输入处理
             window.addEventListener('keydown', (e) => {
                 if (e.key.startsWith('Arrow')) {
                     e.preventDefault();
@@ -769,10 +1004,7 @@
                 touchStart = null;
             });
 
-            // ---------- button listeners ----------
-            startBtn.addEventListener('click', () => { 
-                startGame();  // unlock inside startGame
-            });
+            startBtn.addEventListener('click', startGame);
             pauseBtn.addEventListener('click', pauseGame);
             muteBtn.addEventListener('click', toggleMute);
             moreGames.addEventListener('click', (e) => {
@@ -780,7 +1012,6 @@
                 window.open('https://amitofoicu.github.io/home/main.html', '_blank');
             });
 
-            // resize petal canvas
             function resizePetal() {
                 petalCanvas.width = window.innerWidth;
                 petalCanvas.height = window.innerHeight;
@@ -788,13 +1019,11 @@
             window.addEventListener('resize', resizePetal);
             resizePetal();
 
-            // initial draw
             resetGame();
 
-            // additionally, try to unlock audio on any user interaction (double safety)
-            document.body.addEventListener('touchstart', function once() {
-                unlockAudio();
-                document.body.removeEventListener('touchstart', once);
+            document.body.addEventListener('touchstart', function unlockOnTouch() {
+                unlockAudioForIOS();
+                document.body.removeEventListener('touchstart', unlockOnTouch);
             }, {passive: true});
         })();
     </script>
