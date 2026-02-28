@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lotus Snake · Blossom</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: #0a2f1f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            padding: 8px;
+            position: relative;
+        }
+        .game-container {
+            max-width: 700px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(2px);
+            border-radius: 32px 32px 24px 24px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.5);
+            overflow: hidden;
+            position: relative;
+            z-index: 5;
+        }
+        /* title bar — game title is absolutely centered */
+        .title-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 18px;
+            background: rgba(6, 38, 24, 0.8);
+            backdrop-filter: blur(8px);
+            color: white;
+            border-bottom: 2px solid #c9a96b;
+            position: relative;
+        }
+        .title-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: nowrap;
+            min-width: 0;
+            visibility: visible;
+        }
+        .logo-square {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #d6b16e;
+            box-shadow: 0 2px 8px rgba(255,215,140,0.4);
+            flex-shrink: 0;
+        }
+        .logo-square img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        /* game title centered absolutely */
+        .game-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: 3px;
+            text-shadow: 2px 2px 0 #2b5e3b;
+            white-space: nowrap;
+            color: white;
+            background: transparent;
+            pointer-events: none;
+        }
+        .more-games {
+            background: #f5c542;
+            color: #1e3c2a;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 4px 0 #9e7126;
+            transition: all 0.1s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            border: 1px solid #ffe494;
+            white-space: nowrap;
+            margin-left: 8px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .more-games:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #9e7126;
+        }
+        /* canvas wrapper with background image */
+        .canvas-wrapper {
+            background-image: url('https://amitofoicu.github.io/home/lianchi6.jpg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 24px;
+            padding: 0;
+            position: relative;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background: transparent !important;
+            border: 4px solid #c1a062;
+            border-radius: 24px;
+            box-shadow: inset 0 0 0 1px rgba(255,235,170,0.5), 0 12px 18px -8px black;
+            position: relative;
+            z-index: 10;
+        }
+        /* control bar */
+        .control-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 12px 8px;
+            padding: 12px 16px 18px 16px;
+            background: rgba(20, 50, 30, 0.7);
+            backdrop-filter: blur(4px);
+            border-top: 2px solid #b6904b;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex: 2 1 auto;
+        }
+        .btn {
+            background: #ecd89e;
+            border: none;
+            border-bottom: 4px solid #8f6f3a;
+            color: #1f3f28;
+            font-size: 1.2rem;
+            font-weight: 800;
+            padding: 12px 24px;
+            min-width: 80px;
+            border-radius: 60px;
+            box-shadow: 0 5px 0 #5f4a27, 0 6px 12px black;
+            cursor: pointer;
+            transition: all 0.05s linear;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: 1px;
+            touch-action: manipulation;
+            white-space: nowrap;
+        }
+        @media (max-width: 500px) {
+            .btn {
+                padding: 10px 16px;
+                font-size: 1rem;
+                min-width: 65px;
+            }
+            .game-title {
+                font-size: 1.3rem;
+            }
+            .more-games {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+        }
+        .btn:active {
+            transform: translateY(5px);
+            border-bottom-width: 1px;
+        }
+        .btn.muted {
+            background: #a0a0a0;
+            border-bottom-color: #5a5a5a;
+            color: #2d2d2d;
+        }
+        .sound-btn {
+            background: #b8d0c0;
+        }
+        .score-panel {
+            background: #1e3625e0;
+            padding: 6px 22px;
+            border-radius: 40px;
+            color: #fadf9e;
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 2px solid #dbb067;
+            box-shadow: inset 0 2px 5px #2b542b;
+            backdrop-filter: blur(2px);
+            white-space: nowrap;
+        }
+        .score-number {
+            color: white;
+            font-size: 2rem;
+            min-width: 40px;
+            text-align: center;
+        }
+        .footer-note {
+            text-align: center;
+            color: #c7b08b;
+            font-size: 0.8rem;
+            padding: 6px 0 10px 0;
+            background: #0d2f1bb3;
+            letter-spacing: 0.5px;
+        }
+        /* petal rain overlay + gameover card */
+        .gameover-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .gameover-card {
+            pointer-events: auto;
+            background: rgba(30, 40, 20, 0.9);
+            backdrop-filter: blur(12px);
+            border: 3px solid #f5c542;
+            border-radius: 60px 60px 40px 40px;
+            padding: 30px 50px;
+            text-align: center;
+            color: #ffefc0;
+            box-shadow: 0 20px 30px black;
+            transform: scale(1);
+            animation: popIn 0.3s ease;
+            z-index: 1010;
+        }
+        .gameover-card h1 {
+            font-size: 3rem;
+            margin: 0 0 10px;
+            text-shadow: 3px 3px 0 #2b5e3b;
+        }
+        .final-score {
+            font-size: 2.5rem;
+            background: #2d4a2d;
+            padding: 10px 30px;
+            border-radius: 60px;
+            margin: 20px 0;
+            border: 2px solid gold;
+        }
+        .restart-btn {
+            background: #f5c542;
+            border: none;
+            font-size: 2rem;
+            font-weight: bold;
+            padding: 15px 45px;
+            border-radius: 50px;
+            border-bottom: 6px solid #936f1f;
+            color: #1e3c2a;
+            cursor: pointer;
+            transition: 0.05s linear;
+            margin-top: 15px;
+            box-shadow: 0 8px 0 #6b4f1a;
+        }
+        .restart-btn:active {
+            transform: translateY(6px);
+            border-bottom-width: 2px;
+        }
+        @keyframes popIn {
+            0% { transform: scale(0.6); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        #petalCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+        /* tiny loading status (optional, but gives feedback) */
+        .audio-status {
+            font-size: 0.7rem;
+            color: #b8d0a0;
+            margin-left: 10px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="petalCanvas"></canvas>
+
+    <div class="game-container">
+        <div class="title-bar">
+            <div class="title-left">
+                <div class="logo-square">
+                    <img src="https://amitofoicu.github.io/home/logo.jpg" alt="logo" onerror="this.style.backgroundColor='#d4a859';">
+                </div>
+                <!-- hidden placeholder -->
+            </div>
+            <span class="game-title">LOTUS SNAKE</span>
+            <a href="#" class="more-games" id="moreGamesBtn" target="_blank" rel="noopener">🎮 MORE</a>
+        </div>
+
+        <div class="canvas-wrapper">
+            <canvas id="gameCanvas" width="600" height="600"></canvas>
+        </div>
+
+        <div class="control-bar">
+            <div class="btn-group">
+                <button class="btn" id="startBtn">▶ START</button>
+                <button class="btn" id="pauseBtn">⏸️ PAUSE</button>
+                <button class="btn sound-btn" id="muteBtn">🔊 MUTE</button>
+            </div>
+            <div class="score-panel">
+                <span>🍎</span>
+                <span class="score-number" id="scoreDisplay">0</span>
+            </div>
+        </div>
+        <div class="footer-note">
+            ← ↑ → ↓  SWIPE / ARROWS
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            // ---------- canvas & contexts ----------
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const scoreSpan = document.getElementById('scoreDisplay');
+            const petalCanvas = document.getElementById('petalCanvas');
+            const pCtx = petalCanvas.getContext('2d');
+
+            const startBtn = document.getElementById('startBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+            const muteBtn = document.getElementById('muteBtn');
+            const moreGames = document.getElementById('moreGamesBtn');
+
+            // ---------- game constants ----------
+            const GRID_SIZE = 20;
+            const CELL_SIZE = canvas.width / GRID_SIZE;
+
+            // state
+            let snake = [
+                {x: 10, y: 10},
+                {x: 9, y: 10},
+                {x: 8, y: 10}
+            ];
+            let food = {x: 15, y: 10};
+            let direction = 'RIGHT';
+            let nextDirection = 'RIGHT';
+            let score = 0;
+            let gameRunning = false;
+            let gamePaused = false;
+            let gameInterval = null;
+            const gameSpeed = 200;
+
+            // ---------- AUDIO: preload all files ----------
+            let audioCtx = null;
+            let bgmBuffer = null;      // beijing.ogg
+            let winBuffer = null;       // win.mp3
+            let xiaochuBuffer = null;   // xiaochu.mp3
+            let bgmSource = null;
+            let muted = false;
+
+            // flags to know when preload completed
+            let preloadCompleted = false;
+
+            try {
+                window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            } catch (e) { console.warn("no audio"); }
+
+            // preload all three files immediately and in parallel
+            async function preloadAllSounds() {
+                if (!audioCtx) {
+                    preloadCompleted = true; // no audio, just mark done
+                    return;
+                }
+                try {
+                    // use Promise.all to load simultaneously
+                    const [bgmArray, winArray, xcArray] = await Promise.all([
+                        fetch('https://amitofoicu.github.io/home/beijing.ogg').then(r => r.arrayBuffer()),
+                        fetch('https://amitofoicu.github.io/home/win.mp3').then(r => r.arrayBuffer()),
+                        fetch('https://amitofoicu.github.io/home/xiaochu.mp3').then(r => r.arrayBuffer())
+                    ]);
+
+                    // decode in parallel
+                    const [bgm, win, xc] = await Promise.all([
+                        audioCtx.decodeAudioData(bgmArray),
+                        audioCtx.decodeAudioData(winArray),
+                        audioCtx.decodeAudioData(xcArray)
+                    ]);
+
+                    bgmBuffer = bgm;
+                    winBuffer = win;
+                    xiaochuBuffer = xc;
+                    preloadCompleted = true;
+                    console.log('all audio preloaded');
+                } catch (err) {
+                    console.warn('preload failed', err);
+                    preloadCompleted = true; // still mark true to allow gameplay without audio
+                }
+            }
+            // start preloading immediately
+            preloadAllSounds();
+
+            // playback functions (rely on preloaded buffers)
+            function playBGM() {
+                if (muted || !audioCtx || !bgmBuffer) return;
+                if (bgmSource) {
+                    try { bgmSource.stop(); } catch(e) {}
+                    bgmSource = null;
+                }
+                bgmSource = audioCtx.createBufferSource();
+                bgmSource.buffer = bgmBuffer;
+                bgmSource.loop = true;
+                bgmSource.connect(audioCtx.destination);
+                bgmSource.start();
+            }
+
+            function stopBGM() {
+                if (bgmSource) {
+                    try { bgmSource.stop(); } catch(e) {}
+                    bgmSource = null;
+                }
+            }
+
+            function playWin() {
+                if (muted || !audioCtx || !winBuffer) return;
+                const src = audioCtx.createBufferSource();
+                src.buffer = winBuffer;
+                src.connect(audioCtx.destination);
+                src.start();
+            }
+
+            function playXiaochu() {
+                if (muted || !audioCtx || !xiaochuBuffer) return;
+                const src = audioCtx.createBufferSource();
+                src.buffer = xiaochuBuffer;
+                src.connect(audioCtx.destination);
+                src.start();
+            }
+
+            function toggleMute() {
+                muted = !muted;
+                if (muted) {
+                    muteBtn.innerHTML = '🔇 MUTE';
+                    muteBtn.classList.add('muted');
+                    stopBGM();
+                } else {
+                    muteBtn.innerHTML = '🔊 MUTE';
+                    muteBtn.classList.remove('muted');
+                    // if game is running and not paused, resume BGM
+                    if (gameRunning && !gamePaused) playBGM();
+                }
+            }
+
+            function resumeAudio() {
+                if (audioCtx && audioCtx.state === 'suspended') {
+                    audioCtx.resume().catch(e=>{});
+                }
+            }
+
+            // ---------- petal rain ----------
+            let petals = [];
+            let petalAnimation = null;
+            function startPetalRain() {
+                if (petalAnimation) cancelAnimationFrame(petalAnimation);
+                petals = [];
+                for (let i = 0; i < 250; i++) {
+                    petals.push({
+                        x: Math.random() * window.innerWidth,
+                        y: Math.random() * window.innerHeight * 0.2 - 120,
+                        size: 7 + Math.random() * 20,
+                        speedY: 1 + Math.random() * 4,
+                        speedX: (Math.random() - 0.5) * 0.7,
+                        color: `hsl(${Math.random() * 60 + 300}, 80%, 70%)`,
+                        angle: Math.random() * 6.28,
+                        spin: (Math.random() - 0.5) * 0.04,
+                    });
+                }
+                function drawPetals() {
+                    pCtx.clearRect(0, 0, petalCanvas.width, petalCanvas.height);
+                    pCtx.shadowColor = 'rgba(255,180,200,0.6)';
+                    pCtx.shadowBlur = 12;
+                    for (let p of petals) {
+                        p.y += p.speedY;
+                        p.x += p.speedX;
+                        p.angle += p.spin;
+                        if (p.y > window.innerHeight + 60) {
+                            p.y = -30;
+                            p.x = Math.random() * window.innerWidth;
+                        }
+                        pCtx.save();
+                        pCtx.translate(p.x, p.y);
+                        pCtx.rotate(p.angle);
+                        pCtx.fillStyle = p.color;
+                        pCtx.beginPath();
+                        pCtx.ellipse(0, 0, p.size*0.7, p.size*0.4, 0, 0, 2*Math.PI);
+                        pCtx.fill();
+                        pCtx.restore();
+                    }
+                    petalAnimation = requestAnimationFrame(drawPetals);
+                }
+                drawPetals();
+            }
+
+            function stopPetalRain() {
+                if (petalAnimation) { cancelAnimationFrame(petalAnimation); petalAnimation = null; }
+                pCtx.clearRect(0, 0, petalCanvas.width, petalCanvas.height);
+                petals = [];
+            }
+
+            // ---------- game over card ----------
+            function showGameOverCard(finalScore) {
+                const old = document.querySelector('.gameover-overlay');
+                if (old) old.remove();
+
+                const overlay = document.createElement('div');
+                overlay.className = 'gameover-overlay';
+                overlay.innerHTML = `
+                    <div class="gameover-card">
+                        <h1>🌸 LOTUS BLOSSOM 🌸</h1>
+                        <div class="final-score">SCORE: ${finalScore}</div>
+                        <button class="restart-btn" id="restartAfterGameover">PLAY AGAIN</button>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+
+                document.getElementById('restartAfterGameover').addEventListener('click', () => {
+                    overlay.remove();
+                    stopPetalRain();
+                    resetGame();
+                    stopBGM();
+                    gameRunning = false; gamePaused = false;
+                    drawCanvas();
+                });
+            }
+
+            // ---------- food generation ----------
+            function generateFood() {
+                const snakeSet = new Set(snake.map(cell => `${cell.x},${cell.y}`));
+                let free = [];
+                for (let i = 0; i < GRID_SIZE; i++) {
+                    for (let j = 0; j < GRID_SIZE; j++) {
+                        if (!snakeSet.has(`${i},${j}`)) free.push({x: i, y: j});
+                    }
+                }
+                if (free.length === 0) return false;
+                food = free[Math.floor(Math.random() * free.length)];
+                return true;
+            }
+
+            // ---------- reset game ----------
+            function resetGame() {
+                if (gameInterval) { clearInterval(gameInterval); gameInterval = null; }
+                snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+                direction = 'RIGHT';
+                nextDirection = 'RIGHT';
+                score = 0;
+                scoreSpan.textContent = '0';
+                generateFood();
+                gameRunning = false;
+                gamePaused = false;
+                drawCanvas();
+                stopBGM();
+            }
+
+            // ---------- start / pause / step ----------
+            function startGame() {
+                resumeAudio();   // unlock audio if needed
+                // Even if preload not yet finished, we can still start game, but BGM will start when buffer available.
+                // We trigger BGM immediately; if buffer null, playBGM silently fails.
+                if (!gameRunning) {
+                    gameRunning = true;
+                    gamePaused = false;
+                    if (gameInterval) clearInterval(gameInterval);
+                    gameInterval = setInterval(step, gameSpeed);
+                    // Start background music right after click (files are already preloaded in most cases)
+                    if (!muted) playBGM();
+                } else if (gamePaused) {
+                    gamePaused = false;
+                    // if game was paused but running, music might be off; ensure BGM on unpause
+                    if (!muted) playBGM();
+                }
+            }
+
+            function pauseGame() {
+                if (!gameRunning) {
+                    gamePaused = true;
+                } else {
+                    gamePaused = !gamePaused;
+                    if (gamePaused) {
+                        stopBGM();    // pause music
+                    } else {
+                        if (!muted) playBGM(); // resume music
+                    }
+                }
+            }
+
+            function step() {
+                if (!gameRunning || gamePaused) return;
+                direction = nextDirection;
+                let head = snake[0];
+                let newHead = {x: head.x, y: head.y};
+                if (direction === 'RIGHT') newHead.x += 1;
+                else if (direction === 'LEFT') newHead.x -= 1;
+                else if (direction === 'UP') newHead.y -= 1;
+                else if (direction === 'DOWN') newHead.y += 1;
+
+                // boundary
+                if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
+                    gameOver(); return;
+                }
+
+                const eating = (newHead.x === food.x && newHead.y === food.y);
+                let newSnake = [newHead, ...snake];
+                if (!eating) newSnake.pop();
+
+                // self collision
+                if (newSnake.slice(1).some(s => s.x === newHead.x && s.y === newHead.y)) {
+                    gameOver(); return;
+                }
+
+                snake = newSnake;
+
+                if (eating) {
+                    playWin();        // eat sound (already preloaded)
+                    score++;
+                    scoreSpan.textContent = score;
+                    if (!generateFood()) { gameOver(); return; }
+                }
+                drawCanvas();
+            }
+
+            function gameOver() {
+                if (gameInterval) { clearInterval(gameInterval); gameInterval = null; }
+                gameRunning = false;
+                gamePaused = false;
+                stopBGM();
+                playXiaochu();        // gameover sound (preloaded)
+                startPetalRain();
+                showGameOverCard(score);
+                drawCanvas();
+            }
+
+            // ---------- drawing ----------
+            function drawCanvas() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // faint grid
+                ctx.strokeStyle = 'rgba(255, 250, 210, 0.35)';
+                ctx.lineWidth = 1.5;
+                for (let i = 0; i <= GRID_SIZE; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(i*CELL_SIZE, 0); ctx.lineTo(i*CELL_SIZE, canvas.height); ctx.stroke();
+                    ctx.moveTo(0, i*CELL_SIZE); ctx.lineTo(canvas.width, i*CELL_SIZE); ctx.stroke();
+                }
+
+                // food
+                ctx.shadowColor = '#ffd966';
+                ctx.shadowBlur = 14;
+                ctx.beginPath();
+                ctx.arc(food.x*CELL_SIZE+CELL_SIZE/2, food.y*CELL_SIZE+CELL_SIZE/2, CELL_SIZE/2-3, 0, 2*Math.PI);
+                ctx.fillStyle = '#ff4133';
+                ctx.fill();
+                ctx.strokeStyle = '#fffac2';
+                ctx.lineWidth = 2.2;
+                ctx.stroke();
+
+                // snake
+                ctx.shadowBlur = 10;
+                snake.forEach((seg, idx) => {
+                    const isHead = idx === 0;
+                    const x = seg.x*CELL_SIZE, y = seg.y*CELL_SIZE;
+                    const r = CELL_SIZE/2 - (isHead ? 2 : 4);
+                    ctx.beginPath();
+                    ctx.arc(x+CELL_SIZE/2, y+CELL_SIZE/2, r, 0, 2*Math.PI);
+                    ctx.fillStyle = isHead ? '#f7d44a' : '#4da64d';
+                    ctx.fill();
+                    ctx.strokeStyle = '#1e4f1e';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    if (isHead) {
+                        ctx.fillStyle = '#1e2b0e';
+                        ctx.shadowBlur = 0;
+                        ctx.beginPath();
+                        ctx.arc(x+CELL_SIZE/2-7, y+CELL_SIZE/2-5, 3, 0, 2*Math.PI);
+                        ctx.arc(x+CELL_SIZE/2+7, y+CELL_SIZE/2-5, 3, 0, 2*Math.PI);
+                        ctx.fill();
+                    }
+                });
+                ctx.shadowBlur = 0;
+            }
+
+            // ---------- input handling (keyboard + touch) ----------
+            window.addEventListener('keydown', (e) => {
+                if (e.key.startsWith('Arrow')) {
+                    e.preventDefault();
+                    const k = e.key.slice(5);
+                    if (k === 'Up' && direction !== 'DOWN') nextDirection = 'UP';
+                    else if (k === 'Down' && direction !== 'UP') nextDirection = 'DOWN';
+                    else if (k === 'Left' && direction !== 'RIGHT') nextDirection = 'LEFT';
+                    else if (k === 'Right' && direction !== 'LEFT') nextDirection = 'RIGHT';
+                }
+            });
+
+            let touchStart = null;
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const t = e.touches[0];
+                touchStart = {x: t.clientX, y: t.clientY};
+            }, {passive: false});
+            canvas.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                if (!touchStart) return;
+                const t = e.changedTouches[0];
+                const dx = t.clientX - touchStart.x;
+                const dy = t.clientY - touchStart.y;
+                if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 20) {
+                    if (dx > 0 && direction !== 'LEFT') nextDirection = 'RIGHT';
+                    else if (dx < 0 && direction !== 'RIGHT') nextDirection = 'LEFT';
+                } else if (Math.abs(dy) > 20) {
+                    if (dy > 0 && direction !== 'UP') nextDirection = 'DOWN';
+                    else if (dy < 0 && direction !== 'DOWN') nextDirection = 'UP';
+                }
+                touchStart = null;
+            });
+
+            // ---------- button listeners ----------
+            startBtn.addEventListener('click', () => { 
+                resumeAudio(); 
+                startGame();      // inside startGame we now call playBGM directly
+            });
+            pauseBtn.addEventListener('click', pauseGame);
+            muteBtn.addEventListener('click', toggleMute);
+            moreGames.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.open('https://amitofoicu.github.io/home/more.html', '_blank');
+            });
+
+            // resize petal canvas
+            function resizePetal() {
+                petalCanvas.width = window.innerWidth;
+                petalCanvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resizePetal);
+            resizePetal();
+
+            // initial draw
+            resetGame();
+        })();
+    </script>
+</body>
+</html>
