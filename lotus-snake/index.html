@@ -322,7 +322,7 @@
                 </div>
             </div>
             <span class="game-title">LOTUS SNAKE</span>
-            <a href="#" class="more-games" id="moreGamesBtn" target="_blank" rel="noopener">🎮 MORE</a>
+            <a href="#" class="more-games" id="moreGamesBtn" target="_blank" rel="noopener">MORE</a>
         </div>
 
         <div class="canvas-wrapper">
@@ -333,7 +333,7 @@
             <div class="btn-group">
                 <button class="btn" id="startBtn">▶ START</button>
                 <button class="btn" id="pauseBtn">⏸️ PAUSE</button>
-                <button class="btn sound-btn" id="muteBtn">🔊 MUTE</button>
+                <button class="btn sound-btn" id="muteBtn">🔊</button>
             </div>
             <div class="score-panel">
                 <span>🌸</span>
@@ -638,11 +638,11 @@
             function toggleMute() {
                 muted = !muted;
                 if (muted) {
-                    muteBtn.innerHTML = '🔇 MUTE';
+                    muteBtn.innerHTML = '🔇';
                     muteBtn.classList.add('muted');
                     stopBGM();
                 } else {
-                    muteBtn.innerHTML = '🔊 MUTE';
+                    muteBtn.innerHTML = '🔊';
                     muteBtn.classList.remove('muted');
                     if (gameRunning && !gamePaused) playBGM();
                 }
@@ -1005,7 +1005,7 @@
             muteBtn.addEventListener('click', toggleMute);
             moreGames.addEventListener('click', (e) => {
                 e.preventDefault();
-                window.open('https://amitofoicu.github.io/home/more.html', '_blank');
+                window.open('https://amitofoicu.github.io/home/main.html', '_blank');
             });
 
             function resizePetal() {
