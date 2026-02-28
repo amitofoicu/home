@@ -1,4 +1,4 @@
-name: Deploy HTML Game
+name: Deploy All HTML Games
 
 on:
   push:
@@ -14,27 +14,41 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        game:
+          - lotus-snake
+          - tetris
+          - collect-lotus
+          - listening-game
+          - di-zi-gui
+          - reading-assistant
+          - black-8-pro
+          - single-squash-challenge
+          - black-8-billiard
+          - match-2-style-puzzle
+
     steps:
-      - name: Checkout
+      # 1️⃣ Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ----------------------------
-      # Deploy to GitHub Pages
-      # ----------------------------
+      # 2️⃣ Deploy GitHub Pages (only once, for first game)
       - name: Setup Pages
+        if: matrix.game == 'lotus-snake'
         uses: actions/configure-pages@v4
 
-      - name: Upload Artifact
+      - name: Upload Pages Artifact
+        if: matrix.game == 'lotus-snake'
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
 
       - name: Deploy to GitHub Pages
+        if: matrix.game == 'lotus-snake'
         uses: actions/deploy-pages@v4
 
-      # ----------------------------
-      # Install Butler (itch.io CLI)
-      # ----------------------------
+      # 3️⃣ Install Butler (itch.io CLI)
       - name: Install Butler
         run: |
           curl -L -o butler.zip https://broth.itch.zone/butler/linux-amd64/LATEST/archive/default
@@ -42,11 +56,11 @@ jobs:
           chmod +x butler
           sudo mv butler /usr/local/bin/
 
-      # ----------------------------
-      # Deploy to itch.io
-      # ----------------------------
-      - name: Push to itch.io
+      # 4️⃣ Deploy each game to itch.io
+      - name: Deploy game to itch.io
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          ITCH_USERNAME: ${{ secrets.ITCH_USERNAME }}
         run: |
-          butler push ./lotus-snake amitofo/lotus-snake:html5
+          echo "Deploying ${{ matrix.game }}..."
+          butler push ./${{ matrix.game }} ${{ env.ITCH_USERNAME }}/${{ matrix.game }}:html5 --userversion $GITHUB_SHA
