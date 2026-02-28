@@ -576,7 +576,6 @@
                     
                     console.log('✅ All audio preloaded');
                 } catch (err) {
-                    console.warn('❌ Audio preloading failed', err);
                     resourcesLoaded.audio = 3;
                     updateLoadingStatus();
                 }
