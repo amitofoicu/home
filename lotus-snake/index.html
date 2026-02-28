@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>莲花蛇 · 全资源预加载 + 呼吸光晕</title>
+    <title>Lotus Snake · Breathing Glow + 2 Blossoms</title>
     <style>
         * {
             box-sizing: border-box;
@@ -284,7 +284,6 @@
         .preload-images {
             display: none;
         }
-        /* 加载指示器（可选） */
         .loading-status {
             position: fixed;
             top: 10px;
@@ -300,10 +299,10 @@
     </style>
 </head>
 <body>
-    <!-- 加载状态提示（调试用，可删除） -->
-    <div class="loading-status" id="loadingStatus">加载资源中...</div>
+    <!-- Loading status indicator -->
+    <div class="loading-status" id="loadingStatus">Loading resources...</div>
 
-    <!-- 预加载所有图片 (可见但隐藏) -->
+    <!-- Preload all images (visible but hidden) -->
     <div class="preload-images">
         <img src="https://amitofoicu.github.io/home/lotus1.jpg" alt="lotus1" id="preload-lotus1">
         <img src="https://amitofoicu.github.io/home/lotus2.jpg" alt="lotus2" id="preload-lotus2">
@@ -312,8 +311,6 @@
         <img src="https://amitofoicu.github.io/home/logo.jpg" alt="logo" id="preload-logo">
         <img src="https://amitofoicu.github.io/home/lianchi6.jpg" alt="background" id="preload-bg">
     </div>
-
-    <!-- 预加载音频 (通过Web Audio API) 已在脚本中处理 -->
 
     <canvas id="petalCanvas"></canvas>
 
@@ -344,7 +341,7 @@
             </div>
         </div>
         <div class="footer-note">
-            ← ↑ → ↓  SWIPE / ARROWS · 呼吸光晕 + 2朵迸发
+            ← ↑ → ↓  SWIPE / ARROWS · Breathing Glow + 2 Blossoms
         </div>
     </div>
 
@@ -365,14 +362,14 @@
             const GRID_SIZE = 20;
             const CELL_SIZE = canvas.width / GRID_SIZE;
 
-            // 游戏状态
+            // Game state
             let snake = [
                 {x: 10, y: 10},
                 {x: 9, y: 10},
                 {x: 8, y: 10}
             ];
             
-            // 食物数组
+            // Food array
             let foods = [];
             
             const foodImageUrls = [
@@ -384,7 +381,7 @@
             let foodImages = [];
             let imagesLoaded = false;
 
-            // 跟踪所有资源加载状态
+            // Track all resource loading status
             let resourcesLoaded = {
                 images: 0,
                 audio: 0,
@@ -396,7 +393,7 @@
                 const total = resourcesLoaded.totalImages + resourcesLoaded.totalAudio;
                 const loaded = resourcesLoaded.images + resourcesLoaded.audio;
                 if (loaded >= total) {
-                    loadingStatus.textContent = '✅ 所有资源加载完成';
+                    loadingStatus.textContent = '✅ All resources loaded';
                     loadingStatus.style.backgroundColor = 'rgba(0,100,0,0.8)';
                     setTimeout(() => {
                         loadingStatus.style.opacity = '0';
@@ -405,14 +402,14 @@
                         }, 500);
                     }, 1500);
                 } else {
-                    loadingStatus.textContent = `加载资源中... ${loaded}/${total}`;
+                    loadingStatus.textContent = `Loading resources... ${loaded}/${total}`;
                 }
             }
 
-            // 预加载图片 (包括所有jpg)
+            // Preload all images (including all jpgs)
             function preloadAllImages() {
                 return new Promise((resolve) => {
-                    // 要预加载的图片列表
+                    // List of all images to preload
                     const allImages = [
                         'https://amitofoicu.github.io/home/lotus1.jpg',
                         'https://amitofoicu.github.io/home/lotus2.jpg',
@@ -432,7 +429,7 @@
                             loadedCount++;
                             resourcesLoaded.images = loadedCount;
                             
-                            // 存储莲花图片到foodImages数组
+                            // Store lotus images in foodImages array
                             if (idx < 4) {
                                 foodImages[idx] = img;
                             }
@@ -446,12 +443,12 @@
                         };
                         
                         img.onerror = () => {
-                            console.warn('图片加载失败', url);
+                            console.warn('Image loading failed', url);
                             loadedCount++;
                             resourcesLoaded.images = loadedCount;
                             
                             if (idx < 4) {
-                                // 创建备用颜色占位
+                                // Create fallback color placeholder
                                 const canvas = document.createElement('canvas');
                                 canvas.width = 100;
                                 canvas.height = 100;
@@ -478,17 +475,17 @@
                 });
             }
 
-            // 随机生成食物数量 N (1-5)
+            // Randomly generate number of food items N (1-5)
             function randomFoodN() {
                 return Math.floor(Math.random() * 5) + 1;
             }
 
-            // 随机图片索引
+            // Random image index
             function randomFoodImageIndex() {
                 return Math.floor(Math.random() * 4);
             }
 
-            // 生成一组新的食物
+            // Generate a new set of foods
             function generateFoods() {
                 const snakeSet = new Set(snake.map(cell => `${cell.x},${cell.y}`));
                 let free = [];
@@ -529,11 +526,11 @@
             let gameInterval = null;
             const gameSpeed = 200;
 
-            // 呼吸光晕动画相关
+            // Breathing glow animation
             let glowPhase = 0;
             const glowSpeed = 0.02;
 
-            // 音频
+            // Audio
             let audioCtx = null;
             let bgmBuffer = null;
             let winBuffer = null;
@@ -547,7 +544,7 @@
                 audioCtx = new AudioContext();
             } catch (e) { console.warn("Web Audio not supported"); }
 
-            // 预加载所有音频文件
+            // Preload all audio files
             async function preloadAllAudio() {
                 if (!audioCtx) { 
                     resourcesLoaded.audio = 3;
@@ -556,14 +553,14 @@
                 }
                 
                 try {
-                    // 并行获取所有音频数据
+                    // Fetch all audio data in parallel
                     const [bgmData, winData, xcData] = await Promise.all([
                         fetch('https://amitofoicu.github.io/home/beijing.ogg').then(r => r.arrayBuffer()),
                         fetch('https://amitofoicu.github.io/home/win.mp3').then(r => r.arrayBuffer()),
                         fetch('https://amitofoicu.github.io/home/xiaochu.mp3').then(r => r.arrayBuffer())
                     ]);
                     
-                    // 并行解码
+                    // Decode in parallel
                     const [bgm, win, xc] = await Promise.all([
                         audioCtx.decodeAudioData(bgmData),
                         audioCtx.decodeAudioData(winData),
@@ -577,18 +574,17 @@
                     resourcesLoaded.audio = 3;
                     updateLoadingStatus();
                     
-                    console.log('✅ 所有音频预加载完成');
+                    console.log('✅ All audio preloaded');
                 } catch (err) {
-                    console.warn('❌ 音频预加载失败', err);
-                    resourcesLoaded.audio = 3; // 标记为完成，避免卡住
+                    console.warn('❌ Audio preloading failed', err);
+                    resourcesLoaded.audio = 3;
                     updateLoadingStatus();
                 }
             }
 
-            // 开始预加载所有资源
+            // Start preloading all resources
             Promise.all([preloadAllImages(), preloadAllAudio()]).then(() => {
-                console.log('所有资源加载完成');
-                // 可以开始游戏了
+                console.log('All resources loaded');
             });
 
             function unlockAudioForIOS() {
@@ -652,11 +648,11 @@
                 }
             }
 
-            // 花瓣动画
+            // Petal animation
             let petals = [];
             let petalAnimation = null;
 
-            // 迸发2朵彩色小花 (在指定位置)
+            // Spawn 2 colorful blossoms at specified position
             function spawnTwoBlossomsAt(x, y) {
                 const canvasRect = canvas.getBoundingClientRect();
                 const screenX = canvasRect.left + (x / canvas.width) * canvasRect.width;
@@ -736,9 +732,9 @@
                 overlay.className = 'gameover-overlay';
                 overlay.innerHTML = `
                     <div class="gameover-card">
-                        <h1>🌸 莲花盛开 🌸</h1>
-                        <div class="final-score">得分: ${finalScore}</div>
-                        <button class="restart-btn" id="restartAfterGameover">再来一局</button>
+                        <h1>🌸 LOTUS BLOOMS 🌸</h1>
+                        <div class="final-score">SCORE: ${finalScore}</div>
+                        <button class="restart-btn" id="restartAfterGameover">PLAY AGAIN</button>
                     </div>
                 `;
                 document.body.appendChild(overlay);
@@ -877,7 +873,7 @@
                 drawCanvas();
             }
 
-            // 绘制canvas - 呼吸光晕效果
+            // Draw canvas - breathing glow effect
             function drawCanvas() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
@@ -970,7 +966,7 @@
             }
             animationLoop();
 
-            // 输入处理
+            // Input handling
             window.addEventListener('keydown', (e) => {
                 if (e.key.startsWith('Arrow')) {
                     e.preventDefault();
@@ -1009,7 +1005,7 @@
             muteBtn.addEventListener('click', toggleMute);
             moreGames.addEventListener('click', (e) => {
                 e.preventDefault();
-                window.open('https://amitofoicu.github.io/home/main.html', '_blank');
+                window.open('https://amitofoicu.github.io/home/more.html', '_blank');
             });
 
             function resizePetal() {
