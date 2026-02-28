@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotus Snake · Blossom</title>
+    <title>Lotus Snake · Blossom + Vibration (iOS fix)</title>
     <style>
         * {
             box-sizing: border-box;
@@ -32,7 +32,6 @@
             position: relative;
             z-index: 5;
         }
-        /* title bar — game title is absolutely centered */
         .title-bar {
             display: flex;
             align-items: center;
@@ -67,7 +66,6 @@
             object-fit: cover;
             display: block;
         }
-        /* game title centered absolutely */
         .game-title {
             position: absolute;
             left: 50%;
@@ -104,7 +102,6 @@
             transform: translateY(3px);
             box-shadow: 0 1px 0 #9e7126;
         }
-        /* canvas wrapper with background image */
         .canvas-wrapper {
             background-image: url('https://amitofoicu.github.io/home/lianchi6.jpg');
             background-size: cover;
@@ -124,7 +121,6 @@
             position: relative;
             z-index: 10;
         }
-        /* control bar */
         .control-bar {
             display: flex;
             flex-wrap: wrap;
@@ -220,7 +216,6 @@
             background: #0d2f1bb3;
             letter-spacing: 0.5px;
         }
-        /* petal rain overlay + gameover card */
         .gameover-overlay {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -288,13 +283,6 @@
             pointer-events: none;
             z-index: 999;
         }
-        /* tiny loading status (optional, but gives feedback) */
-        .audio-status {
-            font-size: 0.7rem;
-            color: #b8d0a0;
-            margin-left: 10px;
-            opacity: 0.8;
-        }
     </style>
 </head>
 <body>
@@ -306,7 +294,6 @@
                 <div class="logo-square">
                     <img src="https://amitofoicu.github.io/home/logo.jpg" alt="logo" onerror="this.style.backgroundColor='#d4a859';">
                 </div>
-                <!-- hidden placeholder -->
             </div>
             <span class="game-title">LOTUS SNAKE</span>
             <a href="#" class="more-games" id="moreGamesBtn" target="_blank" rel="noopener">🎮 MORE</a>
@@ -365,16 +352,15 @@
             let gameInterval = null;
             const gameSpeed = 200;
 
-            // ---------- AUDIO: preload all files ----------
+            // ---------- AUDIO: preload all files (fixed iOS unlocking) ----------
             let audioCtx = null;
             let bgmBuffer = null;      // beijing.ogg
             let winBuffer = null;       // win.mp3
             let xiaochuBuffer = null;   // xiaochu.mp3
             let bgmSource = null;
             let muted = false;
-
-            // flags to know when preload completed
             let preloadCompleted = false;
+            let audioInitialized = false;  // flag to ensure we unlock only once
 
             try {
                 window.AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -384,18 +370,16 @@
             // preload all three files immediately and in parallel
             async function preloadAllSounds() {
                 if (!audioCtx) {
-                    preloadCompleted = true; // no audio, just mark done
+                    preloadCompleted = true;
                     return;
                 }
                 try {
-                    // use Promise.all to load simultaneously
                     const [bgmArray, winArray, xcArray] = await Promise.all([
                         fetch('https://amitofoicu.github.io/home/beijing.ogg').then(r => r.arrayBuffer()),
                         fetch('https://amitofoicu.github.io/home/win.mp3').then(r => r.arrayBuffer()),
                         fetch('https://amitofoicu.github.io/home/xiaochu.mp3').then(r => r.arrayBuffer())
                     ]);
 
-                    // decode in parallel
                     const [bgm, win, xc] = await Promise.all([
                         audioCtx.decodeAudioData(bgmArray),
                         audioCtx.decodeAudioData(winArray),
@@ -409,13 +393,27 @@
                     console.log('all audio preloaded');
                 } catch (err) {
                     console.warn('preload failed', err);
-                    preloadCompleted = true; // still mark true to allow gameplay without audio
+                    preloadCompleted = true;
                 }
             }
-            // start preloading immediately
             preloadAllSounds();
 
-            // playback functions (rely on preloaded buffers)
+            // iOS audio unlocking: must be called from a user gesture
+            function unlockAudio() {
+                if (!audioCtx || audioInitialized) return Promise.resolve();
+                audioInitialized = true;
+                // resume and create silent buffer to unlock
+                return audioCtx.resume().then(() => {
+                    // create and play a silent buffer (required for some iOS versions)
+                    const buffer = audioCtx.createBuffer(1, 1, 22050);
+                    const src = audioCtx.createBufferSource();
+                    src.buffer = buffer;
+                    src.connect(audioCtx.destination);
+                    src.start();
+                    console.log('audio unlocked');
+                }).catch(e => console.warn('unlock failed', e));
+            }
+
             function playBGM() {
                 if (muted || !audioCtx || !bgmBuffer) return;
                 if (bgmSource) {
@@ -461,24 +459,54 @@
                 } else {
                     muteBtn.innerHTML = '🔊 MUTE';
                     muteBtn.classList.remove('muted');
-                    // if game is running and not paused, resume BGM
                     if (gameRunning && !gamePaused) playBGM();
                 }
             }
 
-            function resumeAudio() {
-                if (audioCtx && audioCtx.state === 'suspended') {
-                    audioCtx.resume().catch(e=>{});
+            // ---------- 🌸 VIBRATION + BLOSSOM (colorful petals) ON EAT (iOS compatible) ----------
+            function triggerEatFeedback() {
+                // 1) vibration (works on iPhone with iOS 13+ if not in silent? but we call anyway)
+                if (navigator.vibrate) {
+                    navigator.vibrate(30); // short thud
+                } else {
+                    // fallback: no vibration, but we still do petals
+                    console.log("vibrate not supported");
                 }
+
+                // 2) random colorful blossom burst around food position (visual connection)
+                // convert food grid to canvas pixel, then to screen coordinate approx
+                let foodCanvasX = food.x * CELL_SIZE + CELL_SIZE/2;
+                let foodCanvasY = food.y * CELL_SIZE + CELL_SIZE/2;
+                // get canvas rectangle to map to screen
+                const canvasRect = canvas.getBoundingClientRect();
+                const screenX = canvasRect.left + (foodCanvasX / canvas.width) * canvasRect.width;
+                const screenY = canvasRect.top + (foodCanvasY / canvas.height) * canvasRect.height;
+
+                for (let i = 0; i < 25; i++) { // burst 25 fresh petals near food
+                    let offsetX = (Math.random() - 0.5) * 180;
+                    let offsetY = (Math.random() - 0.5) * 150;
+                    petals.push({
+                        x: screenX + offsetX,
+                        y: screenY + offsetY - 30,
+                        size: 8 + Math.random() * 22,
+                        speedY: 1.5 + Math.random() * 5,
+                        speedX: (Math.random() - 0.5) * 1.6,
+                        color: `hsl(${Math.random() * 360}, 85%, 70%)`, // full rainbow
+                        angle: Math.random() * 6.28,
+                        spin: (Math.random() - 0.5) * 0.08,
+                    });
+                }
+                // limit total petals
+                if (petals.length > 600) petals.splice(0, 200);
             }
 
-            // ---------- petal rain ----------
+            // ---------- petal rain (continuous background + burst) ----------
             let petals = [];
             let petalAnimation = null;
             function startPetalRain() {
                 if (petalAnimation) cancelAnimationFrame(petalAnimation);
                 petals = [];
-                for (let i = 0; i < 250; i++) {
+                for (let i = 0; i < 180; i++) {
                     petals.push({
                         x: Math.random() * window.innerWidth,
                         y: Math.random() * window.innerHeight * 0.2 - 120,
@@ -579,21 +607,29 @@
 
             // ---------- start / pause / step ----------
             function startGame() {
-                resumeAudio();   // unlock audio if needed
-                // Even if preload not yet finished, we can still start game, but BGM will start when buffer available.
-                // We trigger BGM immediately; if buffer null, playBGM silently fails.
-                if (!gameRunning) {
-                    gameRunning = true;
-                    gamePaused = false;
-                    if (gameInterval) clearInterval(gameInterval);
-                    gameInterval = setInterval(step, gameSpeed);
-                    // Start background music right after click (files are already preloaded in most cases)
-                    if (!muted) playBGM();
-                } else if (gamePaused) {
-                    gamePaused = false;
-                    // if game was paused but running, music might be off; ensure BGM on unpause
-                    if (!muted) playBGM();
-                }
+                // iOS audio must be unlocked inside user gesture
+                unlockAudio().then(() => {
+                    if (!gameRunning) {
+                        gameRunning = true;
+                        gamePaused = false;
+                        if (gameInterval) clearInterval(gameInterval);
+                        gameInterval = setInterval(step, gameSpeed);
+                        if (!muted) playBGM();
+                    } else if (gamePaused) {
+                        gamePaused = false;
+                        if (!muted) playBGM();
+                    }
+                }).catch(() => {
+                    // fallback: still try to start game even if audio unlock fails
+                    if (!gameRunning) {
+                        gameRunning = true;
+                        gamePaused = false;
+                        if (gameInterval) clearInterval(gameInterval);
+                        gameInterval = setInterval(step, gameSpeed);
+                    } else if (gamePaused) {
+                        gamePaused = false;
+                    }
+                });
             }
 
             function pauseGame() {
@@ -602,9 +638,9 @@
                 } else {
                     gamePaused = !gamePaused;
                     if (gamePaused) {
-                        stopBGM();    // pause music
+                        stopBGM();
                     } else {
-                        if (!muted) playBGM(); // resume music
+                        if (!muted) playBGM();
                     }
                 }
             }
@@ -619,7 +655,6 @@
                 else if (direction === 'UP') newHead.y -= 1;
                 else if (direction === 'DOWN') newHead.y += 1;
 
-                // boundary
                 if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
                     gameOver(); return;
                 }
@@ -628,7 +663,6 @@
                 let newSnake = [newHead, ...snake];
                 if (!eating) newSnake.pop();
 
-                // self collision
                 if (newSnake.slice(1).some(s => s.x === newHead.x && s.y === newHead.y)) {
                     gameOver(); return;
                 }
@@ -636,7 +670,8 @@
                 snake = newSnake;
 
                 if (eating) {
-                    playWin();        // eat sound (already preloaded)
+                    playWin();               // audio
+                    triggerEatFeedback();    // 🌸 vibration + colorful petal burst near food
                     score++;
                     scoreSpan.textContent = score;
                     if (!generateFood()) { gameOver(); return; }
@@ -649,8 +684,8 @@
                 gameRunning = false;
                 gamePaused = false;
                 stopBGM();
-                playXiaochu();        // gameover sound (preloaded)
-                startPetalRain();
+                playXiaochu();
+                startPetalRain();          // full screen petals
                 showGameOverCard(score);
                 drawCanvas();
             }
@@ -658,7 +693,6 @@
             // ---------- drawing ----------
             function drawCanvas() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                // faint grid
                 ctx.strokeStyle = 'rgba(255, 250, 210, 0.35)';
                 ctx.lineWidth = 1.5;
                 for (let i = 0; i <= GRID_SIZE; i++) {
@@ -667,7 +701,6 @@
                     ctx.moveTo(0, i*CELL_SIZE); ctx.lineTo(canvas.width, i*CELL_SIZE); ctx.stroke();
                 }
 
-                // food
                 ctx.shadowColor = '#ffd966';
                 ctx.shadowBlur = 14;
                 ctx.beginPath();
@@ -678,7 +711,6 @@
                 ctx.lineWidth = 2.2;
                 ctx.stroke();
 
-                // snake
                 ctx.shadowBlur = 10;
                 snake.forEach((seg, idx) => {
                     const isHead = idx === 0;
@@ -739,14 +771,13 @@
 
             // ---------- button listeners ----------
             startBtn.addEventListener('click', () => { 
-                resumeAudio(); 
-                startGame();      // inside startGame we now call playBGM directly
+                startGame();  // unlock inside startGame
             });
             pauseBtn.addEventListener('click', pauseGame);
             muteBtn.addEventListener('click', toggleMute);
             moreGames.addEventListener('click', (e) => {
                 e.preventDefault();
-                window.open('https://amitofoicu.github.io/home/more.html', '_blank');
+                window.open('https://amitofoicu.github.io/home/main.html', '_blank');
             });
 
             // resize petal canvas
@@ -759,6 +790,12 @@
 
             // initial draw
             resetGame();
+
+            // additionally, try to unlock audio on any user interaction (double safety)
+            document.body.addEventListener('touchstart', function once() {
+                unlockAudio();
+                document.body.removeEventListener('touchstart', once);
+            }, {passive: true});
         })();
     </script>
 </body>
