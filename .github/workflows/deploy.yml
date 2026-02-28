@@ -49,4 +49,4 @@ jobs:
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: |
-          butler push . amitofo/lotus-snake:html5
+          butler push ./lotus-snake amitofo/lotus-snake:html5
