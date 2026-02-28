@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lotus Snake</title>
+    <title>Lotus Snake · 花瓣重置版</title>
     <style>
         * {
             box-sizing: border-box;
@@ -295,6 +295,7 @@
             font-size: 12px;
             z-index: 10000;
             pointer-events: none;
+            transition: opacity 0.5s;
         }
     </style>
 </head>
@@ -302,14 +303,14 @@
     <!-- Loading status indicator -->
     <div class="loading-status" id="loadingStatus">Loading resources...</div>
 
-    <!-- Preload all images (visible but hidden) -->
+    <!-- Preload all images -->
     <div class="preload-images">
-        <img src="https://amitofoicu.github.io/home/lotus1.jpg" alt="lotus1" id="preload-lotus1">
-        <img src="https://amitofoicu.github.io/home/lotus2.jpg" alt="lotus2" id="preload-lotus2">
-        <img src="https://amitofoicu.github.io/home/lotus3.jpg" alt="lotus3" id="preload-lotus3">
-        <img src="https://amitofoicu.github.io/home/lotus4.jpg" alt="lotus4" id="preload-lotus4">
-        <img src="https://amitofoicu.github.io/home/logo.jpg" alt="logo" id="preload-logo">
-        <img src="https://amitofoicu.github.io/home/lianchi6.jpg" alt="background" id="preload-bg">
+        <img src="https://amitofoicu.github.io/home/lotus1.jpg" alt="lotus1">
+        <img src="https://amitofoicu.github.io/home/lotus2.jpg" alt="lotus2">
+        <img src="https://amitofoicu.github.io/home/lotus3.jpg" alt="lotus3">
+        <img src="https://amitofoicu.github.io/home/lotus4.jpg" alt="lotus4">
+        <img src="https://amitofoicu.github.io/home/logo.jpg" alt="logo">
+        <img src="https://amitofoicu.github.io/home/lianchi6.jpg" alt="background">
     </div>
 
     <canvas id="petalCanvas"></canvas>
@@ -362,14 +363,13 @@
             const GRID_SIZE = 20;
             const CELL_SIZE = canvas.width / GRID_SIZE;
 
-            // Game state
+            // 游戏状态
             let snake = [
                 {x: 10, y: 10},
                 {x: 9, y: 10},
                 {x: 8, y: 10}
             ];
             
-            // Food array
             let foods = [];
             
             const foodImageUrls = [
@@ -381,12 +381,12 @@
             let foodImages = [];
             let imagesLoaded = false;
 
-            // Track all resource loading status
+            // 资源计数
             let resourcesLoaded = {
                 images: 0,
                 audio: 0,
-                totalImages: 6, // 4 lotus + logo + bg
-                totalAudio: 3,   // bgm, win, xiaochu
+                totalImages: 6,
+                totalAudio: 3,
             };
 
             function updateLoadingStatus() {
@@ -406,10 +406,9 @@
                 }
             }
 
-            // Preload all images (including all jpgs)
+            // 预加载图片
             function preloadAllImages() {
                 return new Promise((resolve) => {
-                    // List of all images to preload
                     const allImages = [
                         'https://amitofoicu.github.io/home/lotus1.jpg',
                         'https://amitofoicu.github.io/home/lotus2.jpg',
@@ -429,7 +428,6 @@
                             loadedCount++;
                             resourcesLoaded.images = loadedCount;
                             
-                            // Store lotus images in foodImages array
                             if (idx < 4) {
                                 foodImages[idx] = img;
                             }
@@ -448,7 +446,7 @@
                             resourcesLoaded.images = loadedCount;
                             
                             if (idx < 4) {
-                                // Create fallback color placeholder
+                                // 备用色块
                                 const canvas = document.createElement('canvas');
                                 canvas.width = 100;
                                 canvas.height = 100;
@@ -475,17 +473,17 @@
                 });
             }
 
-            // Randomly generate number of food items N (1-5)
+            // 随机食物数量 1-5
             function randomFoodN() {
                 return Math.floor(Math.random() * 5) + 1;
             }
 
-            // Random image index
+            // 随机图片索引
             function randomFoodImageIndex() {
                 return Math.floor(Math.random() * 4);
             }
 
-            // Generate a new set of foods
+            // 生成新食物
             function generateFoods() {
                 const snakeSet = new Set(snake.map(cell => `${cell.x},${cell.y}`));
                 let free = [];
@@ -526,11 +524,11 @@
             let gameInterval = null;
             const gameSpeed = 200;
 
-            // Breathing glow animation
+            // 呼吸光效
             let glowPhase = 0;
             const glowSpeed = 0.02;
 
-            // Audio
+            // 音频
             let audioCtx = null;
             let bgmBuffer = null;
             let winBuffer = null;
@@ -544,7 +542,7 @@
                 audioCtx = new AudioContext();
             } catch (e) { console.warn("Web Audio not supported"); }
 
-            // Preload all audio files
+            // 预加载音频
             async function preloadAllAudio() {
                 if (!audioCtx) { 
                     resourcesLoaded.audio = 3;
@@ -553,14 +551,12 @@
                 }
                 
                 try {
-                    // Fetch all audio data in parallel
                     const [bgmData, winData, xcData] = await Promise.all([
                         fetch('https://amitofoicu.github.io/home/beijing.ogg').then(r => r.arrayBuffer()),
                         fetch('https://amitofoicu.github.io/home/win.mp3').then(r => r.arrayBuffer()),
                         fetch('https://amitofoicu.github.io/home/xiaochu.mp3').then(r => r.arrayBuffer())
                     ]);
                     
-                    // Decode in parallel
                     const [bgm, win, xc] = await Promise.all([
                         audioCtx.decodeAudioData(bgmData),
                         audioCtx.decodeAudioData(winData),
@@ -573,15 +569,12 @@
                     
                     resourcesLoaded.audio = 3;
                     updateLoadingStatus();
-                    
-                    console.log('✅ All audio preloaded');
                 } catch (err) {
                     resourcesLoaded.audio = 3;
                     updateLoadingStatus();
                 }
             }
 
-            // Start preloading all resources
             Promise.all([preloadAllImages(), preloadAllAudio()]).then(() => {
                 console.log('All resources loaded');
             });
@@ -647,12 +640,20 @@
                 }
             }
 
-            // Petal animation
+            // 花瓣动画系统
             let petals = [];
             let petalAnimation = null;
+            let petalAnimationRunning = false;
 
-            // Spawn 2 colorful blossoms 
+            // 清除所有花瓣（重置用）
+            function clearAllPetals() {
+                petals = [];            // 清空数组
+                pCtx.clearRect(0, 0, petalCanvas.width, petalCanvas.height); // 立即清除画布
+            }
+
+            // 生成两朵绽放花瓣（吃食物时）
             function spawnTwoBlossomsAt(x, y) {
+                console.log('Spawning blossoms at:', x, y); // 调试用
                 const canvasRect = canvas.getBoundingClientRect();
                 const screenX = canvasRect.left + (x / canvas.width) * canvasRect.width;
                 const screenY = canvasRect.top + (y / canvas.height) * canvasRect.height;
@@ -676,8 +677,11 @@
                 if (petals.length > 700) petals.splice(0, 200);
             }
 
+            // 游戏结束时的背景花瓣雨
             function startBackgroundRain() {
-                if (petalAnimation) cancelAnimationFrame(petalAnimation);
+                if (petalAnimationRunning) {
+                    cancelAnimationFrame(petalAnimation);
+                }
                 petals = [];
                 for (let i = 0; i < 150; i++) {
                     petals.push({
@@ -691,9 +695,16 @@
                         spin: (Math.random() - 0.5) * 0.03,
                     });
                 }
+                // 重新启动动画循环
+                drawPetals();
             }
 
             function drawPetals() {
+                if (petalAnimationRunning) {
+                    cancelAnimationFrame(petalAnimation);
+                }
+                petalAnimationRunning = true;
+                
                 pCtx.clearRect(0, 0, petalCanvas.width, petalCanvas.height);
                 pCtx.shadowColor = 'rgba(255,180,200,0.5)';
                 pCtx.shadowBlur = 10;
@@ -717,12 +728,42 @@
                 }
                 petalAnimation = requestAnimationFrame(drawPetals);
             }
+            
+            // 启动花瓣动画
             drawPetals();
 
-            function clearAllPetals() {
-                petals = [];
+            // 重置游戏核心函数（保证花瓣清零，一切重启）
+            function resetGameCompletely() {
+                // 停止游戏循环
+                if (gameInterval) {
+                    clearInterval(gameInterval);
+                    gameInterval = null;
+                }
+                // 停止音乐
+                stopBGM();
+                // 重置蛇、方向、分数
+                snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+                direction = 'RIGHT';
+                nextDirection = 'RIGHT';
+                score = 0;
+                scoreSpan.textContent = '0';
+                gameRunning = false;
+                gamePaused = false;
+                // 重新生成食物
+                generateFoods();
+                // 清除所有飘落花瓣
+                clearAllPetals();
+                
+                // 确保花瓣动画循环在运行
+                if (!petalAnimationRunning) {
+                    drawPetals();
+                }
+                
+                // 重绘棋盘
+                drawCanvas();
             }
 
+            // 游戏结束卡片
             function showGameOverCard(finalScore) {
                 const old = document.querySelector('.gameover-overlay');
                 if (old) old.remove();
@@ -739,28 +780,14 @@
                 document.body.appendChild(overlay);
 
                 document.getElementById('restartAfterGameover').addEventListener('click', () => {
-                    overlay.remove();
-                    clearAllPetals();
-                    resetGame();
-                    stopBGM();
-                    gameRunning = false; gamePaused = false;
-                    drawCanvas();
+                    overlay.remove();                // 移除卡片
+                    resetGameCompletely();            // 彻底重置 + 花瓣清零
                 });
             }
 
+            // 普通重置
             function resetGame() {
-		clearAllPetals();
-                if (gameInterval) { clearInterval(gameInterval); gameInterval = null; }
-                snake = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
-                direction = 'RIGHT';
-                nextDirection = 'RIGHT';
-                score = 0;
-                scoreSpan.textContent = '0';
-                generateFoods();
-                gameRunning = false;
-                gamePaused = false;
-                drawCanvas();
-                stopBGM();
+                resetGameCompletely();
             }
 
             function startGame() {
@@ -777,6 +804,7 @@
                         gameInterval = setInterval(step, gameSpeed);
                     } else if (gamePaused) {
                         gamePaused = false;
+                        if (!muted) playBGM();
                     }
                 }).catch(() => {
                     if (!muted) {
@@ -868,12 +896,12 @@
                 gamePaused = false;
                 stopBGM();
                 playXiaochu();
-                startBackgroundRain();
+                startBackgroundRain();   // 花瓣雨
                 showGameOverCard(score);
                 drawCanvas();
             }
 
-            // Draw canvas - breathing glow effect
+            // 绘图
             function drawCanvas() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
@@ -966,7 +994,7 @@
             }
             animationLoop();
 
-            // Input handling
+            // 键盘输入
             window.addEventListener('keydown', (e) => {
                 if (e.key.startsWith('Arrow')) {
                     e.preventDefault();
@@ -978,6 +1006,7 @@
                 }
             });
 
+            // 触摸滑动
             let touchStart = null;
             canvas.addEventListener('touchstart', (e) => {
                 e.preventDefault();
@@ -1015,6 +1044,7 @@
             window.addEventListener('resize', resizePetal);
             resizePetal();
 
+            // 初始重置
             resetGame();
 
             document.body.addEventListener('touchstart', function unlockOnTouch() {
