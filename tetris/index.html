@@ -1,10 +1,9 @@
-<!DOCTYPE html>
+游戏中禁用移动端双击触屏<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- critical: disable double-tap zoom & touch actions -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tetris · no double‑tap</title>
+    <title>Tetris</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* ----- reset & safe area ----- */
@@ -12,11 +11,8 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            /* completely kill any tap highlight */
             -webkit-tap-highlight-color: transparent;
-            /* prevent text selection on double-tap */
             user-select: none;
-            /* main: disable double-tap zoom and panning on all elements */
             touch-action: manipulation;
         }
 
@@ -25,6 +21,7 @@
             --safe-area-inset-top: env(safe-area-inset-top, 0px);
             --safe-area-inset-left: env(safe-area-inset-left, 0px);
             --safe-area-inset-right: env(safe-area-inset-right, 0px);
+            /* increased top/bottom padding for more breathing space */
             --extra-top-padding: 12px;
             --extra-bottom-padding: 18px;
         }
@@ -41,6 +38,7 @@
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            /* extra top/bottom padding added to safe-area values */
             padding: max(calc(15px + var(--extra-top-padding)), env(safe-area-inset-top)) 
                      max(10px, env(safe-area-inset-right)) 
                      max(calc(15px + var(--extra-bottom-padding)), env(safe-area-inset-bottom)) 
@@ -50,7 +48,7 @@
             -webkit-text-size-adjust: 100%;
         }
 
-        /* poem container (unchanged atmosphere) */
+        /* ----- floating poem (unchanged, but kept for atmosphere) ----- */
         .poem-container {
             position: absolute;
             bottom: max(20px, env(safe-area-inset-bottom));
@@ -60,7 +58,6 @@
             opacity: 0.7;
             transition: opacity 0.3s;
             max-width: 260px;
-            pointer-events: none;  /* no accidental taps */
         }
         .poem-container:hover { opacity: 1; }
         .poem-content {
@@ -82,7 +79,7 @@
             letter-spacing: 1px;
         }
 
-        /* flower container (petals) */
+        /* ----- flower container ----- */
         .flower-container {
             position: fixed;
             top: 0;
@@ -104,7 +101,7 @@
             background-repeat: no-repeat;
         }
 
-        /* header */
+        /* ----- header (logo, title, more) ----- */
         .game-header {
             display: flex;
             align-items: center;
@@ -112,7 +109,7 @@
             width: 100%;
             max-width: 400px;
             margin-top: 5px;
-            margin-bottom: 18px;
+            margin-bottom: 18px;    /* increased bottom margin for extra top padding feel */
             padding: 0 8px;
             z-index: 10;
             position: relative;
@@ -167,7 +164,6 @@
             animation: pulse 2s infinite;
             white-space: nowrap;
             flex-shrink: 0;
-            touch-action: manipulation; /* extra safety */
         }
 
         @keyframes pulse {
@@ -176,7 +172,7 @@
             100% { box-shadow: 0 0 10px rgba(255, 20, 147, 0.5); }
         }
 
-        /* main game area */
+        /* ----- main game area with extra spacing ----- */
         .game-container {
             display: flex;
             flex-direction: column;
@@ -209,17 +205,17 @@
             min-height: 0;
         }
 
-        /* next row */
+        /* ----- next row with spacing ----- */
         .next-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
             width: 100%;
-            margin-bottom: 12px;
+            margin-bottom: 12px;      /* extra spacing */
             flex-shrink: 0;
             gap: 8px;
             background: rgba(0,0,0,0.3);
-            padding: 8px 12px;
+            padding: 8px 12px;         /* increased vertical padding */
             border-radius: 50px;
             backdrop-filter: blur(8px);
             border: 1px solid rgba(255,255,255,0.15);
@@ -242,7 +238,6 @@
             width: 60px;
             height: 60px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-            touch-action: manipulation;
         }
 
         .control-group {
@@ -283,7 +278,7 @@
             color: white;
             border: none;
             border-radius: 30px;
-            padding: 8px 14px;
+            padding: 8px 14px;          /* slightly bigger touch target */
             font-size: clamp(12px, 3vw, 14px);
             font-weight: bold;
             cursor: pointer;
@@ -293,7 +288,6 @@
             align-items: center;
             gap: 6px;
             white-space: nowrap;
-            touch-action: manipulation;
         }
         .mini-control-btn:active {
             transform: translateY(3px);
@@ -307,7 +301,7 @@
             background: linear-gradient(145deg, #2196F3, #1976D2);
             border: none;
             border-radius: 50%;
-            width: 44px;
+            width: 44px;                /* slightly larger */
             height: 44px;
             color: white;
             display: flex;
@@ -317,13 +311,12 @@
             box-shadow: 0 3px 0 #0b5e9e;
             transition: 0.1s;
             flex-shrink: 0;
-            touch-action: manipulation;
         }
         .sound-toggle-btn:active {
             transform: scale(0.95);
         }
 
-        /* canvas container */
+        /* ----- canvas container with extra bottom hint spacing ----- */
         .main-game {
             display: flex;
             justify-content: center;
@@ -357,11 +350,11 @@
             object-fit: contain;
             outline: none;
             image-rendering: crisp-edges;
-            touch-action: none;  /* absolutely no pan/zoom on canvas */
         }
 
+        /* keyboard hint with more margin */
         .keyboard-hint {
-            margin-top: 14px;
+            margin-top: 14px;            /* increased top margin */
             color: rgba(255,255,255,0.7);
             font-size: 14px;
             background: rgba(0,0,0,0.3);
@@ -374,7 +367,6 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             text-align: center;
             white-space: nowrap;
-            pointer-events: none; /* hint not tappable */
         }
         .keyboard-hint i {
             color: #FFD700;
@@ -382,14 +374,15 @@
             font-size: 16px;
         }
 
-        /* bottom controls */
+        /* ----- bottom controls with extra bottom padding (already increased in body) ----- */
         .controls-container {
-            margin-top: 16px;
+            margin-top: 16px;             /* more spacing from canvas */
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 100%;
             flex-shrink: 0;
+            /* extra bottom padding handled by body */
         }
 
         .mobile-controls {
@@ -404,7 +397,7 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             grid-template-rows: repeat(2, 1fr) 5px;
-            gap: 10px;
+            gap: 10px;                  /* increased gap for bigger touch area */
             width: clamp(160px, 42vw, 210px);
             height: clamp(110px, 28vw, 140px);
             margin: 0 auto;
@@ -413,7 +406,7 @@
         .dpad-button {
             background: linear-gradient(145deg, #5C6BC0, #3F51B5);
             border: none;
-            border-radius: 18px;
+            border-radius: 18px;          /* slightly more rounded */
             color: white;
             font-size: clamp(22px, 5.5vw, 28px);
             display: flex;
@@ -423,8 +416,6 @@
             transition: all 0.1s;
             box-shadow: 0 4px 0 #283593, 0 6px 12px rgba(0,0,0,0.2);
             outline: none;
-            /* kill double-tap zoom on buttons */
-            touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
         .dpad-button:active {
@@ -447,7 +438,7 @@
             pointer-events: none;
         }
 
-        /* overlays */
+        /* game overlays */
         .game-over, .perfect-game-over {
             position: absolute;
             top: 0;
@@ -544,16 +535,16 @@
     </style>
 </head>
 <body>
-    <!-- floating petals (unchanged) -->
+    <!-- floating petals (same) -->
     <div class="flower-container" id="flowerContainer"></div>
 
-    <!-- header -->
+    <!-- header with english title -->
     <div class="game-header">
         <div class="header-left">
             <img src="https://amitofoicu.github.io/home/logo.jpg" alt="logo" class="site-logo" onerror="this.style.display='none'">
         </div>
         <span class="game-title"><i class="fas fa-crown" style="margin-right: 4px;"></i>TETRIS</span>
-        <a href="https://amitofoicu.github.io/home/main.html" class="more-games-btn" touch-action="manipulation">
+        <a href="https://amitofoicu.github.io/home/main.html" class="more-games-btn">
             <i class=""></i> MORE
         </a>
     </div>
@@ -562,7 +553,7 @@
     <div class="game-container">
         <div class="game-area">
             <div class="game-board-container">
-                <!-- next row -->
+                <!-- next row with score / controls -->
                 <div class="next-row">
                     <div class="next-piece-label">
                         <i class=""></i> NEXT
@@ -573,32 +564,32 @@
                             <i class="fas fa-star"></i>
                             <span class="score-value" id="score">0</span>
                         </div>
-                        <button class="mini-control-btn" id="startPauseBtn" touch-action="manipulation"><i class="fas fa-play"></i> START</button>
-                        <button class="sound-toggle-btn" id="soundToggle" touch-action="manipulation"><i class="fas fa-volume-up"></i></button>
+                        <button class="mini-control-btn" id="startPauseBtn"><i class="fas fa-play"></i> START</button>
+                        <button class="sound-toggle-btn" id="soundToggle"><i class="fas fa-volume-up"></i></button>
                     </div>
                 </div>
                 
-                <!-- main canvas + hint -->
+                <!-- main canvas + keyboard hint -->
                 <div class="main-game">
                     <div class="game-canvas-container">
-                        <canvas id="gameCanvas" width="190" height="380" touch-action="none"></canvas>
+                        <canvas id="gameCanvas" width="190" height="380"></canvas>
                         <div class="keyboard-hint">
                             <i class="fas fa-arrow-left"></i>
                             <i class="fas fa-arrow-up"></i>
                             <i class="fas fa-arrow-right"></i>
                             <i class="fas fa-arrow-down"></i>  swipe / keys
                         </div>
-                        <!-- overlays -->
+                        <!-- game over overlays -->
                         <div class="game-over" id="gameOver" style="display: none;">
                             <h2>🎉 CONGRATS! 🎉</h2>
                             <p>SCORE: <span id="finalScore">0</span></p>
-                            <button class="mini-control-btn" id="restartBtn" touch-action="manipulation">PLAY AGAIN</button>
+                            <button class="mini-control-btn" id="restartBtn">PLAY AGAIN</button>
                         </div>
                         <div class="perfect-game-over" id="perfectGameOver" style="display: none;">
                             <h2>🎉 CONGRATS! 🎉</h2>
                             <p>PERFECT · SCORE:</p>
                             <div class="infinity-symbol">∞</div>
-                            <button class="mini-control-btn" style="background:linear-gradient(145deg,#9C27B0,#7B1FA2)" id="zenDecryptBtn" touch-action="manipulation">
+                            <button class="mini-control-btn" style="background:linear-gradient(145deg,#9C27B0,#7B1FA2)" id="zenDecryptBtn">
                                 <i class="fas fa-lock-open"></i> ZEN DECRYPT
                             </button>
                         </div>
@@ -610,10 +601,10 @@
             <div class="controls-container">
                 <div class="mobile-controls">
                     <div class="dpad-controls">
-                        <button class="dpad-button left" id="leftBtn" touch-action="manipulation"><i class="fas fa-arrow-left"></i></button>
-                        <button class="dpad-button center" id="centerBtn" touch-action="manipulation"><i class="fas fa-redo-alt"></i></button>
-                        <button class="dpad-button right" id="rightBtn" touch-action="manipulation"><i class="fas fa-arrow-right"></i></button>
-                        <button class="dpad-button down" id="downBtn" touch-action="manipulation"><i class="fas fa-arrow-down"></i></button>
+                        <button class="dpad-button left" id="leftBtn"><i class="fas fa-arrow-left"></i></button>
+                        <button class="dpad-button center" id="centerBtn"><i class="fas fa-redo-alt"></i></button>
+                        <button class="dpad-button right" id="rightBtn"><i class="fas fa-arrow-right"></i></button>
+                        <button class="dpad-button down" id="downBtn"><i class="fas fa-arrow-down"></i></button>
                         <div class="dpad-spacer"></div>
                     </div>
                 </div>
@@ -621,7 +612,7 @@
         </div>
     </div>
 
-    <!-- audio elements (unchanged) -->
+    <!-- audio elements (same sources) -->
     <audio id="backgroundMusic" loop preload="auto"><source src="https://amitofoicu.github.io/home/beijing.ogg" type="audio/ogg"></audio>
     <audio id="clearSound" preload="auto"><source src="https://amitofoicu.github.io/home/win.mp3" type="audio/mpeg"></audio>
     <audio id="moveSound" preload="auto"><source src="https://amitofoicu.github.io/home/ai.mp3" type="audio/mpeg"></audio>
@@ -631,7 +622,7 @@
     <audio id="flowerSound" preload="auto"><source src="https://amitofoicu.github.io/home/xiaochu.mp3" type="audio/mpeg"></audio>
 
     <script>
-        // ---------- CORE LOGIC (unchanged, but with double‑tap prevention already in CSS) ----------
+        // ---------- CORE LOGIC ----------
         const COLS = 10, ROWS = 20;
         const COLORS = ['#FFFFFF','#00D8FF','#0066FF','#FF8000','#FFD700','#00CC00','#AA00FF','#FF3333'];
         const SHAPES = [
@@ -680,6 +671,7 @@
         const perfectSound = document.getElementById('perfectSound');
         const flowerSound = document.getElementById('flowerSound');
 
+        // preload all audio
         function preloadAllAudio() {
             const allAudio = [backgroundMusic, clearSound, moveSound, rotateSound, dropSound, perfectSound, flowerSound];
             allAudio.forEach(audio => {
@@ -688,12 +680,14 @@
                 audio.play().then(() => {
                     audio.pause();
                     audio.currentTime = 0;
+                    // Set final volumes after preload
                     if (audio.id === 'backgroundMusic') audio.volume = 0.5;
                     else if (audio.id === 'moveSound' || audio.id === 'rotateSound' || audio.id === 'dropSound') audio.volume = 0.1;
                     else if (audio.id === 'clearSound') audio.volume = 0.1;
                     else if (audio.id === 'perfectSound') audio.volume = 0.7;
                     else if (audio.id === 'flowerSound') audio.volume = 0.6;
                 }).catch(() => {
+                    // Set volumes even if autoplay fails
                     if (audio.id === 'backgroundMusic') audio.volume = 0.5;
                     else if (audio.id === 'moveSound' || audio.id === 'rotateSound' || audio.id === 'dropSound') audio.volume = 0.1;
                     else if (audio.id === 'clearSound') audio.volume = 0.1;
@@ -706,13 +700,14 @@
         function initAudio() {
             if (audioInitialized) return;
             
-            backgroundMusic.volume = 0.5;
-            clearSound.volume = 0.1;
-            moveSound.volume = 0.1;
-            rotateSound.volume = 0.1;
-            dropSound.volume = 0.1;
-            perfectSound.volume = 0.7;
-            flowerSound.volume = 0.6;
+            // Set all volumes to desired levels
+            backgroundMusic.volume = 0.5;      //背景音乐
+            clearSound.volume = 0.1;            //消除音效 (win.mp3)
+            moveSound.volume = 0.1;              //移动音效 (ai.mp3) - LOW VOLUME
+            rotateSound.volume = 0.1;             //旋转音效 (ai.mp3) - LOW VOLUME
+            dropSound.volume = 0.1;               //下落音效 (ai.mp3) - LOW VOLUME
+            perfectSound.volume = 0.7;             //完美通关音效 (win.mp3)
+            flowerSound.volume = 0.6;               //花瓣音效 (xiaochu.mp3)
             
             [backgroundMusic, clearSound, moveSound, rotateSound, dropSound, perfectSound, flowerSound].forEach(a => {
                 a.addEventListener('error', e => console.log(`Audio load error: ${a.id}`));
@@ -860,9 +855,9 @@
             let original=currentPiece.shape; currentPiece.shape=rotated;
             if(checkCollision(currentPiece,pieceRow,pieceCol)) { 
                 currentPiece.shape=original; 
-                playSound(moveSound);
+                playSound(moveSound);   //碰撞时播放移动音效 (ai.mp3)
             } else {
-                playSound(rotateSound);
+                playSound(rotateSound);  //成功旋转播放旋转音效 (ai.mp3)
             }
             drawBoard();
         }
@@ -873,7 +868,7 @@
             let newRow=pieceRow+dy, newCol=pieceCol+dx;
             if(!checkCollision(currentPiece,newRow,newCol)){
                 pieceRow=newRow; pieceCol=newCol; drawBoard(); 
-                if(dx!==0) playSound(moveSound);
+                if(dx!==0) playSound(moveSound);  //左右移动播放移动音效 (ai.mp3)
                 return true;
             }
             if(dy>0){ mergePiece(); clearLines(); spawnNewPiece(); }
@@ -887,7 +882,7 @@
             while(!checkCollision(currentPiece, pieceRow+1, pieceCol)) {
                 pieceRow++;
             }
-            mergePiece();
+            mergePiece();  //mergePiece内部会播放dropSound (ai.mp3)
             clearLines();
             spawnNewPiece();
             drawBoard();
